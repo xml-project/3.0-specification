@@ -21,7 +21,7 @@
 </authorgroup>
 <abstract>
 <para>This specification describes the syntax and semantics of
-<citetitle>XProc 3.0: An XML Pipeline Language</citetitle>, a language for
+<citetitle>XProc 3.0: An XML Pipeline Language</citetitle>, a cool language for
 describing operations to be performed on documents.</para>
 
 <para>An XML Pipeline specifies a sequence of operations to be
