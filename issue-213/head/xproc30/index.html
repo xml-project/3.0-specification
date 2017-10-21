@@ -1,4 +1,4 @@
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>XProc 3.0: An XML Pipeline Language</title><meta charset="utf-8" /><link rel="alternate" title="XML" href="xproc30.xml" /><link rel="alternate" title="Latest editor's draft" href="http://www.w3.org/XML/XProc/docs/langspec.html" /><link rel="alternate" title="Latest Public Working Draft" href="http://www.w3.org/TR/xproc/" /><meta name="generator" content="DocBook XSL 2.0 Stylesheets V2.0.20" /><link rel="stylesheet" type="text/css" href="css/base.css" /><link rel="stylesheet" type="text/css" href="css/xproc.css" /><link rel="stylesheet" type="text/css" href="css/base.css" /><script type="text/javascript" src="js/dbmodnizr.js"></script><link href="css/prism.css" rel="stylesheet" type="text/css" /><link href="css/db-prism.css" rel="stylesheet" type="text/css" /></head><body><div class="specification"><div class="head" id="spec.head"><h1>XProc 3.0: An XML Pipeline Language</h1><h2>Editor's Draft  <time datetime="2017-10-21T06:52:01Z">21 October 2017 at 06:52 UTC (<a href="https://github.com/xml-project/3.0-specification/commit/8a4e70a0b4afacfa65e6690586b2afb1dc4b4eb3">build 25</a>)</time></h2><dl><dt>This Version:</dt><dd><a href="https://xml-project.github.io/3.0-specification/issue-213/head/xproc30/">https://xml-project.github.io/3.0-specification/issue-213/head/xproc30</a></dd><dt>Latest Version:</dt><dd><a href="http://spec.xproc.org/master/head/xproc30/">http://spec.xproc.org/master/head/xproc30/</a></dd><dt>Editors:</dt><dd><span class="personname">Achim Berndzen</span></dd><dd><span class="personname">Gerrit Imsieke</span></dd><dd><span class="personname">Norman Walsh</span></dd><dt>Repository:</dt><dd><a href="http://github.com/xml-project/3.0-specification">This specification on GitHub</a></dd><dd><a href="http://github.com/xproc/3.0-specification/issues">Report an issue</a></dd><dt>Changes:</dt><dd><a href="http://github.com/xml-project/3.0-specification/commits/issue-213">Commits for this specification</a></dd></dl><p>This document is also available in these non-normative formats: <a href="xproc30.xml">XML</a>.</p><p class="copyright">Copyright © 2016 FIXME:</p><hr /><div class="abstract"><h2>Abstract</h2>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>XProc 3.0: An XML Pipeline Language</title><meta charset="utf-8" /><link rel="alternate" title="XML" href="xproc30.xml" /><link rel="alternate" title="Latest editor's draft" href="http://www.w3.org/XML/XProc/docs/langspec.html" /><link rel="alternate" title="Latest Public Working Draft" href="http://www.w3.org/TR/xproc/" /><meta name="generator" content="DocBook XSL 2.0 Stylesheets V2.0.20" /><link rel="stylesheet" type="text/css" href="css/base.css" /><link rel="stylesheet" type="text/css" href="css/xproc.css" /><link rel="stylesheet" type="text/css" href="css/base.css" /><script type="text/javascript" src="js/dbmodnizr.js"></script><link href="css/prism.css" rel="stylesheet" type="text/css" /><link href="css/db-prism.css" rel="stylesheet" type="text/css" /></head><body><div class="specification"><div class="head" id="spec.head"><h1>XProc 3.0: An XML Pipeline Language</h1><h2>Editor's Draft  <time datetime="2017-10-21T07:06:32Z">21 October 2017 at 07:06 UTC (<a href="https://github.com/xml-project/3.0-specification/commit/18674f61878f89f1f3369618924a76d0e360aa14">build 26</a>)</time></h2><dl><dt>This Version:</dt><dd><a href="https://xml-project.github.io/3.0-specification/issue-213/head/xproc30/">https://xml-project.github.io/3.0-specification/issue-213/head/xproc30</a></dd><dt>Latest Version:</dt><dd><a href="http://spec.xproc.org/master/head/xproc30/">http://spec.xproc.org/master/head/xproc30/</a></dd><dt>Editors:</dt><dd><span class="personname">Achim Berndzen</span></dd><dd><span class="personname">Gerrit Imsieke</span></dd><dd><span class="personname">Norman Walsh</span></dd><dt>Repository:</dt><dd><a href="http://github.com/xml-project/3.0-specification">This specification on GitHub</a></dd><dd><a href="http://github.com/xproc/3.0-specification/issues">Report an issue</a></dd><dt>Changes:</dt><dd><a href="http://github.com/xml-project/3.0-specification/commits/issue-213">Commits for this specification</a></dd></dl><p>This document is also available in these non-normative formats: <a href="xproc30.xml">XML</a>.</p><p class="copyright">Copyright © 2016 FIXME:</p><hr /><div class="abstract"><h2>Abstract</h2>
 <p>This specification describes the syntax and semantics of
 <em class="citetitle">XProc 3.0: An XML Pipeline Language</em>, a language for
 describing operations to be performed on documents.</p>
@@ -1675,6 +1675,12 @@ XPath error code.</p>
 <a id="err.inline.D0050"></a>It is a <em class="glossterm"><a href="#dt-dynamic-error">dynamic error</a></em> (<a href="../steps30/#err.D0050"><code class="errqname">err:XD0050</code></a><sup class="xrefspec"><a href="../steps30/">XPS</a></sup>) if the 
 XPath expression in an AVT or TVT can not be evaluated.
 </p>
+  
+<p>
+<a id="err.inline.D0051"></a>It is a <em class="glossterm"><a href="#dt-dynamic-error">dynamic error</a></em> (<a href="../steps30/#err.D0051"><code class="errqname">err:XD0051</code></a><sup class="xrefspec"><a href="../steps30/">XPS</a></sup>) if the 
+XPath expression in an AVT or TVT evaluates to something to other than an
+atomic value or a node.
+</p>
     
 <section id="attribute-value-templates" class="section"><div class="section-titlepage"><h4>2.10.1 Attribute Value Templates</h4></div>
 
@@ -1752,6 +1758,15 @@ and converted to single text nodes. It is possible to insert nodes with
 text value templates in XProc, for example, if the XPath
 expressions refer to variables that have node content.</p>
 </div></div>
+  
+<p>If the node to be inserted with a text value template is a document
+node, all children of the document node are inserted. If the node is an attribute 
+it is added to an element parent if and only if the attribute either has
+no siblings in the XDM sequence or has only attributes as preceding siblings.
+<a id="err.inline.D0052"></a>It is a <em class="glossterm"><a href="#dt-dynamic-error">dynamic error</a></em> (<a href="../steps30/#err.D0052"><code class="errqname">err:XD0052</code></a><sup class="xrefspec"><a href="../steps30/">XPS</a></sup>) if the XPath 
+expression in a TVT evaluates to an attribute and either the parent is not an 
+element or the attribute has a preceding sibling, that it not an attribute.
+</p>
 </section>
 </section>
 
@@ -5798,7 +5813,11 @@ map contains any property name not recognized as a serialization
 parameter.</p><p>See: <a href="#err.inline.D0041">Serialization parameters</a></p></dd><dt id="err.D0042"><code class="errqname">err:XD0042</code></dt><dd><p>It is a dynamic error
   if a document arrives on an output port whose content type is not accepted
   by the output port specification.</p><p>See: <a href="#err.inline.D0042">p:output</a></p></dd><dt id="err.D0050"><code class="errqname">err:XD0050</code></dt><dd><p>It is a dynamic error if the 
-XPath expression in an AVT or TVT can not be evaluated.</p><p>See: <a href="#err.inline.D0050">Value Templates</a></p></dd></dl></div>
+XPath expression in an AVT or TVT can not be evaluated.</p><p>See: <a href="#err.inline.D0050">Value Templates</a></p></dd><dt id="err.D0051"><code class="errqname">err:XD0051</code></dt><dd><p>It is a dynamic error if the 
+XPath expression in an AVT or TVT evaluates to something to other than an
+atomic value or a node.</p><p>See: <a href="#err.inline.D0051">Value Templates</a></p></dd><dt id="err.D0052"><code class="errqname">err:XD0052</code></dt><dd><p>It is a dynamic error if the XPath 
+expression in a TVT evaluates to an attribute and either the parent is not an 
+element or the attribute has a preceding sibling, that it not an attribute.</p><p>See: <a href="#err.inline.D0052">Text Value Templates</a></p></dd></dl></div>
 </section>
 
 <section id="app.step-errors" class="section"><div class="section-titlepage"><h2>3 Step Errors</h2></div>
