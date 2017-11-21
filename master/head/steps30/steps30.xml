@@ -296,7 +296,7 @@ of its input.</para>
 </p:declare-step>
 
 <para>The input document is transformed from one media type to another.
-<error code="C1002">It is a <glossterm>dynamic
+<error code="C0070">It is a <glossterm>dynamic
 error</glossterm> if the supplied <option>content-type</option> is not
 a valid media type of the form
 “<literal><replaceable>type</replaceable>/<replaceable>subtype</replaceable>+<replaceable>ext</replaceable></literal>”.</error></para>
@@ -327,13 +327,13 @@ a <tag>c:data</tag> document. The resulting document will
 have the specified media type and a <glossterm>representation</glossterm> that
 is the content of the <tag>c:data</tag> element after decoding the base64
 encoded content.</para>
-<para><error code="C1004">It is a <glossterm>dynamic
+<para><error code="C0072">It is a <glossterm>dynamic
 error</glossterm> if the <tag>c:data</tag> contains content is not
 a valid base64 string.</error></para>
-<para><error code="C1005">It is a <glossterm>dynamic
+<para><error code="C0073">It is a <glossterm>dynamic
 error</glossterm> if the <tag>c:data</tag> element does not have
 a <tag class="attribute">content-type</tag> attribute.</error></para>
-<para><error code="C1006">It is a <glossterm>dynamic
+<para><error code="C0074">It is a <glossterm>dynamic
 error</glossterm> if the <option>content-type</option> is supplied and is
 not the same as the <tag class="attribute">content-type</tag> specified on
 the <tag>c:data</tag> element.</error>
@@ -345,13 +345,13 @@ the input document is not a <tag>c:data</tag> document is
 <listitem>
 <para><impl>What happens when one non-XML media type is cast to another
 non-XML media type is <glossterm>implementation-defined</glossterm>.</impl>
-<error code="C1003">It is a <glossterm>dynamic
+<error code="C0071">It is a <glossterm>dynamic
 error</glossterm> if the <tag>p:cast-content-type</tag> step
 cannot perform the requested cast.</error></para>
 </listitem>
 </itemizedlist>
 
-<para><error code="C1007">In all cases except when the input document
+<para><error code="C075">In all cases except when the input document
 is a <tag>c:data</tag> element, it is a <glossterm>dynamic
 error</glossterm> if the <option>content-type</option> is not supplied.</error>
 </para>
@@ -373,26 +373,41 @@ equality.</para>
    <p:input port="source" primary="true" content-types="*/*"/>
    <p:input port="alternate" content-types="*/*"/>
    <p:output port="result" content-types="application/xml"/>
-   <p:option name="fail-if-not-equal" select="false" as="xs:boolean"/>
+   <p:output port="differences" content-types="*/*" sequence="true"/>
+   <p:option name="method" as="xs:QName"/>
+   <p:option name="fail-if-not-equal" select="false()" as="xs:boolean"/>
+   <p:option name="parameters" as="map(xs:QName,item())"/>
 </p:declare-step>
 
-<para>The value of the <option>fail-if-not-equal</option> option
-<rfc2119>must</rfc2119> be a boolean.</para>
-
 <para>This step takes single documents on each of two ports and
-compares them. If both media types are XML media types, the comparison
-uses <function>fn:deep-equal</function> (as defined in <biblioref linkend="xpath-functions"/>). <impl>In <tag>p:compare</tag>, if either
-media type is not an XML media type, the result is
-<glossterm>implementation-defined</glossterm>.</impl></para>
+compares them. If <option>method</option> is not specified, or if
+<code>deep-equal</code> is specified, the comparison
+uses <function>fn:deep-equal</function> (as defined in <biblioref linkend="xpath-functions"/>). <impl>Implementations of <tag>p:compare</tag>
+<rfc2119>must</rfc2119> support the <code>deep-equal</code> <option>method</option>;
+other supported methods are <glossterm>implementation-defined</glossterm>.</impl>
+<error code="C0076">It is a <glossterm>dynamic error</glossterm> if
+the comparison <option>method</option> specified in <tag>p:compare</tag>
+is not supported by the implementation.</error>
+<error code="C0077">It is a <glossterm>dynamic error</glossterm> if
+the media types of the documents supplied are incompatible with the
+comparison <option>method</option>.</error>
+</para>
 
 <para><error code="C0019">It is a <glossterm>dynamic error</glossterm>
-if the documents are not equal, and the value of the
+if the documents are not equal according to the specified comparison
+<option>method</option>, and the value of the
 <option>fail-if-not-equal</option> option is
 <literal>true</literal>.</error> If the documents are equal, or if the
 value of the <option>fail-if-not-equal</option> option is
 <literal>false</literal>, a <tag>c:result</tag> document is produced
 with contents <literal>true</literal> if the documents are equal,
 otherwise <literal>false</literal>.</para>
+
+<para><impl>If
+<option>fail-if-not-equal</option> is <code>false</code>, and the
+documents differ, an <glossterm>implementation-defined</glossterm>
+summary of the differences between the two documents may appear on the
+<port>differences</port> port.</impl></para>
 
 <section>
 <title>Document properties</title>
@@ -473,12 +488,14 @@ directory.</para>
   <p:option name="exclude-filter" as="xs:string" e:type="RegularExpression"/>
 </p:declare-step>
 
-<para>The value of the <option>path</option> option
-<rfc2119>must</rfc2119> be an <type>anyURI</type>. It is interpreted
-as an IRI reference. If it is relative, it is made absolute against
-the base URI of the element on which it is specified
-(<tag>p:with-option</tag> or <tag>p:directory-list</tag> in the case of a
-<olink targetdoc="../xproc20/xproc20.xml" targetptr="option-shortcut">syntactic shortcut</olink> value).</para>
+<para><impl>Conformant processors <rfc2119>must</rfc2119> support directory paths whose
+scheme is <code>file</code>. It is
+<glossterm>implementation-defined</glossterm> what other schemes are
+supported by <tag>p:directory-list</tag>, and what the interpretation
+of 'directory', 'file' and 'contents' is for those schemes.</impl>
+Implementations
+<rfc2119>should</rfc2119> support “globbing”. See
+<xref linkend="uri-globbing"/>.</para>
 
 <para><error code="C0017">It is a
 <glossterm>dynamic error</glossterm> if the absolute path does not
@@ -486,13 +503,6 @@ identify a directory.</error> <error code="C0012">It is a
 <glossterm>dynamic error</glossterm> if the contents of the directory
 path are not available to the step due to access restrictions in the
 environment in which the pipeline is run.</error></para>
-
-<para><impl>Conformant processors <rfc2119>must</rfc2119> support directory paths whose
-scheme is <code>file</code>. It is
-<glossterm>implementation-defined</glossterm> what other schemes are
-supported by <tag>p:directory-list</tag>, and what the interpretation
-of 'directory', 'file' and 'contents' is for those schemes.</impl>
-</para>
 
 <para>If present, the value of the <option>include-filter</option>
 or <option>exclude-filter</option>
@@ -844,15 +854,9 @@ of the step or protocol.</error>
 <section xml:id="file-globbing">
 <title>Filename globbing</title>
 
-<para>Implementations that support <literal>file:</literal> URIs,
-<rfc2119>should</rfc2119> support “globbing”. For example, the
-URI <uri>file:///path/to/dir/*.xml</uri> should return all of the
-XML documents in the directory
-<filename class="directory">/path/to/dir</filename>.</para>
-
-<note xml:id="ednote-globbing" role="editorial">
-<para>Must define the globbing rules!</para>
-</note>
+<para>Implementations
+<rfc2119>should</rfc2119> support “globbing”. See
+<xref linkend="uri-globbing"/>.</para>
 </section>
 
 <section xml:id="c.request_body">
@@ -1436,16 +1440,12 @@ result a document (or documents) specified by an IRI.</para>
   <p:option name="document-properties" as="map(xs:QName, item())"/>
 </p:declare-step>
 
-<para>The value of the <option>href</option> option
-<rfc2119>must</rfc2119> be an <type>anyURI</type>. It is interpreted
-as an IRI reference. If it is relative, it is made absolute against
-the base URI of the element on which it is specified
-(<tag>p:with-option</tag> or <tag>p:load</tag> in the case of a
-<olink targetdoc="../xproc20/xproc20.xml" targetptr="option-shortcut">syntactic shortcut</olink> value).</para>
-
-<para>The document or documents identified by the URI are loaded and
+<para>The document or documents identified by the
+<option>href</option> URI are loaded and
 returned. If the URI protocol supports redirection, then redirects
-<rfc2119>must</rfc2119> be followed.</para>
+<rfc2119>must</rfc2119> be followed. Implementations
+<rfc2119>should</rfc2119> support “globbing”. See
+<xref linkend="uri-globbing"/>.</para>
 
 <para>The behavior of this step depends on the content type of the
 document or documents loaded. The content type of each document is
@@ -2009,7 +2009,7 @@ option is true, then the supplied properties are added to the existing
 properties. If it is false, the document’s properties are replaced by
 the new set.</para>
 
-<para><error code="C1001">It is a <glossterm>dynamic
+<para><error code="C0069">It is a <glossterm>dynamic
 error</glossterm> if the <option>properties</option> map contains
 a key equal to the string “<literal>content-type</literal>”.</error>
 </para>
@@ -3842,6 +3842,189 @@ Norman Walsh, Alex Miłowski, and Henry Thompson.</para>
 who contributed to this document and all of the versions that came before it.</para>
 </appendix>
 
+<appendix xml:id="uri-globbing" version="5.0-extension w3c-xproc">
+<title>URI globbing</title>
+
+<para>A “glob” is a modified form of wildcard expansion designed for
+matching paths on a filesystem. <impl>A glob always applies to
+<literal>file:</literal> URIs; whether it applies to other URI schemes
+is <glossterm>implementation-defined</glossterm>.</impl>
+Given a set of absolute URIs, the rules below determine which URIs
+match the specified “glob”.
+Globs are
+applied to the path portion of the absolute URI of each potential
+match. Globs can be interpreted like regular expressions with the
+following special rules:</para>
+
+<orderedlist>
+<listitem>
+<para>The characters “<literal>\</literal>”, “<literal>?</literal>”,
+“<literal>*</literal>”, and “<literal>[</literal>” are special.
+All other characters match exactly and only themselves.
+</para>
+</listitem>
+<listitem>
+<para>Globs are always anchored. Any non-special characters at the
+start or end of the string must match exactly those characters
+<emphasis>at the start or end of the string</emphasis>.
+If a string begins or ends with special characters, then the matching
+rules for those characters apply to the start or end of the string.
+</para>
+</listitem>
+<listitem>
+<para>The character “<literal>\</literal>” escapes the character
+that follows it. The character that follows matches exactly and only
+itself, regardless of whatever special meaning it would have had
+if it had not been preceded by a “<literal>\</literal>”. If a
+“<literal>\</literal>” is the very last character of a string, it
+is interpreted as “<literal>\\</literal>”.
+</para>
+</listitem>
+<listitem>
+<para>The character “<literal>?</literal>” matches any single character
+except the path separator character, “<literal>/</literal>”.
+</para>
+</listitem>
+<listitem>
+<para>The character “<literal>*</literal>” matches zero or more characters
+except the path separator.
+</para>
+</listitem>
+<listitem>
+<para>The character sequence “<literal>**</literal>” matches zero or more
+characters, <emphasis>including</emphasis> the path separator.
+</para>
+</listitem>
+<listitem>
+<para>The character “<literal>[</literal>” begins a range.
+The range consists of all of the characters after “<literal>[</literal>” up to but
+excluding the first unescaped “<literal>]</literal>” that follows or the end of
+the string, whichever comes first. The closing “<literal>]</literal>”, if present,
+has no bearing on matches, it simply ends the range. A range matches any single
+character that is a member of the range.</para>
+<orderedlist>
+<listitem>
+<para>If the first character of a range is “<literal>^</literal>”, then the range
+consists of all of the characters that follow the “<literal>^</literal>” and the
+meaning of the range is inverted. It matches all of the characters
+<emphasis>not</emphasis> identified by the range.
+</para>
+</listitem>
+<listitem>
+<para>If the first or last character of a range is “<literal>-</literal>”, then the
+hyphen character is literally part of the range. If a hyphen appears anywhere else
+in a range, then it identifies an inclusive character sequence. The sequence begins
+with the character that precedes the hyphen and ends with the character that follows
+the hyphen. For the purposes of such a hyphen, the characters are ordered by
+Unicode code point. If the code point of the beginning character is greater than the
+code point of the ending character, then the sequence consists of no characters.
+If the same character appears more than once in a range, all of the multiple occurrences
+collapse to a single occurrence.
+</para>
+</listitem>
+</orderedlist>
+</listitem>
+</orderedlist>
+
+<para>Note that the path portion of a URI always begins with a single slash so
+most useful globs will have to start with a slash.</para>
+
+<para>Some examples follow. For the purpose of these examples, let’s consider
+the following URIs:</para>
+
+<orderedlist>
+<listitem>
+<simpara><uri>file:///a</uri></simpara>
+</listitem>
+<listitem>
+<simpara><uri>file:///ab</uri></simpara>
+</listitem>
+<listitem>
+<simpara><uri>file:///c.txt</uri></simpara>
+</listitem>
+<listitem>
+<simpara><uri>file:///d/e.txt</uri></simpara>
+</listitem>
+<listitem>
+<simpara><uri>file:///d/f/g.txt</uri></simpara>
+</listitem>
+<listitem>
+<simpara><uri>file:///file0.dat</uri></simpara>
+</listitem>
+<listitem>
+<simpara><uri>file:///fileA.dat</uri></simpara>
+</listitem>
+<listitem>
+<simpara><uri>file:///file-.dat</uri></simpara>
+</listitem>
+</orderedlist>
+
+<para>And the following globs:</para>
+
+<variablelist>
+<varlistentry>
+<term><literal>/?</literal></term>
+<listitem>
+<para>Matches “<literal>file:///a</literal>”, but not “<literal>file:///ab</literal>” or any
+other URI.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><literal>/*.txt</literal></term>
+<listitem>
+<para>Matches only “<literal>file:///c.txt</literal>”.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><literal>/*/*.txt</literal></term>
+<listitem>
+<para>Matches only “<literal>file:///d/e.txt</literal>”.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><literal>/**.txt</literal></term>
+<listitem>
+<para>Matches all three “<literal>.txt</literal>” files.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><literal>/d/**/*.txt</literal></term>
+<listitem>
+<para>Matches only “<literal>file:///d/f/g.txt</literal>” (but would also have
+matched “<literal>file:///d/f/h/i/j/k.txt</literal>” had it been present).
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><literal>/*[0-9].dat</literal></term>
+<listitem>
+<para>Matches only “<literal>file:///file0.dat</literal>”.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><literal>/*[^0-9].dat</literal></term>
+<listitem>
+<para>Matches “<literal>file:///fileA.dat</literal>” and
+“<literal>file:///file-.dat</literal>”.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><literal>/*[-0-9].dat</literal></term>
+<listitem>
+<para>Matches “<literal>file:///file0.dat</literal>” and
+“<literal>file:///file-.dat</literal>”.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+</appendix>
 <appendix xml:id="references" version="5.0-extension w3c-xproc">
 
 <title>References</title>
