@@ -698,7 +698,10 @@
       <ref name="decl.attributes"/>
       <optional>
         <attribute name="visibility">
-          <data type="boolean"/>
+          <choice>
+            <value>private</value>
+            <value>public</value>
+          </choice>
         </attribute>
       </optional>
       <ref name="common.attributes"/>
