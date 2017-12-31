@@ -4060,6 +4060,9 @@ is no primary input port.</error>
 </para>
 </listitem>
 </itemizedlist>
+<para><error code="S0086">It is a <glossterm>static error</glossterm> 
+to provide more than one p:with-input for the same port.</error>
+</para>
 
 <para>If no connection is provided for a <glossterm>primary input
 port</glossterm>, the input will be connected to the
@@ -4134,7 +4137,8 @@ space-separated list of step/port pairs of the form
 If “@port-name” is omitted, the connection is to the primary output port of
 the step named “step-name”. If the “step-name” is omitted, the connection is
 to the specified port on the same step as the step associated with the
-current default readable port.</para>
+current default readable port. An empty or all whitespace attribute value is a shortcut
+for the binding to the default readable port.</para>
 <para><error code="S0082">If
 <tag class="attribute">pipe</tag> is specified, it is a <glossterm>static error</glossterm>
 if <tag>p:document</tag>, <tag>p:pipe</tag>, or <tag>p:inline</tag> appear among
