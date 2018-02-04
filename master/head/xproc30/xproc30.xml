@@ -4630,6 +4630,8 @@ has a prefix which is not bound to a namespace.</error>
 Type<superscript>[citation needed]</superscript>. If an atomic type,
 or sequence of atomic types, is specified, the value provided for the
 option will be atomized according to the standard XPath rules.
+<error code="D0049">It is a <glossterm>dynamic error</glossterm> if 
+the sequence type is not syntactically valid.</error>   
 <error code="D0036">It is a <glossterm>dynamic error</glossterm> if
 the computed value does not match the specified sequence
 type.</error></para>
@@ -4657,14 +4659,11 @@ evaluation error will occur.</para>
 
 <para>If a <tag class="attribute">select</tag> expression is given,
 the <glossterm>readable ports</glossterm> available for document
-connections are the <glossterm>readable ports</glossterm> in the
-environment inherited by the first step in the surrounding
-<glossterm>container</glossterm>'s <glossterm>contained
-steps</glossterm>.</para>
+connections are computed as if <tag>p:variable</tag> was an atomic step.</para>
 
 <para>If a <tag class="attribute">select</tag> expression is given but
 no document connection is provided, the implicit connection is to the
-<glossterm>default readable port</glossterm> computed as if the variable
+<glossterm>default readable port</glossterm> computed as if <tag>p:variable</tag>
 was an atomic step. If there is no default readable port, the
 connection is treated as if <tag>p:empty</tag> was specified.</para>
 </listitem>
@@ -4770,6 +4769,8 @@ name.</error></para>
 Type<superscript>[citation needed]</superscript>. If an atomic type,
 or sequence of atomic types, is specified, the value provided for the
 option will be atomized according to the standard XPath rules.
+<error code="D0049">It is a <glossterm>dynamic error</glossterm> if 
+the sequence type is not syntactically valid.</error>  
 <error code="D0036">It is a <glossterm>dynamic error</glossterm> if
 the computed value does not match the specified sequence
 type.</error></para>
@@ -4856,6 +4857,8 @@ name as part of the same step invocation.</error></para>
 Type<superscript>[citation needed]</superscript>. If an atomic type,
 or sequence of atomic types, is specified, the value provided for the
 option will be atomized according to the standard XPath rules.
+<error code="D0049">It is a <glossterm>dynamic error</glossterm> if 
+the sequence type is not syntactically valid.</error>  
 <error code="D0036">It is a <glossterm>dynamic error</glossterm> if
 the computed value does not match the specified sequence
 type.</error></para>
