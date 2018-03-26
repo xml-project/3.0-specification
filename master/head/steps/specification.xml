@@ -1539,6 +1539,11 @@ returned. If the URI protocol supports redirection, then redirects
 <rfc2119>should</rfc2119> support “globbing”. See
 <xref linkend="uri-globbing"/>.</para>
 
+<para><error code="D0011">It is a <glossterm>dynamic error</glossterm> 
+if the resource referenced by a <code>p:load</code> element does not exist, 
+cannot be accessed, or has an XML content type and is not a well-formed 
+XML document.</error></para>  
+
 <para>The behavior of this step depends on the content type of the
 document or documents loaded. The content type of each document is
 determined as follows:</para>
@@ -1579,7 +1584,8 @@ be loaded:
 
 <para>For an XML media type, the content is loaded and parsed as XML.</para>
 
-<para>If the <option>dtd-validate</option> parameter is <literal>true</literal>,
+<para>If the <option>dtd-validate</option> parameter is <literal>true</literal>
+and the document has a <literal>doctype</literal> declaration,
 then DTD validation must be performed when parsing the document.
 <error code="C0027">It is a <glossterm>dynamic error</glossterm> if a DTD
 validation is performed and the document is not valid.</error>
