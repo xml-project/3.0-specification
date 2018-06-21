@@ -275,7 +275,7 @@ one input with respect to some set of XML Schemas, etc.</para>
       <section xml:id="step-names">
         <title>Step names</title>
         <para>The <tag class="attribute">name</tag> attribute on any step can be used to give it a
-          name. The name must be unique within its scope, see <xref linkend="scoping"/>.</para>
+          name. <assert xml:id="unique-names">The name <rfc2119>must</rfc2119> be unique within its scope, see <xref linkend="scoping"/>.</assert></para>
         <para>If the pipeline author does not provide an explicit name, the processor manufactures a
           default name. All default names are of the form
             “<literal>!1</literal><replaceable>.m</replaceable><replaceable>.n</replaceable>…” where
@@ -397,15 +397,15 @@ in an XProc pipeline is <glossterm>implementation-defined</glossterm>.</impl>
 <section xml:id="text-documents">
 <title>Text Documents</title>
 
-<para>Text documents are non-XML documents.
-<impl>Representations of text documents are are
-<glossterm>implementation-dependent</glossterm>.</impl>
-</para>
+<para>Text documents are non-XML documents. A text document is represented by
+a single text node wrapped in a document node as instances of the 
+<biblioref linkend="xpath-datamodel"/>.</para>
 
 <para>Text documents are identified by a text media type.
 <termdef xml:id="dt-text-media-type">Media types of the form
 “<literal>text/<replaceable>something</replaceable></literal>”
-are <firstterm baseform="text media type">text media types</firstterm>.
+are <firstterm baseform="text media type">text media types</firstterm> with the
+exception of “<literal>text/xml</literal>” which is an XML media type.
 </termdef>
 </para>
 </section>
@@ -4261,10 +4261,7 @@ serialized implementations
 specified options are allowed.</para>
 
 <para>For XML outputs, see <xref linkend="xml-serialization"/>.
-For non-XML outputs, see <xref linkend="non-xml-serialization"/>.
-<error code="D0041">It is a <glossterm>dynamic error</glossterm> if the
-map contains any property name not recognized as a serialization
-parameter.</error></para>
+For non-XML outputs, see <xref linkend="non-xml-serialization"/>.</para>
 
 <section xml:id="xproc-serialization">
 <title>XML serialization</title>
@@ -5498,24 +5495,6 @@ output</emphasis> on that port. </para>
       <e:rng-pattern name="Empty"/>
     </section>
 
-<section xml:id="p.character-map">
-<title>p:character-map</title>
-
-<e:rng-pattern name="CharacterMap"/>
-
-<para>When character maps are used during serialization, each occurrence of
-the identified character is replaced by the specified string.</para>
-
-<section xml:id="p.output-character">
-<title>p:output-character</title>
-
-<e:rng-pattern name="OutputCharacter"/>
-
-<para>Maps a single character to a string at serialization time.</para>
-
-</section>
-</section>
-
     <section xml:id="p.documentation"><title>p:documentation</title><para>A
           <tag>p:documentation</tag> contains human-readable documentation.</para>
       <e:rng-pattern name="Documentation"/>
@@ -5704,7 +5683,7 @@ in the PSVI, are preserved between steps.</impl></para>
 <citetitle xlink:href="http://www.w3.org/TR/xproc20-steps/">XProc 2.0:
 Standard Step Library</citetitle>.
 Alex Milowski, Henry Thompson, and Norman Walsh editors.
-W3C Working Draft 15 December 2014.
+W3C Working Group Note 21 July 2016.
 </bibliomixed>
     <bibliomixed xml:id="xml-infoset-rec"><abbrev>Infoset</abbrev>
 <citetitle xlink:href="http://www.w3.org/TR/xml-infoset/">XML
@@ -5733,7 +5712,7 @@ Dave Hollander, Andrew Layman, et. al.,
 editors. W3C Recommendation 16 August 2006.</bibliomixed>
     <bibliomixed xml:id="lastcall-xslt30"><abbrev>XSLT 3.0</abbrev>
    <citetitle xlink:href="http://www.w3.org/TR/xslt-30/">XSL Transformations (XSLT) Version 3.0</citetitle>. Michael Kay,
-   W3C Last Call Working Draft 2 October 2014</bibliomixed>
+   W3C Recommendation 8 June 2017</bibliomixed>
     <bibliomixed xml:id="xpath31"><abbrev>XPath 3.1</abbrev>
 <citetitle xlink:href="http://www.w3.org/TR/xpath31/">XML Path Language (XPath)
 	3.1</citetitle>. Jonathan Robie, Michael Dyck, Josh Spiegel, editors.
@@ -5918,7 +5897,8 @@ default value, are its <firstterm>specified options</firstterm>.</para></glossde
         this set <emphasis>Visited</emphasis>), are defined by cases.</para></glossdef></glossentry><glossentry><glossterm>subpipeline</glossterm><glossdef><para>Sibling steps (and the connections between them) form a
             <firstterm>subpipeline</firstterm>.</para></glossdef></glossentry><glossentry><glossterm>text media type</glossterm><glossdef><para>Media types of the form
 “<literal>text/<replaceable>something</replaceable></literal>”
-are <firstterm baseform="text media type">text media types</firstterm>.
+are <firstterm baseform="text media type">text media types</firstterm> with the
+exception of “<literal>text/xml</literal>” which is an XML media type.
 </para></glossdef></glossentry><glossentry><glossterm>text value template</glossterm><glossdef><para>In a text node that is
 designated as a <firstterm>text value template</firstterm>,
 expressions can be used by surrounding each expression with curly
