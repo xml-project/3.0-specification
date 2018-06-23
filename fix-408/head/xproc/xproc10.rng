@@ -43,7 +43,9 @@
     </attribute>
   </define>
   <define name="xpath-version.attr">
-    <attribute name="xpath-version"/>
+    <attribute name="xpath-version">
+      <value>3.1</value>
+    </attribute>
   </define>
   <define name="psvi-required.attr">
     <attribute name="psvi-required">
