@@ -486,6 +486,9 @@
     <element name="document">
       <ref name="href.attr" sa:avt="true"/>
       <optional>
+        <attribute name="content-type"/>
+      </optional>
+      <optional>
         <ref name="document-properties.attr"/>
       </optional>
       <optional>
@@ -509,6 +512,9 @@
     <element name="inline">
       <ref name="common.attributes"/>
       <ref name="inline.attributes"/>
+      <optional>
+        <attribute name="content-type"/>
+      </optional>
       <optional>
         <ref name="document-properties.attr"/>
       </optional>

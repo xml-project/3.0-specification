@@ -186,6 +186,7 @@ Pipe =
 Document =
   element document {
     [ sa:avt = "true" ] href.attr,
+    attribute content-type { text }?,
     document-properties.attr?,
     attribute parameters { PropertyMap }?,
     common.attributes,
@@ -197,6 +198,7 @@ Inline =
   element inline {
     common.attributes,
     inline.attributes,
+    attribute content-type { text }?,
     document-properties.attr?,
     attribute encoding { text }?,
     use-when.attr?,
