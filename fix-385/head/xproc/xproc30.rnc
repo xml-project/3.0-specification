@@ -791,6 +791,7 @@ Step-load =
     use-when.attr?,
     attribute href { xsd:anyURI }?,
     attribute parameters { xsd:string }?,
+    attribute content-type { xsd:string }?,
     attribute document-properties { xsd:string }?,
     (WithOption* & (Documentation | PipeInfo)*)
   }

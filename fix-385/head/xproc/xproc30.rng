@@ -2297,6 +2297,11 @@
         </attribute>
       </optional>
       <optional>
+        <attribute name="content-type">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
         <attribute name="document-properties">
           <data type="string"/>
         </attribute>
