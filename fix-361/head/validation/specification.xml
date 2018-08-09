@@ -366,9 +366,9 @@ validation -- RELAX NG</citetitle>
 2008.
 </bibliomixed>
 <bibliomixed xml:id="iso19757-3"><abbrev>Schematron</abbrev>ISO/IEC JTC 1/SC 34.
-<citetitle>ISO/IEC 19757-3:2006(E) Document Schema Definition
+<citetitle>ISO/IEC 19757-3:2016(E) Document Schema Definition
 Languages (DSDL) — Part 3: Rule-based validation — Schematron</citetitle>
-2006.
+2016.
 </bibliomixed>
 <bibliomixed xml:id="relaxng-compact-syntax"><abbrev>RELAX NG
 Compact Syntax</abbrev>ISO/IEC JTC 1/SC 34.
@@ -405,5 +405,23 @@ how <glossterm role="unwrapped">implementation-defined</glossterm> features are 
 implementation has discretion in how it is performed.
 Implementations are not required to document or explain
 how <glossterm role="unwrapped">implementation-dependent</glossterm> features are performed.</para></glossdef></glossentry></glosslist></appendix>
+
+<appendix version="5.0-extension w3c-xproc" xml:id="ancillary-files">
+<title>Ancillary files</title>
+
+<para>This specification includes by reference a number of
+ancillary files.</para>
+
+<variablelist>
+<varlistentry>
+<term><link xlink:href="steps.xpl"/></term>
+<listitem>
+<para>An XProc step library for the declared steps.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+</appendix>
 
 </specification>

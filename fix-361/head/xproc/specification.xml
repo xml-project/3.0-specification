@@ -255,11 +255,12 @@ one input with respect to some set of XML Schemas, etc.</para>
         <code>subpipeline</code> = (<tag>p:variable</tag>|<tag>p:for-each</tag>|<tag>p:viewport</tag>|<tag>p:choose</tag>|<tag>p:if</tag>|<tag>p:group</tag>|<tag>p:try</tag>|<code xlink:href="#p.atomic">p:<replaceable>standard-step</replaceable></code>|<code xlink:href="#p.atomic"><replaceable>pfx:user-pipeline</replaceable></code>)+ </para>
 
       <note xml:id="note-udp">
-        <para>User-defined pipelines (identified with
-              <code><replaceable>pfx:user-pipeline</replaceable></code> in the preceding syntax
-          summary) are atomic. A pipeline <emphasis>declaration</emphasis> may contain a
-          subpipeline, but the invocation of that pipeline is atomic and does not contain a
-          subpipeline.</para>
+        <para>When a user-defined pipeline is invoked, (identified
+        with <code><replaceable>pfx:user-pipeline</replaceable></code>
+        in the preceding syntax summary) it appears as an atomic step.
+        A pipeline <emphasis>declaration</emphasis> may contain a
+        subpipeline, but the invocation of that pipeline is atomic and
+        does not contain a subpipeline.</para>
       </note>
       <para>Steps have “ports” into which inputs and outputs are connected. Each step has a number
         of input ports and a number of output ports; a step can have zero input ports and/or zero
@@ -275,7 +276,7 @@ one input with respect to some set of XML Schemas, etc.</para>
       <section xml:id="step-names">
         <title>Step names</title>
         <para>The <tag class="attribute">name</tag> attribute on any step can be used to give it a
-          name. The name must be unique within its scope, see <xref linkend="scoping"/>.</para>
+          name. <assert xml:id="unique-names">The name <rfc2119>must</rfc2119> be unique within its scope, see <xref linkend="scoping"/>.</assert></para>
         <para>If the pipeline author does not provide an explicit name, the processor manufactures a
           default name. All default names are of the form
             “<literal>!1</literal><replaceable>.m</replaceable><replaceable>.n</replaceable>…” where
@@ -313,6 +314,7 @@ one input with respect to some set of XML Schemas, etc.</para>
         </note>
       </section>
     </section>
+  </section>
 
 <section xml:id="documents">
 <title>Documents</title>
@@ -397,15 +399,15 @@ in an XProc pipeline is <glossterm>implementation-defined</glossterm>.</impl>
 <section xml:id="text-documents">
 <title>Text Documents</title>
 
-<para>Text documents are non-XML documents.
-<impl>Representations of text documents are are
-<glossterm>implementation-dependent</glossterm>.</impl>
-</para>
+<para>Text documents are non-XML documents. A text document is represented by
+a single text node wrapped in a document node as instances of the
+<biblioref linkend="xpath-datamodel"/>.</para>
 
 <para>Text documents are identified by a text media type.
 <termdef xml:id="dt-text-media-type">Media types of the form
 “<literal>text/<replaceable>something</replaceable></literal>”
-are <firstterm baseform="text media type">text media types</firstterm>.
+are <firstterm baseform="text media type">text media types</firstterm> with the
+exception of “<literal>text/xml</literal>” which is an XML media type.
 </termdef>
 </para>
 </section>
@@ -797,6 +799,74 @@ the input and output connections must not form a cycle in the graph.
           any, is called for.</para>
       </section>
     </section>
+
+<section xml:id="initiating">
+<title>Initiating a pipeline</title>
+
+<para>Initiating a pipeline necessarily involves two activities:
+static analysis and dynamic evaluation. Static analysis consists of
+those tasks that can be performed by inspection of the pipeline
+alone, including the binding of
+<link linkend="statics">static options and variables</link>,
+computation of serialization properties and document-properties,
+<link linkend="use-when">evaluation of <code>use-when</code> expressions</link>,
+and detecting static errors. Dynamic evaluation consists of tasks which, in general,
+cannot be performed out until a source document is available.</para>
+
+<para>There may be an <glossterm>implementation-defined</glossterm>
+mechanism for providing default values for static
+<tag>p:option</tag>s. If such a mechanism exists, the values provided
+must match the sequence type declared for the option, if such a
+declaration exists.</para>
+
+<section xml:id="static-expressions">
+<title>Evaluating expressions during static analysis</title>
+
+<para>Several kinds of expressions are evaluated during static analysis:</para>
+
+<orderedlist>
+<listitem>
+<para>The <tag class="attribute">select</tag> expressions on static
+<tag>p:option</tag>s, unless a static default value has been provided.</para>
+</listitem>
+<listitem>
+<para>The <tag class="attribute">select</tag> expressions on static
+<tag>p:variable</tag>s.
+</para>
+</listitem>
+<listitem>
+<para>The <tag class="attribute">document-properties</tag> of
+<tag>p:inline</tag> and <tag>p:document</tag> elements.
+</para>
+</listitem>
+<listitem>
+<para>The <tag class="attribute">serialization</tag> properties
+on <tag>p:output</tag>.
+</para>
+</listitem>
+<listitem>
+<para>Expressions in <tag class="attribute">use-when</tag> attributes used
+for <link linkend="use-when">conditional element exclusion</link>.</para>
+</listitem>
+</orderedlist>
+
+<para>For the purposes of evaluating a these expressions,
+the context node, position, and size are all undefined. The
+<glossterm>in-scope bindings</glossterm> are limited to the lexically preceding,
+statically declared options and variables. There are no available collections
+except the default collection on <tag>p:variable</tag>s which explicitly create
+a collection.</para>
+
+<para>The results of XProc extension functions may differ during static analysis,
+as described in the description of each function.</para>
+
+</section>
+
+<section xml:id="dynamic-evaluation">
+<title>Dynamic evaluation of the pipeline</title>
+
+<para>FIXME: write an introduction.</para>
+
     <section xml:id="environment">
       <title>Environment</title>
       <para><termdef xml:id="dt-environment">The <firstterm>environment</firstterm> is a
@@ -911,6 +981,7 @@ are visible.</para>
          </section>
 
     </section>
+
     <section xml:id="xpath-context">
       <title>XPath in XProc</title>
 
@@ -1018,7 +1089,7 @@ with the following static context:</para>
               <term>In-scope variables</term>
               <listitem>
 <para>Variables and options are lexically scoped. The union of the
-<glossterm>specified options</glossterm> and the variables that
+options and the variables that
 are “visible” from the step's lexical position are available
 as variable bindings to the XPath processor.
 Variables and options can shadow each other, only the lexically most
@@ -1098,19 +1169,18 @@ refer to that variable will raise an error.</para>
             <varlistentry>
               <term>context item</term>
               <listitem>
-<para>A document. The document is either specified with a
+<para>The context item. The context item is either specified with a
 <glossterm>connection</glossterm> or is taken from the
 <glossterm>default readable port</glossterm>. <error code="D0008">It
-is a <glossterm>dynamic error</glossterm> if a document sequence
-appears where a document to be used as the context node is
+is a <glossterm>dynamic error</glossterm> if a sequence of items
+appears where an item to be used as the context item is
 expected.</error>
 </para>
 
-<para>When the context node has a non-XML content type, XPath
-expressions are evaluated in the context of the corresponding
-<glossterm>proxy document</glossterm>.
-<termdef xml:id="dt-proxy-document">A <firstterm>proxy document</firstterm> is
-an empty document node.</termdef>.</para>
+<para>The context item used for an XML, text, or JSON document is
+the XDM representation of that item.
+<impl>The context item used for binary documents is
+<glossterm>implementation-defined</glossterm>.</impl></para>
 
 <para>If there is no explicit connection and there is no default
 readable port then the context node is undefined.</para>
@@ -1431,6 +1501,10 @@ readable port then the context node is undefined.</para>
           </note>
         </section>
     </section>
+
+</section>
+</section>
+
     <section xml:id="xpath-extension-functions">
       <title>XPath Extension Functions</title>
 
@@ -1530,8 +1604,8 @@ system properties, which are all in the XProc namespace:</para>
               <para>Returns the version(s) of XProc implemented by the processor
                 as a space-separated list. For example, a processor that
                 supports XProc 1.0 would return “1.0”; a processor that supports
-                XProc 1.0 and 2.0 would return “1.0 2.0”; a processor that
-                supports only XProc 2.0 would return “2.0”.</para>
+                XProc 1.0 and 3.0 would return “1.0 3.0”; a processor that
+                supports only XProc 3.0 would return “3.0”.</para>
             </listitem>
           </varlistentry>
           <varlistentry>
@@ -1540,10 +1614,9 @@ system properties, which are all in the XProc namespace:</para>
               <para>Returns the version(s) of XPath implemented by the processor
                 for evaluating XPath expressions on XProc elements. The result
                 is a space-separated list of versions supported. For example, a
-                processor that only supports XPath 2.0 would return “2.0”; a
-                processor that supports XPath 2.0 and XPath 3.0 could return
-                “2.0 3.0”; a processor that supports only XPath 2.0 would return
-                “2.0”.</para>
+                processor that only supports XPath 3.1 would return “3.1”; a
+                processor that supports XPath 3.0 and XPath 3.1 could return
+                “3.0 3.1”.</para>
             </listitem>
           </varlistentry>
           <varlistentry>
@@ -1558,6 +1631,9 @@ system properties, which are all in the XProc namespace:</para>
 <para>Implementations may support additional system properties but such properties
 <rfc2119>must</rfc2119> be in a namespace and <rfc2119>must not</rfc2119> be
 in the XProc namespace.</para>
+
+<para><impl>The value of the <function>p:system-propety</function> function during
+static analysis is <glossterm>implementation-defined</glossterm>.</impl></para>
 
       </section>
       <section xml:id="f.step-available">
@@ -1579,6 +1655,9 @@ scope for the expression. The
 <function>p:step-available</function> function returns true if and
 only if the processor knows how to evaluate steps of the specified
 type.</para>
+
+<para><impl>The value of the <function>p:step-available</function> function during
+static analysis is <glossterm>implementation-dependent</glossterm>.</impl></para>
 </section>
 
 <section xml:id="f.iteration-position">
@@ -1601,6 +1680,8 @@ ancestor <tag>p:for-each</tag> or <tag>p:viewport</tag>.</para>
 among the ancestors of the element on which the expression involving
 <function>p:iteration-position</function> occurs, it returns 1.</para>
 
+<para>The value of the <function>p:iteration-position</function> function during
+static analysis is 1.</para>
 </section>
 
 <section xml:id="f.iteration-size">
@@ -1622,6 +1703,8 @@ ancestor <tag>p:for-each</tag> or <tag>p:viewport</tag>.</para>
 among the ancestors of the element on which the expression involving
 <function>p:iteration-size</function> occurs, it returns 1.</para>
 
+<para>The value of the <function>p:iteration-size</function> function during
+static analysis is 1.</para>
 </section>
 
 <section xml:id="f.version-available">
@@ -1639,6 +1722,8 @@ specified.</para>
 <para>A version 1.0 processor will return <literal>true()</literal> when
 <code>p:version-available('1.0')</code> is evaluated.</para>
 
+<para>The <function>p:version-available</function> function behaves
+normally during static anlaysis.</para>
 </section>
 
 <section xml:id="f.xpath-version-available">
@@ -1653,9 +1738,11 @@ specified.</para>
 <methodparam><type>xs:string</type><parameter>version</parameter></methodparam>
 </methodsynopsis>
 
-<para>A processor that supports XPath 2.0 will return <literal>true()</literal> when
-<code>p:xpath-version-available('2.0')</code> is evaluated.</para>
+<para>A processor that supports XPath 3.1 will return <literal>true()</literal> when
+<code>p:xpath-version-available('3.1')</code> is evaluated.</para>
 
+<para>The <function>p:xpath-version-available</function> function behaves
+normally during static anlaysis.</para>
 </section>
 
 <section xml:id="f.make-map">
@@ -1695,6 +1782,9 @@ if any of the <tag>c:param</tag> elements are invalid.</error>
 <title>Editorial Note</title>
 <para>Must tie down what “valid” means wrt the c:param element.</para>
 </note>
+
+<para>The <function>p:make-map</function> function behaves
+normally during static anlaysis.</para>
 </section>
 
 <section xml:id="f.document-properties">
@@ -1704,21 +1794,17 @@ if any of the <tag>c:param</tag> elements are invalid.</error>
 of a document as a map.</para>
 
 <methodsynopsis>
-<type>map(xs:QName,item())</type>
+<type>map(xs:QName,item()*)</type>
 <methodname>p:document-properties</methodname>
-<methodparam><type>document-node()</type><parameter>doc</parameter></methodparam>
+<methodparam><type>item()</type><parameter>doc</parameter></methodparam>
 </methodsynopsis>
 
 <para>The map returned contains (exclusively) the document properties
-associated with the <parameter>doc</parameter> specified.</para>
+associated with the <parameter>doc</parameter> specified. If the item
+is not associated with a document, the resulting map will be empty.</para>
 
-<para feature="document-properties-non-xml-document">The context node
-for the <function>p:document-properties</function> function must be an
-XPath document node. In order to access the document properties of a
-non-XML document, the processor is responsible for manufacturing an
-empty document node for this purpose and for maintaining the
-association between that empty document node and the corresponding
-non-XML document.</para>
+<para>The <function>p:document-properties</function> function behaves
+normally during static anlaysis.</para>
 </section>
 
 <section xml:id="f.document-properties-document">
@@ -1730,23 +1816,19 @@ of a document as an XML document.</para>
 <methodsynopsis>
 <type>document-node()</type>
 <methodname>p:document-properties-document</methodname>
-<methodparam><type>document-node()</type><parameter>doc</parameter></methodparam>
+<methodparam><type>item()</type><parameter>doc</parameter></methodparam>
 </methodsynopsis>
 
 <para>The document returned is a <code>p:document-properties</code>
 document that contains (exclusively) the document properties
 associated with the <parameter>doc</parameter> specified. Each key in the
 properties becomes an element, each value becomes the content of that element.
-For atomic values other than string, an <tag class="attribute">xsi:type</tag> attribute is added to identify the
+For atomic values other than string, an
+<tag class="attribute">xsi:type</tag> attribute is added to identify the
 type of the value.</para>
 
-<para feature="document-properties-non-xml-document">The context node
-for the <function>p:document-properties-document</function> function must be an
-XPath document node. In order to access the document properties of a
-non-XML document, the processor is responsible for manufacturing an
-empty document node for this purpose and for maintaining the
-association between that empty document node and the corresponding
-non-XML document.</para>
+<para>The <function>p:document-properties-document</function> function behaves
+normally during static anlaysis.</para>
 </section>
 
 <section xml:id="f.document-property">
@@ -1773,15 +1855,79 @@ non-XML document, the processor is responsible for manufacturing an
 empty document node for this purpose and for maintaining the
 association between that empty document node and the corresponding
 non-XML document.</para>
+
+<para>The <function>p:document-property</function> function behaves
+normally during static anlaysis.</para>
 </section>
 
-      <section xml:id="other-xpath-extension-functions">
-        <title>Other XPath Extension Functions</title>
-        <para><impl>It is <glossterm>implementation-defined</glossterm> if the processor supports
-            any other XPath extension functions.</impl> Additional extension functions, if any,
-            <rfc2119>must not</rfc2119> use any of the XProc namespaces. </para>
-      </section>
-    </section>
+<section xml:id="f.force-qname-keys">
+<title>Force QName keys</title>
+
+<para>This function forces a <type>map(*)</type> into a
+<type>map(xs:QName, item()*)</type>.</para>
+
+<methodsynopsis>
+  <type>map(xs:Qname, item()*)</type>
+  <methodname>p:force-qname-keys</methodname>
+  <methodparam>
+    <type>map(*)</type>
+    <parameter>map</parameter>
+  </methodparam>
+</methodsynopsis>
+
+<para>The <function>p:force-qname-keys()</function> takes as its input a
+map of type <type>map(*)</type> (so any map) and forces this into a
+map with <type>xs:Qname</type> keys. Every key/value entry in
+<code>$map</code> is processed as follows:</para>
+
+<itemizedlist>
+  <listitem>
+    <para>If the entry's key is of type <type>xs:QName</type>, the entry
+    is copied to the function's result map, unchanged.</para>
+  </listitem>
+  <listitem>
+    <para>If the entry's key is of type <type>xs:string</type> it is
+    transformed into an <type>xs:Qname</type> using the <link xlink:href="https://www.w3.org/TR/xpath-31/#doc-xpath31-EQName">XPath EQName production rules</link>. That is, it can be written
+    as a local-name only, as a prefix plus local-name or as a URI plus
+    local-name (using the <code>Q{}</code> syntax). An entry with this
+    QName as key and the original entry's value is added to the
+    function's result map.</para>
+    <para>
+      <error code="D0061">It is a <glossterm>dynamic error</glossterm>
+      if a string key cannot be converted into a QName.</error>
+    </para>
+  </listitem>
+  <listitem>
+    <para>If the entry's key is of any other type, the entry is ignored
+    and will <emphasis>not</emphasis> be copied to the function's
+    result map.</para>
+  </listitem>
+</itemizedlist>
+
+<note>
+  <para>This function is <emphasis>forced</emphasis> on any step options that have a
+  <type>map()</type> datatype with <type>xs:QName</type> keys
+  (<code>as="map(xs:QName, ...)</code>). This allows
+  passing maps with (easier to specify) <type>xs:string</type> type
+  keys that are converted automatically into the required
+  <type>xs:QName</type> keys. See also <xref linkend="p.option"/>.</para>
+</note>
+
+<para>The <function>p:force-qname-keys</function> function behaves
+normally during static anlaysis.</para>
+</section>
+
+<section xml:id="other-xpath-extension-functions">
+  <title>Other XPath Extension Functions</title>
+  <para><impl>It is <glossterm>implementation-defined</glossterm> if the processor supports
+  any other XPath extension functions.</impl> Additional extension functions, if any,
+  <rfc2119>must not</rfc2119> use any of the XProc namespaces. </para>
+
+<para><impl>The value of the any other XPath extension functions during
+static analysis is <glossterm>implementation-defined</glossterm>.</impl></para>
+</section>
+</section>
+
     <section xml:id="psvi-support">
       <title>PSVIs in XProc</title>
       <para>XML documents flow between steps in an XProc pipeline. <xref linkend="infoset-conformance"/> identifies the properties of those documents that
@@ -1835,7 +1981,7 @@ non-XML document.</para>
               <rfc2119>must not</rfc2119> contain any PSVI properties.</para>
         </listitem>
         <listitem>
-          <para>If an implementation supports XPath 2.0, the data model constructed with which to
+          <para>If an implementation supports XPath 2.0 or later, the data model constructed with which to
             evaluate XPath expressions and match patterns <rfc2119>should</rfc2119> take advantage
             of as much PSVI information as possible. </para>
         </listitem>
@@ -1954,12 +2100,14 @@ value template as an <type>xs:untypedAtomic</type>.</para>
 <title>Text Value Templates</title>
 
 <para>This section describes how text nodes are processed when they
-are designated text value templates. All text nodes that are the
-descendants of a <tag>p:inline</tag> element are text value templates
-unless the <tag>p:inline</tag> has an <tag class="attribute">expand-text</tag> attribute with the value
-“<code>false</code>”. Text nodes that are descendants of an element
-node in an implicit inline are text value templates as well. No other
-text node is a text value template.</para>
+are designated text value templates. Text nodes that are descendants
+of a <tag>p:inline</tag> and text nodes that are descendants of an
+element node in an implicit inline may be text value templates. No
+other text node is a text value template.</para>
+
+<para>Whether or not a text node that may be a text value template is
+designated one is determined by the <code>expand-text</code> attribute,
+see <xref linkend="expand-text-attribute"/>.</para>
 
 <para><termdef xml:id="dt-text-value-template">In a text node that is
 designated as a <firstterm>text value template</firstterm>,
@@ -1978,8 +2126,7 @@ expression is evaluated with an undefined context node.</para>
 non-string atomic values are converted to strings by taking their
 string value. Strings are converted into text nodes.</para>
 
-<para>The result of the text value template is this sequence of nodes.
-Adjacent text nodes are combined into a single text node.</para>
+<para>The result of the text value template is this sequence of nodes.</para>
 
 <note xml:id="unlike-xslt-tvts">
 <para>Unlike XSLT, in XProc, text value templates are not atomized
@@ -1988,47 +2135,194 @@ text value templates in XProc, for example, if the XPath
 expressions refer to variables that have node content.</para>
 </note>
 
-<para>If the node to be inserted with a text value template is a document
-node, all children of the document node are inserted. If the node is an attribute
+<para>If a node to be inserted with a text value template is a document
+node, all the children of the document node are inserted.</para>
+
+<para>How the nodes are inserted depends on the content type of the
+<tag>p:inline</tag>.</para>
+
+<orderedlist>
+<listitem>
+<para>If the content type is an <glossterm>XML media type</glossterm>,
+the nodes are added to the XML document where they occur. This is analagous
+to the way element constructors work in <biblioref linkend="xquery10"/>.
+</para>
+<para>If the node is an attribute
 it is added to an element parent if and only if the attribute either has
 no siblings in the XDM sequence or has only attributes as preceding siblings.
 <error code="D0052">It is a <glossterm>dynamic error</glossterm> if the XPath
 expression in a TVT evaluates to an attribute and either the parent is not an
 element or the attribute has a preceding sibling that it not an attribute.</error>
 </para>
+</listitem>
+<listitem>
+<para>If the content type is not an <glossterm>XML media
+type</glossterm>, each text value template is replaced by the
+concatentation of the serialization of the nodes that result from
+evaluating the template.</para>
+<para>This serialization is performed with the following serialization parameters:</para>
 
-<note>
-<para>The treatment of attribute nodes within text value templates in XProc 3.0 is
-in line with the concept of element constructors in XQuery, so that an attributes
-only sequence needs to be at the beginning of the XDM sequence to be added.
+<itemizedlist>
+<listitem>
+<para><option>byte-order-mark</option>: false</para>
+</listitem>
+<listitem>
+<para><option>cdata-section-elements</option>: ()</para>
+</listitem>
+<listitem>
+<para><option>doctype-public</option>: ()</para>
+</listitem>
+<listitem>
+<para><option>doctype-system</option>: ()</para>
+</listitem>
+<listitem>
+<para><option>encoding</option>: “utf-8”</para>
+</listitem>
+<listitem>
+<para><option>escape-uri-attributes</option>: false</para>
+</listitem>
+<listitem>
+<para><option>include-content-type</option>: false</para>
+</listitem>
+<listitem>
+<para><option>indent</option>: false</para>
+</listitem>
+<listitem>
+<para><option>media-type</option>: “application/xml”</para>
+</listitem>
+<listitem>
+<para><option>method</option>: “xml”</para>
+</listitem>
+<listitem>
+<para><option>normalization-form</option>: ()</para>
+</listitem>
+<listitem>
+<para><option>omit-xml-declaration</option>: true</para>
+</listitem>
+<listitem>
+<para><option>standalone</option>: false</para>
+</listitem>
+<listitem>
+<para><option>undeclare-prefixes</option>: false</para>
+</listitem>
+<listitem>
+<para><option>use-character-maps</option>: ()</para>
+</listitem>
+<listitem>
+<para><option>version</option>: 1.0</para>
+</listitem>
+</itemizedlist>
+</listitem>
+</orderedlist>
+
+<para>Interpretation of the character content of the <tag>p:inline</tag>
+according to the media type occurs after text value templates have been
+replaced.</para>
+
+<section xml:id="expand-text-attribute">
+<title>The [p:]expand-text attribute</title>
+
+<para>The <code>expand-text</code> attribute controls
+whether or not its descendant text nodes are designated as text value
+templates. On elements in the XProc namespace, the attribute is
+named <tag class="attribute">expand-text</tag>. On elements that are
+not in the XProc namespace, the attribute is named
+<tag class="attribute">p:expand-text</tag>.</para>
+
+<para>If the <code>expand-text</code> attribute appears on more than one
+element among the ancestors of a text node, only the value on the nearest
+ancestor is considered. (An <code>expand-text</code> attribute on an element overrides
+the value on all of its ancestors.)</para>
+
+<para>If the nearest <code>expand-text</code> attribute has the value
+“<code>false</code>”, then the text nodes are not text value
+templates. If it has the value “<code>true</code>”, or if no
+<code>expand-text</code> attribute is present among the text node’s
+ancestors, then the text nodes are text value templates.</para>
+
+<!--feature="p-inline-no-nesting"-->
+<para>If a <tag>p:inline</tag> occurs as a descendant of another
+<tag>p:inline</tag>, any <tag class="attribute">expand-text</tag>
+within the inner <tag>p:inline</tag> is treated like an ordinary
+attribute; that is, neither will its value influence text expansion
+nor will it be removed from the descendant.</para>
+
+<!-- feature="no-p-expand-text-on-p"-->
+<para><error code="S0084">It is a <glossterm>static error</glossterm> if the
+<tag class="attribute">p:expand-text</tag> attribute appears on any element
+in the XProc namespace.</error>
 </para>
-</note>
+</section>
+
+<simplesect>
+<title>Examples</title>
+
+<para>Consider the following examples. In each case:</para>
+
+<itemizedlist>
+<listitem>
+<para>The variable <code>$name</code>
+is bound to the following XML element:</para>
+
+<programlisting language="xml">  &lt;name&gt;&lt;given&gt;Mary&lt;/given&gt; &lt;surname&gt;Smith&lt;/surname&gt;&lt;/name&gt;</programlisting>
+</listitem>
+<listitem>
+<para>The result of evaluating the text value template
+“<code>{$name/node()}</code>” is a sequence of three nodes, the given
+name element, a text node containing a single space, and the surname
+element.</para>
+</listitem>
+</itemizedlist>
+
+<para>If the media type is an XML media type:</para>
+
+<programlisting>  &lt;p:inline content-type="application/xml"&gt;
+    &lt;attribution&gt;{$name/node()}&lt;/attribution&gt;
+  &lt;/p:inline&gt;</programlisting>
+
+<para>the result is that sequence of nodes:</para>
+
+<programlisting>  &lt;attribution&gt;&lt;given&gt;Mary&lt;/given&gt; &lt;surname&gt;Smith&lt;/surname&gt;&lt;/attribution&gt;</programlisting>
+
+<para>If the media type is not an XML media type:</para>
+
+<programlisting>  &lt;p:inline content-type="application/json"&gt;
+    {{ "name": "{$name/node()}" }}
+  &lt;/p:inline&gt;</programlisting>
+
+<para>the result is the concatentation of the serialization of the nodes:</para>
+
+<programlisting>  { "name": "&lt;given&gt;Mary&lt;/given&gt; &lt;surname&gt;Smith&lt;/surname&gt;" }</programlisting>
+
+<para>If the string value is desired, instead of escaped markup, write the
+expression such that it returns the string values:</para>
+
+<programlisting>  &lt;p:inline content-type="application/json"&gt;
+    {{ "name": "{$name/node()/string()}" }}
+  &lt;/p:inline&gt;</programlisting>
+
+<para>To produce:</para>
+
+<programlisting>  { "name": "Mary Smith" }</programlisting>
+
+</simplesect>
 </section>
 </section>
 
 <section xml:id="options">
 <title>Options</title>
 
-<para>Some steps accept options. Options are name/value pairs. The
-value of an option can be specified as a default on the step, can be
-provided by the caller of the step (overriding any default), or may be
-undefined.</para>
+<para>Some steps accept options. Options are name/value pairs. The value
+of an option is the default value specified in its declaration, or
+a value provided by the caller of the step (overriding the default).
+If it has neither a default value nor a provided value, its value is
+the empty sequence.</para>
 
-<para><termdef xml:id="dt-option">An <firstterm>option</firstterm>
-is a name/value pair. The name <rfc2119>must</rfc2119> be an <link xlink:href="http://www.w3.org/TR/REC-xml-names/#dt-expname">expanded
-name</link>. The value may be any XDM value.</termdef>
-</para>
-
-<para><termdef xml:id="dt-declared-options">The options declared on a
-step are its <firstterm>declared options</firstterm>.</termdef> Option
-names are always expressed as literal values, pipelines cannot
+<para><termdef xml:id="dt-option">An <firstterm>option</firstterm> is
+a name/value pair. The name <rfc2119>must</rfc2119> be an <link xlink:href="http://www.w3.org/TR/REC-xml-names/#dt-expname">expanded
+name</link>. The value may be any XPath data model value.</termdef>
+Option names are always expressed as literal values, pipelines cannot
 construct option names dynamically. </para>
-
-<para><termdef xml:id="dt-specified-options">The options on a step
-which have specified values, either because a <tag>p:with-option</tag>
-element specifies a value or because the declaration included a
-default value, are its <firstterm>specified options</firstterm>.</termdef>
-</para>
 
 <para><impl>How outside values are specified for pipeline options on
 the pipeline initially invoked by the processor is
@@ -2042,11 +2336,7 @@ they perform. For example, an XSLT stylesheet might have required
 parameters or an XQuery query might have external variables.
 In the XProc Step Library, the standard way to pass such values to
 the step is to use an option named “<literal>parameters</literal>”
-whose value is a map item value
-<biblioref linkend="lastcall-xslt30"/>.
-The map item contains the
-mapping of between the names and the values whose interpretation is
-specific to the step.</para>
+whose value is a map.</para>
 </section>
 
 <section xml:id="variables">
@@ -2057,10 +2347,42 @@ variables to hold computed values.</para>
 
 <para><termdef xml:id="dt-variable">A <firstterm>variable</firstterm>
 is a name/value pair. The name <rfc2119>must</rfc2119> be an <link xlink:href="http://www.w3.org/TR/REC-xml-names/#dt-expname">expanded
-name</link>. The value may be any XDM value.</termdef>
+name</link>. The value may be any XPath data model value.</termdef>
 </para>
 
-<para>Variables and options may shadow each other.</para>
+<para>The names of variables and options are not distinct and are lexically
+scoped. <termdef xml:id="dt-shadow">We say that a variable
+<firstterm baseform="shadow">shadows</firstterm> another variable
+(or option) if it has the same name and appears later in the same lexical
+scope.</termdef></para>
+
+<para>Consider this pipeline:</para>
+
+<programlisting language="xml">&lt;p:declare-step xmlns:p="http://www.w3.org/ns/xproc" version="3.0" name="main"&gt;
+  &lt;p:option name="bname" as="xs:integer" select="1"/&gt;
+
+  &lt;p:message message="NAME1={$bname}"&gt;
+    &lt;p:input port="source"&gt;
+      &lt;p:empty/&gt;
+    &lt;/p:input&gt;
+  &lt;/p:message&gt;
+
+  &lt;p:variable name="bname" as="$opt + 1"/&gt;
+
+  &lt;p:message message="NAME2={$bname}"/&gt;
+
+  &lt;p:variable name="bname" as="7"/&gt;
+
+  &lt;p:message message="NAME3={$bname}"/&gt;
+
+  &lt;p:sink/&gt;
+&lt;/p:declare-step&gt;</programlisting>
+
+<para>If no overriding value is provided for <varname>$bname</varname> at runtime,
+the pipeline will produce three messages: “NAME1=1”, “NAME2=2”, and “NAME3=7”.
+(If an overriding value is provided at runtime, “NAME1” will have that value,
+“NAME2” will have one more than that value, and “NAME3” will have the value 7.
+</para>
 </section>
 
     <section xml:id="security-considerations">
@@ -2238,7 +2560,7 @@ appear on the <code>messages</code> port.</para>
         </section>
       </section>
     </section>
-  </section>
+
   <section xml:id="syntax">
     <title>Syntax Overview</title>
     <para>This section describes the normative XML syntax of XProc. This syntax is sufficient to
@@ -2599,15 +2921,14 @@ are effectively excluded from the pipeline document. If a node is effectively
 excluded, the processor <rfc2119>must</rfc2119> behave as if the element
 was not present in the document.</para>
 
-<para xml:id="p.use-when">Elements that are not in the XProc namespace <rfc2119>may</rfc2119> also
-have a <tag class="attribute">use-when</tag> attribute, but the attribute must
-be in the XProc namespace. The semantics of a
-<tag class="attribute">p:use-when</tag> attribute
-on an element not in the XProc namespace are the same as the semantics of a
-<tag class="attribute">use-when</tag> attribute on an element in the XProc
+<para xml:id="p.use-when">Elements that are not in the XProc namespace
+<rfc2119>may</rfc2119> also have a <tag class="attribute">use-when</tag> attribute, but the attribute must be
+in the XProc namespace. The semantics of a <tag class="attribute">p:use-when</tag> attribute on an element not in the
+XProc namespace are the same as the semantics of a <tag class="attribute">use-when</tag> attribute on an element in the XProc
 namespace.</para>
 
-<para>Conditional element exclusion occurs before any static analysis
+<para>Conditional element exclusion occurs during
+<link linkend="initiating">static analysis</link>
 of the pipeline.</para>
 
 <note xml:id="note-excl-use-when">
@@ -2617,47 +2938,6 @@ or validation errors which will be reported in the usual way. Note also that
 <tag class="attribute">use-when</tag> is not performed when it occurs on the
 descendant of a <tag>p:inline</tag> element.</para>
 </note>
-
-<para>For the purposes of evaluating a <tag class="attribute">use-when</tag>
-expression, the context node, position, and size are all undefined. No
-<glossterm>in-scope bindings</glossterm> are available. There are no
-readable ports. There are no available documents or available collections.
-</para>
-
-<para>There are some additional restrictions on the XPath extension functions
-that are available in a <tag class="attribute">use-when</tag>
-expression:</para>
-
-<itemizedlist>
-<listitem>
-<para>The <literal>p:episode</literal> system property
-<rfc2119>should not</rfc2119> be used. <impl>The value of
-the <literal>p:episode</literal> system property in a
-<tag class="attribute">use-when</tag> expression is
-<glossterm>implementation-dependent</glossterm>.</impl></para>
-</listitem>
-<listitem>
-<para>The <function>p:step-available</function> function cannot be used
-to test for the availability of extension steps (because the libraries
-that declare them may not have been imported). <impl>The results of testing
-for steps not in the XProc namespace in a
-<tag class="attribute">use-when</tag> expression are
-<glossterm>implementation-dependent</glossterm>.</impl></para>
-</listitem>
-<listitem>
-<para>The steps available and possibly other aspects of the expression may
-depend on the version specified for a pipeline, see
-<xref linkend="versioning-considerations"/>. For example, in a “1.0” pipeline,
-the processor <rfc2119>should not</rfc2119> report that “2.0” steps are
-available.</para>
-</listitem>
-</itemizedlist>
-
-<para><error code="S0061">It is a <glossterm>static error</glossterm> if a
-<tag class="attribute">use-when</tag>
-expression refers to the context or attempts to refer to any documents
-or collections.</error>
-</para>
 </section>
 
 <section xml:id="syntax-summaries"><title>Syntax Summaries</title>
@@ -2803,11 +3083,11 @@ the summaries:</para><itemizedlist>
     </para>
   </listitem>
   <listitem>
-    <para><type>XPathExpression</type>, <type>XSLTMatchPattern</type>:
+    <para><type>XPathExpression</type>, <type>XSLTSelectionPattern</type>:
     As a string per <biblioref linkend="xmlschema-2"/>, including
     whitespace normalization, and the further requirement to be a
-    conformant Expression per <biblioref linkend="xpath31"/> or Match
-    pattern per <biblioref linkend="xslt20"/>.
+    conformant Expression per <biblioref linkend="xpath31"/> or selection
+    pattern per <biblioref linkend="xslt30"/>.
     </para>
   </listitem>
   <listitem>
@@ -3842,8 +4122,10 @@ expression.
 The selected nodes are returned as separate documents.
 If such a document consists exclusively of text nodes, then it has a content
 type of <literal>text/plain</literal>, otherwise it has a content type
-of <literal>application/xml</literal>.
-</para>
+of <literal>application/xml</literal>. <error code="D0016">It is a
+<glossterm>dynamic error</glossterm> if the select expression on a p:input or
+p:with-input returns anything other than document nodes, element nodes,
+processing instruction nodes, comment nodes, text nodes or an empty sequence.</error></para>
 
 <para>The
 <tag class="attribute">select</tag> expression applies
@@ -3884,15 +4166,9 @@ document.</simpara>
 <link linkend="media-type-match">match</link> the allowed content types.</para>
 </listitem>
 </varlistentry>
-
 <varlistentry><term><tag class="attribute">href</tag></term>
 <listitem>
-<para>The <tag class="attribute">href</tag> attribute is a shortcut for a
-<tag>p:document</tag> child element with the specified
-<tag class="attribute">href</tag> attribute. <error code="S0081">If
-<tag class="attribute">href</tag> is specified, it is a <glossterm>static error</glossterm>
-if <tag>p:input</tag> has any child elements other than <tag>p:documentation</tag> and
-<tag>p:pipeinfo</tag>.</error></para>
+<para>As described in <tag>p:with-input</tag>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><tag class="attribute">exclude-inline-prefixes</tag></term>
@@ -4003,40 +4279,54 @@ expression is the base URI of the matched element or document.</para>
 <para>If a document constructed by selection consists exclusively of
 text nodes, then it has a content type of
 <literal>text/plain</literal>, otherwise it has a content type of
-<literal>application/xml</literal>.</para>
+<literal>application/xml</literal>. <error code="D0016">It is a
+<glossterm>dynamic error</glossterm> if the select expression on a p:input or
+p:with-input returns anything other than document nodes, element nodes,
+processing instruction nodes, comment nodes, text nodes or an
+empty sequence.</error></para>
 </listitem>
 </varlistentry>
 <varlistentry><term><tag class="attribute">href</tag></term>
 <listitem>
-<para>The <tag class="attribute">href</tag> attribute is a shortcut for a
-<tag>p:document</tag> child element with the specified
-<tag class="attribute">href</tag> attribute. <error code="S0081">If
-<tag class="attribute">href</tag> is specified, it is a <glossterm>static error</glossterm>
-if <tag>p:with-input</tag> has any child elements other than <tag>p:documentation</tag> and
-<tag>p:pipeinfo</tag>.</error></para>
-<para><error code="S0085">It is a <glossterm>static error</glossterm> if a <tag>p:with-input</tag>
-has a <tag class="attribute">href</tag> attribute and a <tag class="attribute">pipe</tag>
-attribute.</error></para>
+<para>The <tag class="attribute">href</tag> attribute is a shortcut for
+a <tag>p:document</tag> child with an <tag class="attribute">href</tag> attribute
+having the same value as this <tag class="attribute">href</tag> attribute.
+</para>
+
+<para><error code="S0081">If <tag class="attribute">href</tag> is specified,
+it is a <glossterm>static error</glossterm> if
+any child elements other than <tag>p:documentation</tag> and
+<tag>p:pipeinfo</tag> are present.</error></para>
+
+<para><error code="S0085">It is a <glossterm>static error</glossterm> if both
+a <tag class="attribute">href</tag> attribute and a
+<tag class="attribute">pipe</tag> attribute are present.</error></para>
 </listitem>
 </varlistentry>
 <varlistentry><term><tag class="attribute">pipe</tag></term>
 <listitem>
 <para>The <tag class="attribute">pipe</tag> attribute is a shortcut for one or
 more <tag>p:pipe</tag> children. The attribute value <rfc2119>must</rfc2119> be
-space-separated list of port@step pairs of the form
-“<replaceable>port-name</replaceable>@<replaceable>step-name</replaceable>”.
-If “port-name” is omitted, the connection is to the primary output port of
-the step named “step-name”. If the “@step-name” is omitted, the connection is
-to the specified port on the same step as the step associated with the
-current default readable port. An empty or all whitespace attribute value is a shortcut
-for the binding to the default readable port.</para>
-<para><error code="S0082">If
-<tag class="attribute">pipe</tag> is specified, it is a <glossterm>static error</glossterm>
-if <tag>p:with-input</tag> has any child elements other than <tag>p:documentation</tag> and
-<tag>p:pipeinfo</tag>.</error></para>
-<para><error code="S0085">It is a <glossterm>static error</glossterm> if a <tag>p:with-input</tag>
-has a <tag class="attribute">href</tag> attribute and a <tag class="attribute">pipe</tag>
-attribute.</error></para>
+whitespace-separated list of tokens or empty.
+<error code="S0090">It is a <glossterm>static error</glossterm> if the value
+of the <tag class="attribute">pipe</tag> attribute contains any tokens not
+of the form <replaceable>port-name</replaceable>,
+<replaceable>port-name@step-name</replaceable>, or <replaceable>@step-name</replaceable>.
+</error>
+If “<replaceable>port-name</replaceable>” is omitted,
+the connection is to the primary output port of
+the step named “<replaceable>step-name</replaceable>”.
+If “<literal>@<replaceable>step-name</replaceable></literal>” is omitted,
+the connection is to the specified port on the same step as the step associated with the
+default readable port. If the value is empty, the connection is to
+the default readable port.</para>
+<para><error code="S0082">If <tag class="attribute">pipe</tag> is specified,
+it is a <glossterm>static error</glossterm>
+any child elements other than <tag>p:documentation</tag> and
+<tag>p:pipeinfo</tag> are present.</error></para>
+<para><error code="S0085">It is a <glossterm>static error</glossterm> if both
+an <tag class="attribute">href</tag> attribute and a <tag class="attribute">pipe</tag>
+attribute are present.</error></para>
 </listitem>
 </varlistentry>
 <varlistentry><term><tag class="attribute">exclude-inline-prefixes</tag></term>
@@ -4168,35 +4458,12 @@ are:</para>
 <variablelist>
 <varlistentry><term><tag class="attribute">href</tag></term>
 <listitem>
-<para>The <tag class="attribute">href</tag> attribute is a shortcut for a
-<tag>p:document</tag> child element with the specified
-<tag class="attribute">href</tag> attribute. <error code="S0081">If
-<tag class="attribute">href</tag> is specified, it is a <glossterm>static error</glossterm>
-if <tag>p:output</tag> has any child elements other than <tag>p:documentation</tag> and
-<tag>p:pipeinfo</tag>.</error></para>
-<para><error code="S0085">It is a <glossterm>static error</glossterm> if a <tag>p:output</tag>
-has a <tag class="attribute">href</tag> attribute and a <tag class="attribute">pipe</tag>
-attribute.</error></para>
+<para>As described in <tag>p:with-input</tag>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><tag class="attribute">pipe</tag></term>
 <listitem>
-  <para>The <tag class="attribute">pipe</tag> attribute is a shortcut for one or
-    more <tag>p:pipe</tag> children. The attribute value <rfc2119>must</rfc2119> be
-    space-separated list of port@step pairs of the form
-    “<replaceable>port-name</replaceable>@<replaceable>step-name</replaceable>”.
-    If “port-name” is omitted, the connection is to the primary output port of
-    the step named “step-name”. If the “@step-name” is omitted, the connection is
-    to the specified port on the same step as the step associated with the
-    current default readable port. An empty or all whitespace attribute value is a shortcut
-    for the binding to the default readable port.</para>
-<para><error code="S0082">If
-<tag class="attribute">pipe</tag> is specified, it is a <glossterm>static error</glossterm>
-if <tag>p:output</tag> has any child elements other than <tag>p:documentation</tag> and
-<tag>p:pipeinfo</tag>.</error></para>
-<para><error code="S0085">It is a <glossterm>static error</glossterm> if a <tag>p:output</tag>
-has a <tag class="attribute">href</tag> attribute and a <tag class="attribute">pipe</tag>
-attribute.</error></para>
+<para>As described in <tag>p:with-input</tag>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><tag class="attribute">exclude-inline-prefixes</tag></term>
@@ -4255,10 +4522,7 @@ serialized implementations
 specified options are allowed.</para>
 
 <para>For XML outputs, see <xref linkend="xml-serialization"/>.
-For non-XML outputs, see <xref linkend="non-xml-serialization"/>.
-<error code="D0041">It is a <glossterm>dynamic error</glossterm> if the
-map contains any property name not recognized as a serialization
-parameter.</error></para>
+For non-XML outputs, see <xref linkend="non-xml-serialization"/>.</para>
 
 <section xml:id="xproc-serialization">
 <title>XML serialization</title>
@@ -4308,8 +4572,8 @@ be absolute, and is not resolved.</para>
 <term><option>encoding</option></term>
 <listitem>
 <para>A character set name. <impl>If no <option>encoding</option> is
-specified, the encoding used is <glossterm>implementation
-defined</glossterm>. If the <option>method</option> is
+specified, the encoding used is <glossterm>implementation-defined</glossterm>.
+If the <option>method</option> is
 “<literal>xml</literal>” or “<literal>xhtml</literal>”, the
 implementation defined encoding <rfc2119>must</rfc2119> be either
 UTF-8 or UTF-16.</impl></para>
@@ -4366,7 +4630,7 @@ default varies according to the <option>method</option>:</para>
 
 <para><impl>For methods other than <literal>xml</literal>, <literal>html</literal>,
 <literal>xhtml</literal>, and <literal>text</literal>; the
-<option>media-type</option> is <glossterm>implementation defined</glossterm>.
+<option>media-type</option> is <glossterm>implementation-defined</glossterm>.
 </impl></para>
 </listitem>
 </varlistentry>
@@ -4494,8 +4758,8 @@ subsequent declarations of other variables with the same name.</para>
 
 <para>Options can be declared on atomic or compound steps. The value
 of an option can be specified by the caller invoking the step. Any
-value specified by the caller takes precedence over any default value
-specified in the declaration.</para>
+value specified by the caller takes precedence over the default value
+of the option.</para>
 
 <section xml:id="p.variable">
 <title>p:variable</title>
@@ -4503,9 +4767,11 @@ specified in the declaration.</para>
 <para>A <tag>p:variable</tag> declares a variable and associates a
 value with it. Variable declarations may optionally specify the type
 of the variable using an
-XPath Sequence Type<superscript>[citation needed]</superscript>.</para>
+<biblioref linkend="xpath31"/>
+<link xlink:href="https://www.w3.org/TR/xpath-31/#dt-sequence-type">sequence Type</link>.
+</para>
 
-<e:rng-pattern name="VariableSelect"/>
+<e:rng-pattern name="GeneralVariable"/>
 
 <para>The attributes that can appear on <tag>p:variable</tag> are
 <link linkend="common-attr">the common attributes</link> and:</para>
@@ -4524,15 +4790,28 @@ bound to a namespace.</error>
 </varlistentry>
 <varlistentry><term><tag class="attribute">as</tag></term>
 <listitem>
-<para>The type of the value may be specified in the <tag class="attribute">as</tag> attribute using an XPath Sequence
-Type<superscript>[citation needed]</superscript>. If an atomic type,
+<para>The type of the value may be specified in the <tag class="attribute">as</tag> attribute using an
+<biblioref linkend="xpath31"/>
+<link xlink:href="https://www.w3.org/TR/xpath-31/#dt-sequence-type">sequence Type</link>.
+If an atomic type,
 or sequence of atomic types, is specified, the value provided for the
 option will be atomized according to the standard XPath rules.
-<error code="S0084">It is a <glossterm>static error</glossterm> if
+<error code="D0049">It is a <glossterm>dynamic error</glossterm> if
 the sequence type is not syntactically valid.</error>
 <error code="D0036">It is a <glossterm>dynamic error</glossterm> if
 the computed value does not match the specified sequence
 type.</error></para>
+</listitem>
+</varlistentry>
+<varlistentry><term><tag class="attribute">static</tag></term>
+<listitem>
+<para>An indication of whether the variable is to be evaluated
+statically or not. See <link linkend="statics"/>.
+If <tag class="attribute">static</tag> is not specified, it
+defaults to “<code>false</code>”.</para>
+<para>A variable that is declared static cannot have a
+<tag class="attribute">pipe</tag> attribute or <tag>p:pipe</tag> children.
+</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><tag class="attribute">select</tag></term>
@@ -4540,7 +4819,10 @@ type.</error></para>
 <para>The variable's value is specified with a <tag class="attribute">select</tag> attribute. The <tag class="attribute">select</tag> attribute <rfc2119>must</rfc2119> be
 specified. The content of the <tag class="attribute">select</tag>
 attribute is an XPath expression which will be evaluated to provide
-the value of the variable.</para>
+the value of the variable.
+<error code="S0094">It is a <glossterm>static error</glossterm> if
+a <tag>p:variable</tag> does not have a select attribute.</error>
+</para>
 <para>The <tag class="attribute">select</tag> expression
 is evaluated as an XPath expression using the appropriate context as
 described in <xref linkend="xpath-context"/>, for the enclosing
@@ -4586,37 +4868,28 @@ the context node, size, or position when the context item is
 undefined.</error></para>
 </listitem>
 </varlistentry>
+
+<varlistentry><term><tag class="attribute">visibility</tag></term>
+<listitem>
+<para>If the <tag>p:variable</tag> is a child of a <tag>p:library</tag>,
+the <tag class="attribute">visibility</tag> attribute controls whether
+the variable is visible to an importing pipeline. If
+<tag class="attribute">visibility</tag> is set to “<literal>private</literal>”,
+the variable is visible inside the <tag>p:library</tag> but not visible to
+any pipeline importing the <tag>p:library</tag>. If the visibility attribute is
+missing, “<literal>public</literal>” is assumed. If the <tag>p:variable</tag>
+is not a child of a <tag>p:library</tag> the attribute is ignored.</para>
+</listitem>
+</varlistentry>
+
 <varlistentry><term><tag class="attribute">href</tag></term>
 <listitem>
-<para>The <tag class="attribute">href</tag> attribute is a shortcut for a
-<tag>p:document</tag> child element with the specified
-<tag class="attribute">href</tag> attribute. <error code="S0081">If
-<tag class="attribute">href</tag> is specified, it is a <glossterm>static error</glossterm>
-if <tag>p:variable</tag> has any child elements other than <tag>p:documentation</tag> and
-<tag>p:pipeinfo</tag>.</error></para>
-<para><error code="S0085">It is a <glossterm>static error</glossterm> if a <tag>p:variable</tag>
-has a <tag class="attribute">href</tag> attribute and a <tag class="attribute">pipe</tag>
-attribute.</error></para>
+<para>As described in <tag>p:with-input</tag>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><tag class="attribute">pipe</tag></term>
 <listitem>
-  <para>The <tag class="attribute">pipe</tag> attribute is a shortcut for one or
-    more <tag>p:pipe</tag> children. The attribute value <rfc2119>must</rfc2119> be
-    space-separated list of port@step pairs of the form
-    “<replaceable>port-name</replaceable>@<replaceable>step-name</replaceable>”.
-    If “port-name” is omitted, the connection is to the primary output port of
-    the step named “step-name”. If the “@step-name” is omitted, the connection is
-    to the specified port on the same step as the step associated with the
-    current default readable port. An empty or all whitespace attribute value is a shortcut
-    for the binding to the default readable port.</para>
-<para><error code="S0082">If
-<tag class="attribute">pipe</tag> is specified, it is a <glossterm>static error</glossterm>
-if <tag>p:variable</tag> has any child elements other than <tag>p:documentation</tag> and
-<tag>p:pipeinfo</tag>.</error></para>
-<para><error code="S0085">It is a <glossterm>static error</glossterm> if a <tag>p:variable</tag>
-has a <tag class="attribute">href</tag> attribute and a <tag class="attribute">pipe</tag>
-attribute.</error></para>
+  <para>As described in <tag>p:with-input</tag>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><tag class="attribute">exclude-inline-prefixes</tag></term>
@@ -4646,8 +4919,9 @@ node for the expression that defines the value of the variable.</error>
 <section xml:id="p.option">
 <title>p:option</title>
 
-<para>A <tag>p:option</tag> declares an option and may associate a
-default value with it. The <tag>p:option</tag> tag can only be used in
+<para>A <tag>p:option</tag> declares an option and associates a
+default value with it. This value may be overridden by the caller of a step.
+The <tag>p:option</tag> tag can only be used in
 a <tag>p:declare-step</tag>.</para>
 
 <para>The name of the option <rfc2119>must</rfc2119> be an EQName. If it
@@ -4662,18 +4936,33 @@ has a prefix which is not bound to a namespace.</error></para>
 to declare two or more options on the same step with the same
 name.</error></para>
 
-<e:rng-pattern name="OptionDeclaration"/>
+<e:rng-pattern name="Option"/>
 
-<para>An option may declare its type. The type is specified in the
-<tag class="attribute">as</tag> attribute using an XPath Sequence
-Type<superscript>[citation needed]</superscript>. If an atomic type,
-or sequence of atomic types, is specified, the value provided for the
-option will be atomized according to the standard XPath rules.
-<error code="S0084">It is a <glossterm>static error</glossterm> if
-the sequence type is not syntactically valid.</error>
-<error code="D0036">It is a <glossterm>dynamic error</glossterm> if
-the computed value does not match the specified sequence
-type.</error></para>
+  <para>An option may declare its type. The type is specified in the <tag class="attribute">as</tag> attribute using an
+<biblioref linkend="xpath31"/>
+<link xlink:href="https://www.w3.org/TR/xpath-31/#dt-sequence-type">sequence Type</link>.
+The following rules apply:</para>
+  <itemizedlist>
+    <listitem>
+      <para>If an atomic type,
+        or sequence of atomic types, is specified, the value provided for the
+        option will be atomized according to the standard XPath rules. <error code="D0049">It is a <glossterm>dynamic error</glossterm> if
+          the sequence type is not syntactically valid.</error>
+        <error code="D0036">It is a <glossterm>dynamic error</glossterm> if
+          the computed value does not match the specified sequence
+          type.</error></para>
+    </listitem>
+    <listitem>
+      <para>If the type is declared as a map with <type>xs:QName</type>
+        keys (<type>map(xs:QName, ...)</type>), the
+        <function>p:force-qname-keys()</function> (<xref linkend="f.force-qname-keys"/>) function is automatically applied to
+        the map passed with <code>p:with-option</code>. This makes
+        it possible to pass in maps using (easier to write)
+        <type>xs:string</type> type keys that are converted
+        automatically into the required <type>xs:QName</type>
+        keys.</para>
+    </listitem>
+  </itemizedlist>
 
 <para>An option may declare that it is required by specifying
 the value <literal>true</literal> for the
@@ -4686,45 +4975,58 @@ declared to be so; in other words, the default value for the
 </para>
 
 <para>If an option is not declared to be required, it
-<rfc2119>may</rfc2119> be given a default value. The value is
-specified with a <tag class="attribute">select</tag> attribute.</para>
+<rfc2119>may</rfc2119> be given a default value. The default value is
+specified with a <tag class="attribute">select</tag> attribute
+containing an XPath expression which will be evaluated to provide
+a default value for the option. If no default value is explicitly provided,
+the default value of an option is the empty sequence.</para>
 
-<e:rng-pattern name="OptionSelect"/>
+<para>A <tag>p:option</tag> with a may be declared “static”.
+See <link linkend="statics"/>. If <tag class="attribute">static</tag> is not
+specified, it defaults to “<code>false</code>”.</para>
 
-<para>If a <tag class="attribute">select</tag> attribute is specified,
-its content is an XPath expression which will be evaluated to provide
-the value of the option, which may differ from one instance of the
-step type to another.</para>
+<para>The <tag class="attribute">select</tag> expression is evaluated
+during static analysis.</para>
 
-<para>The <tag class="attribute">select</tag> expression is only
-evaluated when its actual value is needed by an instance of the step
-type being declared. In this case, it is evaluated as described in
-<xref linkend="p.with-option"/> except that</para>
+<para>If the <tag>p:option</tag> is a child of a <tag>p:library</tag>,
+the <tag class="attribute">visibility</tag> attribute controls whether
+the option is visible to an importing pipeline. If
+<tag class="attribute">visibility</tag> is set to “<literal>private</literal>”,
+the option is visible inside the <tag>p:library</tag> but not visible to
+any pipeline importing the <tag>p:library</tag>. If the visibility attribute is
+missing, “<literal>public</literal>” is assumed. If the <tag>p:option</tag>
+is not a child of a <tag>p:library</tag> the attribute is ignored.</para>
+
+<para>The following errors apply to options:</para>
 
 <itemizedlist>
-          <listitem>
-            <para>The
-              context item is undefined.</para>
-          </listitem>
-          <listitem>
-            <para>the variable bindings consist only of bindings for options whose declaration
-              precedes the <tag>p:option</tag> itself in the surrounding step
-                <glossterm>signature</glossterm>;</para>
-          </listitem>
-          <listitem>
-            <para>the in-scope namespaces are the in-scope namespaces of the <tag>p:option</tag>
-              itself.</para>
-          </listitem>
-</itemizedlist>
-
+<listitem>
 <para><error code="S0017">It is a <glossterm>static error</glossterm>
-to specify that an option is both <tag class="attribute">required</tag> <emphasis>and</emphasis> has a
-default value.</error></para>
-
+to specify that an option is both <tag class="attribute">required</tag>
+<emphasis>and</emphasis> has a default value.</error></para>
+</listitem>
+<listitem>
+<para><error code="S0095">It is a <glossterm>static error</glossterm>
+to specify that an option is both <tag class="attribute">required</tag>
+<emphasis>and</emphasis> static.</error></para>
+</listitem>
+<listitem>
 <para><error code="D0026">It is a <glossterm>dynamic error</glossterm> if
 the <tag class="attribute">select</tag> expression makes reference to
 the context node, size, or position.</error></para>
+</listitem>
+</itemizedlist>
+</section>
 
+<section xml:id="statics">
+<title>Static Options and Variables</title>
+
+<para>A <tag>p:option</tag> or <tag>p:variable</tag> that is a
+<emphasis>direct child</emphasis> of <tag>p:declare-step</tag> may be
+declared “static”:</para>
+
+<para>The values of static options and variables are computed during
+<link linkend="initiating">static analysis</link>.</para>
 </section>
 
 <!-- ============================================================ -->
@@ -4735,7 +5037,7 @@ the context node, size, or position.</error></para>
 <para>A <tag>p:with-option</tag> provides an actual value for an
 option when a step is invoked.</para>
 
-<e:rng-pattern name="WithOptionSelect"/>
+<e:rng-pattern name="WithOption"/>
 
 <para>The attributes that can appear on <tag>p:with-option</tag> are
 <link linkend="common-attr">the common attributes</link> and:</para>
@@ -4759,11 +5061,13 @@ name as part of the same step invocation.</error></para>
 </varlistentry>
 <varlistentry><term><tag class="attribute">as</tag></term>
 <listitem>
-<para>The type of the value may be specified in the <tag class="attribute">as</tag> attribute using an XPath Sequence
-Type<superscript>[citation needed]</superscript>. If an atomic type,
+<para>The type of the value may be specified in the <tag class="attribute">as</tag> attribute using an
+<biblioref linkend="xpath31"/>
+<link xlink:href="https://www.w3.org/TR/xpath-31/#dt-sequence-type">sequence Type</link>.
+If an atomic type,
 or sequence of atomic types, is specified, the value provided for the
 option will be atomized according to the standard XPath rules.
-<error code="S0084">It is a <glossterm>static error</glossterm> if
+<error code="D0049">It is a <glossterm>dynamic error</glossterm> if
 the sequence type is not syntactically valid.</error>
 <error code="D0036">It is a <glossterm>dynamic error</glossterm> if
 the computed value does not match the specified sequence
@@ -4814,35 +5118,12 @@ undefined.</error></para>
 </varlistentry>
 <varlistentry><term><tag class="attribute">href</tag></term>
 <listitem>
-<para>The <tag class="attribute">href</tag> attribute is a shortcut for a
-<tag>p:document</tag> child element with the specified
-<tag class="attribute">href</tag> attribute. <error code="S0081">If
-<tag class="attribute">href</tag> is specified, it is a <glossterm>static error</glossterm>
-if <tag>p:with-option</tag> has any child elements other than <tag>p:documentation</tag> and
-<tag>p:pipeinfo</tag>.</error></para>
-<para><error code="S0085">It is a <glossterm>static error</glossterm> if a <tag>p:with-option</tag>
-has a <tag class="attribute">href</tag> attribute and a <tag class="attribute">pipe</tag>
-attribute.</error></para>
+<para>As described in <tag>p:with-input</tag>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><tag class="attribute">pipe</tag></term>
 <listitem>
-  <para>The <tag class="attribute">pipe</tag> attribute is a shortcut for one or
-    more <tag>p:pipe</tag> children. The attribute value <rfc2119>must</rfc2119> be
-    space-separated list of port@step pairs of the form
-    “<replaceable>port-name</replaceable>@<replaceable>step-name</replaceable>”.
-    If “port-name” is omitted, the connection is to the primary output port of
-    the step named “step-name”. If the “@step-name” is omitted, the connection is
-    to the specified port on the same step as the step associated with the
-    current default readable port. An empty or all whitespace attribute value is a shortcut
-    for the binding to the default readable port.</para>
-<para><error code="S0082">If
-<tag class="attribute">pipe</tag> is specified, it is a <glossterm>static error</glossterm>
-if <tag>p:with-option</tag> has any child elements other than <tag>p:documentation</tag> and
-<tag>p:pipeinfo</tag>.</error></para>
-<para><error code="S0085">It is a <glossterm>static error</glossterm> if a <tag>p:with-option</tag>
-has a <tag class="attribute">href</tag> attribute and a <tag class="attribute">pipe</tag>
-attribute.</error></para>
+  <para>As described in <tag>p:with-input</tag>.</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><tag class="attribute">exclude-inline-prefixes</tag></term>
@@ -4853,6 +5134,11 @@ author to exclude some namespace declarations in inline content, see <tag>p:inli
 </listitem>
 </varlistentry>
 </variablelist>
+
+<para><error code="S0092">It is a <glossterm>static
+error</glossterm> if a <tag>p:with-option</tag> refers to an option that
+is declared static.</error>
+See <xref linkend="statics"/>.</para>
 </section>
 
 <!-- ============================================================ -->
@@ -4953,7 +5239,7 @@ not be in scope.</para>
 step</glossterm> or pipeline. It declares the inputs, outputs, and
 options for all steps of that type.</para>
 
-      <e:rng-pattern name="DeclareStep"/>
+<e:rng-pattern name="DeclareStep"/>
 
 <para>The value of the <tag class="attribute">type</tag> can be from
 any namespace provided that the expanded-QName of the value has a
@@ -4964,12 +5250,9 @@ XProc namespace.</error> Except as described in <xref linkend="versioning-consid
 users nor implementers may define additional steps in the XProc
 namespace.</para>
 
-<para>Irrespective of the context in which the
-<tag>p:declare-step</tag> occurs, there are initially no option or
-variable names in-scope inside a <tag>p:declare-step</tag>. That is,
-<tag>p:option</tag> and <tag>p:variable</tag> elements can refer to
-values declared by their preceding siblings, but not by any of their
-ancestors.</para>
+<para>The <glossterm>in-scope bindings</glossterm> at the beginning of
+a <tag>p:declare-step</tag> are limited to the lexically preceding,
+statically declared options and variables.</para>
 
 <para><impl>When a declared step is evaluated directly by the XProc
 processor (as opposed to occurring as an atomic step in some
@@ -5001,6 +5284,14 @@ attribute is ignored.</para>
 <para>For a description of <tag class="attribute">psvi-required</tag>,
 see <xref linkend="psvi-support"/>. For <tag class="attribute">xpath-version</tag>, see <xref linkend="xpath-context"/>. For <tag class="attribute">exclude-inline-prefixes</tag>, see
 <tag>p:inline</tag>.</para>
+
+<para>In a <tag>p:declare-step</tag>, variables and options can be
+declared before the subpipline and variables can be declared (and redeclared)
+within the subpipeline. <error code="S0091">It is a <glossterm>static error</glossterm>
+if a <tag>p:option</tag> or <tag>p:variable</tag> declared before the subpipeline
+begins shadows another option or variable declared within the same
+<tag>p:declare-step</tag>.</error>
+</para>
 
 <section xml:id="declare-atomic-steps">
         <title>Declaring atomic steps</title>
@@ -5046,7 +5337,8 @@ see <xref linkend="psvi-support"/>. For <tag class="attribute">xpath-version</ta
           port.</error></para>
         <para>The requested <tag class="attribute">xpath-version</tag>
           <rfc2119>must</rfc2119> be used to evaluate XPath expressions subject to the constraints
-          outlined in <xref linkend="xpath-context"/>.</para>
+          outlined in <xref linkend="xpath-context"/>. If the attribute is not specified, the value
+          “<literal>3.1</literal>” is assumed. </para>
         <para>The <tag class="attribute">psvi-required</tag> attribute allows the author to declare
           that a step relies on the processor's ability to pass PSVI annotations between steps, see
             <xref linkend="psvi-support"/>. If the attribute is not specified, the value
@@ -5054,9 +5346,13 @@ see <xref linkend="psvi-support"/>. For <tag class="attribute">xpath-version</ta
       </section></section>
     <!-- ============================================================ -->
 
-<section xml:id="p.library"><title>p:library</title><para>A <tag>p:library</tag> is a collection
-        of step declarations and/or pipeline definitions.</para>
-      <e:rng-pattern name="Library"/>
+<section xml:id="p.library">
+<title>p:library</title>
+
+<para>A <tag>p:library</tag> is a collection of static variables, static options,
+and step declarations.</para>
+
+<e:rng-pattern name="Library"/>
 
 <para>The <tag class="attribute">version</tag> attribute identifies the version
 of XProc for which this library was authored. If the
@@ -5065,6 +5361,14 @@ has no ancestors in the XProc namespace, then it <rfc2119>must</rfc2119>
 have a <tag class="attribute">version</tag> attribute.
 See <xref linkend="versioning-considerations"/>.</para>
 
+<para>The requested <tag class="attribute">xpath-version</tag>
+          <rfc2119>must</rfc2119> be used to evaluate XPath expressions subject to the constraints
+          outlined in <xref linkend="xpath-context"/>. If the attribute is not specified, the value
+          “<literal>3.1</literal>” is assumed. </para>
+        <para>The <tag class="attribute">psvi-required</tag> attribute allows the author to declare
+          that a step relies on the processor's ability to pass PSVI annotations between steps, see
+            <xref linkend="psvi-support"/>. If the attribute is not specified, the value
+            “<literal>false</literal>” is assumed. </para>
       <para>For a description of <tag class="attribute">psvi-required</tag>, see <xref linkend="psvi-support"/>; for <tag class="attribute">xpath-version</tag>, see <xref linkend="xpath-context"/>; for <tag class="attribute">exclude-inline-prefixes</tag>, see
           <tag>p:inline</tag>.</para>
 
@@ -5074,8 +5378,10 @@ See <xref linkend="versioning-considerations"/>.</para>
           mechanism for instantiating it or referring to it. It is effectively invisible.</para>
       </note><para>Libraries can import pipelines and/or other libraries.
 See also <xref linkend="handling-imports"/>.</para></section>
-    <!-- ============================================================ -->
-    <section xml:id="p.import"><title>p:import</title><para>An <tag>p:import</tag> loads a pipeline
+
+<!-- ============================================================ -->
+
+<section xml:id="p.import"><title>p:import</title><para>An <tag>p:import</tag> loads a pipeline
         or pipeline library, making it available in the pipeline or library which contains the
           <tag>p:import</tag>.</para>
       <e:rng-pattern name="Import"/>
@@ -5108,6 +5414,13 @@ See also <xref linkend="handling-imports"/>.</para></section>
         resolve to the same resource, they must not be considered the same imported
         library.</para>
 
+</section>
+
+<section xml:id="p.import-functions"><title>p:import-functions</title>
+
+<para>FIXME: T.B.D.</para>
+
+<e:rng-pattern name="ImportFunctions"/>
 </section>
 
 <!-- ============================================================ -->
@@ -5172,55 +5485,30 @@ step.</error>
 
 <e:rng-pattern name="Inline"/>
 
-<para>The <tag class="attribute">document-properties</tag> attribute
+<para>The <tag class="attribute">content-type</tag> attribute can be used
+to set the content type of the provided document;
+the <tag class="attribute">document-properties</tag> attribute
 can be used to set the <glossterm>document properties</glossterm> of
-the provided document. The document's content type is determined by
-the value of the "content-type" key in the provided map. If no
-attribute <tag class="attribute">document-properties</tag> is provided
-or the provided map does not contain a "content-type" key, the value
-"<literal>application/xml</literal>" is assumed.
+the provided document.</para>
+
+<para>The document's content type is determined statically.
+If a <tag class="attribute">content-type</tag> is specified, that is the
+content type. Otherwise, the content type is
+“<literal>application/xml</literal>”.
 </para>
 
-<para>How the content of a <tag>p:inline</tag> element is interpreted
-depends on the document's content type and the <tag class="attribute">encoding</tag> attribute.
-</para>
+<para><error code="D0062">It is a <glossterm>dynamic error</glossterm> if
+the <tag class="attribute">document-properties</tag> map contains a
+<literal>content-type</literal> key and that key has a value that differs
+from the statically determined content type.</error></para>
 
-<!--
-<informaltable>
-<thead>
-<tr>
-<td colspan="4"><tag class="attribute">content-type</tag></td>
-</tr>
-<tr>
-<td></td>
-<td><glossterm>XML media type</glossterm></td>
-<td><glossterm>text media type</glossterm></td>
-<td>Other media types</td>
-</tr>
-</thead>
-<tbody>
-<tr>
-<th align="left"><tag class="attribute">encoding</tag> absent</th>
-<td>OK</td>
-<td>OK</td>
-<td>error</td>
-</tr>
-<tr>
-<th align="left"><tag class="attribute">encoding</tag>
-is “<literal>base64</literal>”.</th>
-<td>error</td>
-<td>OK</td>
-<td>OK</td>
-</tr>
-<tr>
-<th align="left"><tag class="attribute">encoding</tag> is something else.</th>
-<td>error</td>
-<td>implementation-defined</td>
-<td>implementation-defined</td>
-</tr>
-</tbody>
-</informaltable>
--->
+<para>The base URI of the document is the base URI of the
+<tag>p:inline</tag> element.</para>
+
+<para>How the content of a <tag>p:inline</tag>
+element is interpreted depends on the document's content type and the
+<tag class="attribute">encoding</tag> attribute.
+</para>
 
 <para><error code="D0054">It is a
 <glossterm>dynamic error</glossterm> if an encoding is specified
@@ -5231,15 +5519,19 @@ and the content type is an <glossterm>XML media type</glossterm>.</error>
 if the content type value specifies a character set and the <tag class="attribute">encoding</tag> attribute is absent.</error>
 </para>
 
-<para><error code="D0039">It is a <glossterm>dynamic error</glossterm> if the 
-<tag class="attribute">encoding</tag> attribute is 
-present and content type value specifies a character set that is not supported 
-by the implementation.</error>  
+<para><error code="D0039">It is a <glossterm>dynamic error</glossterm>
+if the <tag class="attribute">encoding</tag> attribute is present and
+content type value specifies a character set that is not supported by
+the implementation.</error>
 </para>
-  
+
 <para><error code="D0056">It is a <glossterm>dynamic error</glossterm>
 if an encoding is specified and the content of the <tag>p:inline</tag>
-contains any XML markup.</error> In other words, the entire content
+contains any XML markup.</error>
+<error code="D0063">It is a <glossterm>dynamic error</glossterm>
+if the <tag>p:inline</tag> contains any XML markup and has a
+content type that is not an <glossterm>XML media type</glossterm>.</error>
+In other words, in these cases, the entire content
 must be a single text node. CDATA sections and character references do
 not count as markup for this purpose because they will already have
 been replaced by the XML parser that read the pipeline.</para>
@@ -5258,6 +5550,11 @@ encoding specified is not supported by the implementation.</error>
 the body is not correctly encoded per the value of the <tag class="attribute">encoding</tag> attribute.</error>
 </para>
 
+<para><error code="S0088">It is a <glossterm>static error</glossterm>
+if a text node designated as a <link linkend="text-value-templates">text
+value template</link> appears in a <tag>p:inline</tag> where an
+<tag class="attribute">encoding</tag> is specified.</error></para>
+
 <para>The interpretation of the (possibily decoded) content
 depends on the document's content type.
 </para>
@@ -5265,12 +5562,18 @@ depends on the document's content type.
 <section xml:id="inline-non-xml">
 <title>Inline non-XML content</title>
 
-<para>If the document's content type is not
-an <glossterm>XML media type</glossterm>, then the content is
-non-XML.</para>
+<para>If the document's content type is not an <glossterm>XML media
+type</glossterm>, then the content is non-XML.</para>
 
 <para><impl>The representation of non-XML content is
 <glossterm>implementation-dependent</glossterm></impl>.</para>
+
+<note>
+<para>In the presence of <glossterm baseform="text value template">text value templates</glossterm>, it is not possible to
+interpret the non-XML characters until the templates have been
+expanded.</para>
+</note>
+
 </section>
 
 <section xml:id="inline-xml-content">
@@ -5280,7 +5583,7 @@ non-XML.</para>
 specified or the map does not contain a key "content-type" or specifies
 an <glossterm>XML media type</glossterm>, then
 the content is XML. A new XML document is created by wrapping a document node
-around the nodes which appear as children of <tag>p:inline</tag>. Any preceding or 
+around the nodes which appear as children of <tag>p:inline</tag>. Any preceding or
 following whitespace-only text nodes will be discarded.</para>
 
 <para>The in-scope namespaces of the inline document differ from the
@@ -5374,33 +5677,8 @@ as defined below, are removed:</para>
               prefix has been preserved, but it would be equally correct if a different
               prefix had been used.</para>
 
-<para>If the <tag class="attribute">expand-text</tag> attribute is not
-false, then each attribute value and text node within the
-<tag>p:inline</tag> is evaluated as a <glossterm>text value
-template</glossterm>. The context node for these expressions is
-undefined.</para>
-
-<para xml:id="p.expand-text">Within the descendants of <tag>p:inline</tag> the attribute
-<tag class="attribute">p:expand-text</tag> (i.e., the attribute <code>expand-text</code>
-<emphasis>in the XProc namespace</emphasis>), may appear on an element.
-If it does, the specified value is used as the expand text value
-for the descendants of the element on which it occurs. The
-<tag class="attribute">p:expand-text</tag> will not appear in the inline content.
-</para>
-
-<!--feature="p-inline-no-nesting"-->
-<para>If a <tag>p:inline</tag> occurs as
-a descendant of another <tag>p:inline</tag>, any <tag class="attribute">expand-text</tag> within the inner
-<tag>p:inline</tag> is treated like an ordinary attribute; that is,
-neither will its value influence text expansion nor will it be removed
-from the descendant.</para>
-
-<!-- feature="no-p-expand-text-on-p"-->
-<para>(A <tag class="attribute">p:expand-text</tag> attribute on an element in the
-XProc namespace is an error. If it occurs on other elements that are
-not descendants of <tag>p:inline</tag>, the attribute has no
-effect.)</para>
-
+<para>The text-node descendants of a <tag>p:inline</tag> may be
+<link linkend="text-value-templates">text value templates</link>.</para>
 </section>
 
 <section xml:id="implicit-inlines">
@@ -5411,7 +5689,9 @@ optionally preceded and/or followed by whitespace, in any namespace
 other than the XProc namespace, occurs where a <tag>p:inline</tag> is
 allowed, each is treated as if it was enclosed within a
 <tag>p:inline</tag> element (with no attributes). Any preceding or
-following whitespace is discarded.</para>
+following whitespace is discarded. Elements in the XProc namespace are
+forbidden except for <tag>p:documentation</tag>
+and <tag>p:pipeinfo</tag> which are ignored.</para>
 
 <para>The following example demonstrates this implicit behaviour:</para>
 
@@ -5436,7 +5716,7 @@ wants to include top level comments, processing instructions, or whitespace,
 or if the document element is in the XProc namespace.</para>
 
 <para><error code="S0079">It is a <glossterm>static error</glossterm>
-if comments or processing instructions occur as siblings of an element node
+if comments, non-whitespace text nodes, or processing instructions occur as siblings of an element node
 that would be treated as an implicit inline.</error>
 </para>
 </section>
@@ -5449,25 +5729,44 @@ that would be treated as an implicit inline.</error>
 
 <e:rng-pattern name="Document"/>
 
-<para>The value of the <tag class="attribute">href</tag> attribute
-<rfc2119>must</rfc2119> be an <type>anyURI</type>. It is interpreted
+<para>The value of the <tag class="attribute">href</tag> attribute,
+after expanding any
+<glossterm baseform="attribute value template">attribute value templates</glossterm>,
+is a whitespace-separated list of URIs. Each URI
+<rfc2119>must</rfc2119> be an <type>anyURI</type>.
+<error code="D0064">It is a <glossterm>dynamic error</glossterm>
+if any URI is not a valid <type>xs:anyURI</type>.</error>
+The URI is interpreted
 as an IRI reference. If it is relative, it is made absolute against
-the base URI of the <tag>p:document</tag> element.</para>
+the base URI of the <tag>p:document</tag> element.
+</para>
 
-<para>The semantics of <tag>p:document</tag> are the same as a the
+<para>The semantics of <tag>p:document</tag>, with respect to each URI,
+taken in order from left to right, are the same as a the
 semantics of <tag>p:load</tag> where the <option>href</option> option
-comes from the <tag class="attribute">href</tag> attribute, the
+is the URI, the
+<option>content-type</option> option comes from
+<tag class="attribute">content-type</tag> attribute, the
 <option>document-properties</option> option comes from the
 <tag class="attribute">document-properties</tag> attribute, and the
 <option>parameters</option> option comes from the
 <tag class="attribute">parameters</tag> attribute.
 </para>
 
+<note>
+<para>If the <tag class="attribute">href</tag> attribute is a list of
+more than one URI, it follows from the way that the URIs in that sequence are
+processed that they will have same <option>content-type</option>,
+<option>document-properties</option>, and <option>parameters</option>.
+Use different <tag>p:document</tag> elements if different values are
+required.</para>
+</note>
+
 <para><error code="D0011">It is a <glossterm>dynamic error</glossterm>
 if the resource referenced by a <tag>p:document</tag> element does not
 exist, cannot be accessed, or has an XML content type and is not a
-well-formed XML document.</error> <error code="D0023">It is a 
-<glossterm>dynamic error</glossterm> if a DTD validation is performed 
+well-formed XML document.</error> <error code="D0023">It is a
+<glossterm>dynamic error</glossterm> if a DTD validation is performed
 and the document is not valid.</error>
 </para>
 
@@ -5486,27 +5785,17 @@ output</emphasis> on that port. </para>
 </note>
 </section>
 
-    <section xml:id="p.empty"><title>p:empty</title><para>A <tag>p:empty</tag> connects to an
-          <glossterm>empty sequence</glossterm> of documents.</para>
-      <e:rng-pattern name="Empty"/>
-    </section>
+<section xml:id="p.empty">
+<title>p:empty</title>
+<para>A <tag>p:empty</tag> connects to an <glossterm>empty
+sequence</glossterm> of documents.</para>
 
-<section xml:id="p.character-map">
-<title>p:character-map</title>
+<e:rng-pattern name="Empty"/>
 
-<e:rng-pattern name="CharacterMap"/>
-
-<para>When character maps are used during serialization, each occurrence of
-the identified character is replaced by the specified string.</para>
-
-<section xml:id="p.output-character">
-<title>p:output-character</title>
-
-<e:rng-pattern name="OutputCharacter"/>
-
-<para>Maps a single character to a string at serialization time.</para>
-
-</section>
+<para>If an empty binding is used, it must be the only binding for the
+port. <error code="S0089">It is a <glossterm>static error</glossterm>
+if the <tag>p:empty</tag> binding appears as a sibling of any other binding,
+including itself.</error></para>
 </section>
 
     <section xml:id="p.documentation"><title>p:documentation</title><para>A
@@ -5590,7 +5879,7 @@ possible set of parameter values.</para>
     </section>
   </section>
 
-  <appendix xml:id="conformance">
+<appendix xml:id="conformance">
 <title>Conformance</title>
 
 <para>Conformant processors <rfc2119>must</rfc2119> implement all of the features
@@ -5688,7 +5977,7 @@ additional information items and properties, particularly those made available
 in the PSVI, are preserved between steps.</impl></para>
 </section>
 </appendix>
-  <appendix xml:id="references" version="5.0-extension w3c-xproc">
+<appendix xml:id="references" version="5.0-extension w3c-xproc">
 <title>References</title>
 <section xml:id="normative-references">
   <title>Normative References</title>
@@ -5697,7 +5986,7 @@ in the PSVI, are preserved between steps.</impl></para>
 <citetitle xlink:href="http://www.w3.org/TR/xproc20-steps/">XProc 2.0:
 Standard Step Library</citetitle>.
 Alex Milowski, Henry Thompson, and Norman Walsh editors.
-W3C Working Draft 15 December 2014.
+W3C Working Group Note 21 July 2016.
 </bibliomixed>
     <bibliomixed xml:id="xml-infoset-rec"><abbrev>Infoset</abbrev>
 <citetitle xlink:href="http://www.w3.org/TR/xml-infoset/">XML
@@ -5726,7 +6015,7 @@ Dave Hollander, Andrew Layman, et. al.,
 editors. W3C Recommendation 16 August 2006.</bibliomixed>
     <bibliomixed xml:id="lastcall-xslt30"><abbrev>XSLT 3.0</abbrev>
    <citetitle xlink:href="http://www.w3.org/TR/xslt-30/">XSL Transformations (XSLT) Version 3.0</citetitle>. Michael Kay,
-   W3C Last Call Working Draft 2 October 2014</bibliomixed>
+   W3C Recommendation 8 June 2017</bibliomixed>
     <bibliomixed xml:id="xpath31"><abbrev>XPath 3.1</abbrev>
 <citetitle xlink:href="http://www.w3.org/TR/xpath31/">XML Path Language (XPath)
 	3.1</citetitle>. Jonathan Robie, Michael Dyck, Josh Spiegel, editors.
@@ -5743,10 +6032,14 @@ W3C Recommendation. 23 January 2007.</bibliomixed>
     <bibliomixed xml:id="xpath31-functions"><abbrev>XPath and XQuery Functions and Operators 3.1</abbrev>
 <citetitle xlink:href="https://www.w3.org/TR/xpath-functions-31/">XPath and XQuery Functions and  Operators 3.1</citetitle>. Michael Kay, editor.
 W3C Recommendation. 21 March 2017</bibliomixed>
-    <bibliomixed xml:id="xslt20"><abbrev>XSLT 2.0</abbrev>
-<citetitle xlink:href="http://www.w3.org/TR/xslt20/">XSL Transformations (XSLT)
-Version 2.0</citetitle>. Michael Kay, editor.
-W3C Recommendation. 23 January 2007.</bibliomixed>
+    <bibliomixed xml:id="xslt30"><abbrev>XSLT 3.0</abbrev>
+<citetitle xlink:href="http://www.w3.org/TR/xslt-30/">XSL Transformations (XSLT)
+Version 3.0</citetitle>. Michael Kay, editor.
+W3C Recommendation. 8 June 2017.</bibliomixed>
+    <bibliomixed xml:id="xquery10"><abbrev>XQuery 1.0</abbrev>
+<citetitle xlink:href="http://www.w3.org/TR/xquery/">XQuery 1.0: An XML
+Query Language</citetitle>. Scott Boag, Don Chamberlin, Mary Fernández, et. al.,
+editors. W3C Recommendation. 23 January 2007.</bibliomixed>
     <bibliomixed xml:id="xmlschema-1"><abbrev>W3C XML Schema: Part 1</abbrev>
 <citetitle xlink:href="http://www.w3.org/TR/xmlschema-1/">XML Schema Part 1:
 Structures Second Edition</citetitle>.
@@ -5797,7 +6090,7 @@ November, 1996.</bibliomixed>
   </bibliolist>
 </section>
 </appendix>
-  <appendix xmlns:db="http://docbook.org/ns/docbook" xml:id="glossary"><title>Glossary</title><glosslist><glossentry><glossterm>Namespaces
+<appendix xmlns:db="http://docbook.org/ns/docbook" xml:id="glossary"><title>Glossary</title><glosslist><glossentry><glossterm>Namespaces
           in XML</glossterm><glossdef><para>Unless otherwise noted, the term <firstterm>Namespaces
           in XML</firstterm> refers equally to <biblioref linkend="xmlns10"/> and <biblioref linkend="xmlns11"/>.</para></glossdef></glossentry><glossentry><glossterm>XML</glossterm><glossdef><para>XProc is intended to work equally well with <biblioref linkend="xml10"/> and
           <biblioref linkend="xml11"/>. Unless otherwise noted, the term
@@ -5836,8 +6129,7 @@ URI.</para></glossdef></glossentry><glossentry><glossterm>compound step</glosste
           relationships.</para></glossdef></glossentry><glossentry><glossterm>container</glossterm><glossdef><para>A compound step or multi-container step is a
             <firstterm>container</firstterm> for the steps directly within it or within non-step
           wrappers directly within it.</para></glossdef></glossentry><glossentry><glossterm>declared inputs</glossterm><glossdef><para>The input ports declared on a step are its
-            <firstterm>declared inputs</firstterm>.</para></glossdef></glossentry><glossentry><glossterm>declared options</glossterm><glossdef><para>The options declared on a
-step are its <firstterm>declared options</firstterm>.</para></glossdef></glossentry><glossentry><glossterm>declared outputs</glossterm><glossdef><para>The output ports declared on a step are its
+            <firstterm>declared inputs</firstterm>.</para></glossdef></glossentry><glossentry><glossterm>declared outputs</glossterm><glossdef><para>The output ports declared on a step are its
             <firstterm>declared outputs</firstterm>.</para></glossdef></glossentry><glossentry><glossterm>default readable port</glossterm><glossdef><para>The
                 <firstterm>default readable port</firstterm>, which may be undefined, is a specific
               step name/port name pair from the set of readable ports.</para></glossdef></glossentry><glossentry><glossterm>document</glossterm><glossdef><para>A <firstterm>document</firstterm> is a
@@ -5882,9 +6174,9 @@ how <glossterm role="unwrapped">implementation-dependent</glossterm> features ar
               <glossterm>XML</glossterm> document, the XProc processor must sometimes add additional
             namespace nodes, perhaps even renaming prefixes, to satisfy the constraints of
               <glossterm>Namespaces in XML</glossterm>. This process is referred to as
-              <firstterm>namespace fixup</firstterm>.</para></glossdef></glossentry><glossentry><glossterm>option</glossterm><glossdef><para>An <firstterm>option</firstterm>
-is a name/value pair. The name <rfc2119>must</rfc2119> be an <link xlink:href="http://www.w3.org/TR/REC-xml-names/#dt-expname">expanded
-name</link>. The value may be any XDM value.</para></glossdef></glossentry><glossentry><glossterm>pipeline</glossterm><glossdef><para>A <firstterm>pipeline</firstterm> is a set of connected
+              <firstterm>namespace fixup</firstterm>.</para></glossdef></glossentry><glossentry><glossterm>option</glossterm><glossdef><para>An <firstterm>option</firstterm> is
+a name/value pair. The name <rfc2119>must</rfc2119> be an <link xlink:href="http://www.w3.org/TR/REC-xml-names/#dt-expname">expanded
+name</link>. The value may be any XPath data model value.</para></glossdef></glossentry><glossentry><glossterm>pipeline</glossterm><glossdef><para>A <firstterm>pipeline</firstterm> is a set of connected
         steps, with outputs of one step flowing into inputs of another.</para></glossdef></glossentry><glossentry><glossterm>primary input
             port</glossterm><glossdef><para>If a step has a document input port which is
           explicitly marked “<code>primary='true'</code>”, or if it has exactly one document input
@@ -5895,23 +6187,23 @@ name</link>. The value may be any XDM value.</para></glossdef></glossentry><glos
           explicitly marked “<code>primary='true'</code>”, or if it has exactly one document output
           port and that port is <emphasis>not</emphasis> explicitly marked
             “<code>primary='false'</code>”, then that output port is the <firstterm>primary output
-            port</firstterm> of the step.</para></glossdef></glossentry><glossentry><glossterm>proxy document</glossterm><glossdef><para>A <firstterm>proxy document</firstterm> is
-an empty document node.</para></glossdef></glossentry><glossentry><glossterm>readable
+            port</firstterm> of the step.</para></glossdef></glossentry><glossentry><glossterm>readable
                 ports</glossterm><glossdef><para>The <firstterm>readable
                 ports</firstterm> are a set of step name/port name pairs.</para></glossdef></glossentry><glossentry><glossterm>representation</glossterm><glossdef><para>A <firstterm>representation</firstterm>
 is a data structure used by an XProc processor to refer to the actual
-document content.</para></glossdef></glossentry><glossentry><glossterm>signature</glossterm><glossdef><para>The <firstterm>signature</firstterm> of a step is the set
-          of inputs, outputs, and options that it is declared to accept.</para></glossdef></glossentry><glossentry><glossterm>specified options</glossterm><glossdef><para>The options on a step
-which have specified values, either because a <tag>p:with-option</tag>
-element specifies a value or because the declaration included a
-default value, are its <firstterm>specified options</firstterm>.</para></glossdef></glossentry><glossentry><glossterm>static error</glossterm><glossdef><para>A <firstterm>static error</firstterm> is one which can
+document content.</para></glossdef></glossentry><glossentry><glossterm>shadow</glossterm><glossdef><para>We say that a variable
+<firstterm baseform="shadow">shadows</firstterm> another variable
+(or option) if it has the same name and appears later in the same lexical
+scope.</para></glossdef></glossentry><glossentry><glossterm>signature</glossterm><glossdef><para>The <firstterm>signature</firstterm> of a step is the set
+          of inputs, outputs, and options that it is declared to accept.</para></glossdef></glossentry><glossentry><glossterm>static error</glossterm><glossdef><para>A <firstterm>static error</firstterm> is one which can
           be detected before pipeline evaluation is even attempted.</para></glossdef></glossentry><glossentry><glossterm>step</glossterm><glossdef><para>A <firstterm>step</firstterm> is the basic computational unit
           of a pipeline.</para></glossdef></glossentry><glossentry><glossterm>step type exports</glossterm><glossdef><para>The <firstterm>step type exports</firstterm> of an
         XProc element, against the background of a set of URIs of resources already visited (call
         this set <emphasis>Visited</emphasis>), are defined by cases.</para></glossdef></glossentry><glossentry><glossterm>subpipeline</glossterm><glossdef><para>Sibling steps (and the connections between them) form a
             <firstterm>subpipeline</firstterm>.</para></glossdef></glossentry><glossentry><glossterm>text media type</glossterm><glossdef><para>Media types of the form
 “<literal>text/<replaceable>something</replaceable></literal>”
-are <firstterm baseform="text media type">text media types</firstterm>.
+are <firstterm baseform="text media type">text media types</firstterm> with the
+exception of “<literal>text/xml</literal>” which is an XML media type.
 </para></glossdef></glossentry><glossentry><glossterm>text value template</glossterm><glossdef><para>In a text node that is
 designated as a <firstterm>text value template</firstterm>,
 expressions can be used by surrounding each expression with curly
@@ -5921,10 +6213,10 @@ templates</glossterm>.</para></glossdef></glossentry><glossentry><glossterm>valu
 attribute value templates and text value templates are referred to as
 <firstterm baseform="value template">value templates</firstterm>.</para></glossdef></glossentry><glossentry><glossterm>variable</glossterm><glossdef><para>A <firstterm>variable</firstterm>
 is a name/value pair. The name <rfc2119>must</rfc2119> be an <link xlink:href="http://www.w3.org/TR/REC-xml-names/#dt-expname">expanded
-name</link>. The value may be any XDM value.</para></glossdef></glossentry><glossentry><glossterm>visible</glossterm><glossdef><para>If two names are in the same scope, we say that
+name</link>. The value may be any XPath data model value.</para></glossdef></glossentry><glossentry><glossterm>visible</glossterm><glossdef><para>If two names are in the same scope, we say that
 they are <firstterm>visible</firstterm> to each other.
 </para></glossdef></glossentry></glosslist></appendix>
-  <appendix xml:id="language-summary">
+<appendix xml:id="language-summary">
 <title>Pipeline Language Summary</title>
 
 <para>This appendix summarizes the XProc pipeline language. Machine readable
@@ -5951,7 +6243,7 @@ and
 <?step-vocabulary-summary?>
 
 </appendix>
-  <appendix xml:id="errors-list">
+<appendix xml:id="errors-list">
 <title>List of Error Codes</title>
 
 <para>The following error codes are defined by this specification.</para>
@@ -5983,7 +6275,7 @@ can be raised by steps in this specification:</para>
 <?step-error-list?>
 </section>
 </appendix>
-  <appendix xml:id="namespace-fixup-guidance">
+<appendix xml:id="namespace-fixup-guidance">
 <title>Guidance on Namespace Fixup (Non-Normative)</title>
 
 <para>An XProc processor may find it necessary to add missing
@@ -6105,9 +6397,10 @@ the same prefix or declares a new default namespace.</para>
 </orderedlist>
 
 </appendix>
-  <appendix xml:id="handling-imports">
-    <title>Handling Circular and Re-entrant Library Imports (Non-Normative)</title>
-    <para>When handling imports, an implementation needs to be able to detect the following
+<appendix version="5.0-extension w3c-xproc" xml:id="handling-imports">
+<title>Handling Circular and Re-entrant Library Imports (Non-Normative)</title>
+
+<para>When handling imports, an implementation needs to be able to detect the following
       situations, and distinguish them from cases where multiple import chains produce genuinely
       conflicting step definitions:</para>
     <orderedlist>
@@ -6192,8 +6485,8 @@ the same prefix or declares a new default namespace.</para>
         contain duplicates) is a bag constructed by starting with an empty bag and adding each
         member of each of the input bags in turn to it. It follows that the cardinality of the
         result is the sum of the cardinality of all the input bags.</termdef></para>
-  </appendix>
-  <appendix version="5.0-extension w3c-xproc" xml:id="parallelism">
+</appendix>
+<appendix version="5.0-extension w3c-xproc" xml:id="parallelism">
 <title>Sequential steps, parallelism, and side-effects</title>
 
 <para>XProc imposes as few constraints on the order in which steps
@@ -6239,7 +6532,7 @@ using <tag>p:pipeinfo</tag> and
 greater control over parallelism in their implementations.</para>
 
 </appendix>
-  <appendix version="5.0-extension w3c-xproc" xml:id="xproc-media-type">
+<appendix version="5.0-extension w3c-xproc" xml:id="xproc-media-type">
 <title>The <code>application/xproc+xml</code> media type</title>
 
 <para>This appendix registers a new MIME media type,
@@ -6424,6 +6717,51 @@ identifier notation is exactly that for
 <quote><code>application/xml</code></quote>,
 as specified in <biblioref linkend="rfc3023"/> or its successors.</para>
 </section>
+</appendix>
+<appendix version="5.0-extension w3c-xproc" xml:id="ancillary-files">
+<title>Ancillary files</title>
+
+<para>This specification includes by reference a number of
+ancillary files.</para>
+
+<variablelist>
+<varlistentry>
+<term><link xlink:href="xproc30.rnc"/>, <link xlink:href="xproc30.rng"/></term>
+<listitem>
+<para>A RELAX NG Schema for XProc 3.0 pipelines, in compact or XML form.
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry>
+<term><link xlink:href="xproc10.rnc"/>, <link xlink:href="xproc10.rng"/></term>
+<listitem>
+<para>A RELAX NG Schema for XProc 1.0 pipelines, in compact or XML form.
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry>
+<term><link xlink:href="xproc.rnc"/>, <link xlink:href="xproc.rng"/></term>
+<listitem>
+<para>A RELAX NG Schema for XProc pipelines, in compact or XML form.
+It will validate either XProc 1.0 pipelines or XProc 3.0 pipelines,
+depending on the value of the version attribute.
+</para>
+<para>In order to use this schema, you must also download the 1.0 and 3.0
+schemas; they are included into this one.</para>
+</listitem>
+</varlistentry>
+
+<varlistentry>
+<term><link xlink:href="library.xpl"/></term>
+<listitem>
+<para>An XProc pipeline library that declares all of the standard built-in steps.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
 </appendix>
 
 <appendix xml:id="changelog">

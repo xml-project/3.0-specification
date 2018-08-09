@@ -78,7 +78,7 @@ with the specified value.
 <p:declare-step type="p:add-attribute">
   <p:input port="source" content-types="application/xml text/xml */*+xml"/>
   <p:output port="result" content-types="application/xml"/>
-  <p:option name="match" select="'/*'" as="xs:string" e:type="XSLTMatchPattern"/>
+  <p:option name="match" select="'/*'" as="xs:string" e:type="XSLTSelectionPattern"/>
   <p:option name="attribute-name" required="true" as="xs:QName"/>
   <p:option name="attribute-prefix" as="xs:NCName"/>
   <p:option name="attribute-namespace" as="xs:anyURI"/>
@@ -86,7 +86,7 @@ with the specified value.
 </p:declare-step>
 
 <para>The value of the <option>match</option> option
-<rfc2119>must</rfc2119> be an XSLTMatchPattern. <error code="C0023">It
+<rfc2119>must</rfc2119> be an XSLTSelectionPattern. <error code="C0023">It
 is a <glossterm>dynamic error</glossterm> if the match pattern matches a node
 which is not an element.</error></para>
 
@@ -209,6 +209,7 @@ of its input.</para>
    <p:input port="source" content-types="*/*"/>
    <p:output port="result" content-types="*/*"/>
    <p:option name="content-type" as="xs:string"/>
+   <p:option name="parameters" as="map(*)"/>   
 </p:declare-step>
 
 <para>The input document is transformed from one media type to another.
@@ -217,6 +218,14 @@ error</glossterm> if the supplied <option>content-type</option> is not
 a valid media type of the form
 “<literal><replaceable>type</replaceable>/<replaceable>subtype</replaceable>+<replaceable>ext</replaceable></literal>”.</error></para>
 
+   
+<para>The <option>parameters</option> can be used to supply parameters to
+control casting. <impl>The semantics of the keys and the allowed values for 
+these keys are <glossterm>implementation-defined</glossterm>.</impl>
+<error code="C0079">It is a <glossterm>dynamic error</glossterm> if the map 
+<option>parameters</option> contains an entry whose key is defined by the 
+implementation and whose value is not valid for that key.</error></para>
+   
 <itemizedlist>
 <listitem>
 <para>Casting from one XML media type to another simply changes the
@@ -368,11 +377,11 @@ with the deleted items removed, on the <port>result</port> port.</para>
 <p:declare-step type="p:delete">
    <p:input port="source" content-types="application/xml text/xml */*+xml"/>
    <p:output port="result" content-types="application/xml"/>
-   <p:option name="match" required="true" as="xs:string" e:type="XSLTMatchPattern"/>
+   <p:option name="match" required="true" as="xs:string" e:type="XSLTSelectionPattern"/>
 </p:declare-step>
 
 <para>The value of the <option>match</option> option <rfc2119>must</rfc2119> be an
-XSLTMatchPattern. A match pattern may match multiple items to be
+XSLTSelectionPattern. A match pattern may match multiple items to be
 deleted.</para>
 
 <para>If an element is selected by the <option>match</option> option, the
@@ -392,15 +401,14 @@ of the element on which it occurred.</para>
 <section xml:id="c.directory-list">
 <title>p:directory-list</title>
 
-<para>The <code>p:directory-list</code> step produces a list of the
-contents of a specified
-directory.</para>
+  <para>The <code>p:directory-list</code> step produces a list of the contents
+    of a specified directory.</para>
 
 <p:declare-step type="p:directory-list">
   <p:output port="result" content-type="application/xml"/>
   <p:option name="path" required="true" as="xs:anyURI"/>
-  <p:option name="include-filter" as="xs:string" e:type="RegularExpression"/>
-  <p:option name="exclude-filter" as="xs:string" e:type="RegularExpression"/>
+  <p:option name="include-filter" as="xs:string*" e:type="RegularExpression"/>
+  <p:option name="exclude-filter" as="xs:string*" e:type="RegularExpression"/>
 </p:declare-step>
 
 <para><impl>Conformant processors <rfc2119>must</rfc2119> support directory paths whose
@@ -408,9 +416,7 @@ scheme is <code>file</code>. It is
 <glossterm>implementation-defined</glossterm> what other schemes are
 supported by <tag>p:directory-list</tag>, and what the interpretation
 of 'directory', 'file' and 'contents' is for those schemes.</impl>
-Implementations
-<rfc2119>should</rfc2119> support “globbing”. See
-<xref linkend="uri-globbing"/>.</para>
+</para>
 
 <para><error code="C0017">It is a
 <glossterm>dynamic error</glossterm> if the absolute path does not
@@ -424,11 +430,14 @@ or <option>exclude-filter</option>
 option <rfc2119>must</rfc2119> be a regular expression as specified in <biblioref linkend="xpath-functions"/>, section 7.61 “<literal>Regular Expression
 Syntax</literal>”.</para>
 
-<para>If the <option>include-filter</option> pattern matches a
-directory entry's name, the entry is included in the output. If the
-<option>exclude-filter</option> pattern matches a directory entry's name,
-the entry is excluded in the output. If both options are provided, the
-include filter is processed first, then the exclude filter.</para>
+  <para>If the <option>include-filter</option> pattern matches a directory
+    entry's name, the entry is included in the output. If the
+      <option>exclude-filter</option> pattern matches a directory entry's name,
+    the entry is excluded in the output. If both options are provided, the
+    include filter is processed first, then the exclude filter. As a result: An
+    item is included if it matches (at least) one of the
+      <option>include-filter</option> values and none of the
+      <option>exclude-filter</option> values.</para>
 
 <para xml:id="cv.directory">The result document produced for
 the specified directory path has a <tag>c:directory</tag> document
@@ -636,7 +645,7 @@ for some value and injects it into the <port>source</port> document.</para>
   <p:option name="parameters" as="map(xs:QName,item())"/>
   <p:option name="value" required="true" as="xs:string"/>
   <p:option name="algorithm" required="true" as="xs:QName"/>
-  <p:option name="match" select="'/*'" as="xs:string" e:type="XSLTMatchPattern"/>
+  <p:option name="match" select="'/*'" as="xs:string" e:type="XSLTSelectionPattern"/>
   <p:option name="version" as="xs:string"/>
 </p:declare-step>
 
@@ -662,7 +671,7 @@ hexadecimal characters.
 </para>
 
 <para>The value of the <option>match</option> option must be an
-XSLTMatchPattern.</para>
+XSLTSelectionPattern.</para>
 
 <para>The hash of the specified value is computed using the algorithm and
 parameters specified. <error code="C0036">It is a
@@ -869,14 +878,6 @@ messages).
 or values that are inconsistent with each other or with the requirements
 of the step or protocol.</error>
 </para>
-</section>
-
-<section xml:id="file-globbing">
-<title>Filename globbing</title>
-
-<para>Implementations
-<rfc2119>should</rfc2119> support “globbing”. See
-<xref linkend="uri-globbing"/>.</para>
 </section>
 
 <section xml:id="c.request_body">
@@ -1394,16 +1395,16 @@ port's document relative to the matching elements in the
 
 <p:declare-step type="p:insert">
    <p:input port="source" primary="true" content-types="application/xml text/xml */*+xml"/>
-   <p:input port="insertion" sequence="true" content-types="application/xml text/xml */*+xml"/>
+   <p:input port="insertion" sequence="true" content-types="application/xml text/* */*+xml"/>
    <p:output port="result" content-types="application/xml"/>
-   <p:option name="match" select="'/*'" as="xs:string" e:type="XSLTMatchPattern"/>
+   <p:option name="match" select="'/*'" as="xs:string" e:type="XSLTSelectionPattern"/>
    <p:option name="position" required="true" as="xs:token" e:type="first-child|last-child|before|after"/>
 </p:declare-step>
 
 <para>The value of the <option>match</option> option
-<rfc2119>must</rfc2119> be an XSLTMatchPattern. <error code="C0023">It
+<rfc2119>must</rfc2119> be an XSLTSelectionPattern. <error code="C0023">It
 is a <glossterm>dynamic error</glossterm> if that pattern matches
-anything other than element, text, processing-instruction, or comment nodes.</error>
+an attribute or a namespace node.</error>
 Multiple matches are
 allowed, in which case multiple copies of the <port>insertion</port>
 documents will occur. If no elements match, then the document is
@@ -1429,10 +1430,13 @@ the following list:
 </itemizedlist>
 
 <para><error code="C0025">It is a <glossterm>dynamic error</glossterm>
-if the match pattern matches anything other than an element node and
-the value of the <option>position</option> option is
+if the match pattern matches anything other than an element or a document
+node and the value of the <option>position</option> option is
 “<literal>first-child</literal>” or
-“<literal>last-child</literal>”.</error></para>
+“<literal>last-child</literal>”.</error> <error code="C0024">It is a 
+<glossterm>dynamic error</glossterm> if the match pattern matches a document 
+node and the value of the <option>position</option> is “<literal>before</literal>” or
+“<literal>after</literal>”.</error></para>
 
 <para>As the inserted elements are part of the output of the step they
 are not considered in determining matching elements. If an empty sequence
@@ -1459,7 +1463,7 @@ element and stores that label in the specified attribute.</para>
   <p:option name="attribute-prefix" as="xs:NCName"/>
   <p:option name="attribute-namespace" as="xs:anyURI"/>
   <p:option name="label" select="'concat(&#34;_&#34;,$p:index)'" as="xs:string" e:type="XPathExpression"/>
-  <p:option name="match" select="'*'" as="xs:string" e:type="XSLTMatchPattern"/>
+  <p:option name="match" select="'*'" as="xs:string" e:type="XSLTSelectionPattern"/>
   <p:option name="replace" select="'true'" as="xs:boolean"/>
 </p:declare-step>
 
@@ -1477,7 +1481,7 @@ colon.</error>
 expression used to generate the value of the attribute label.</para>
 
 <para>The value of the <option>match</option> option
-<rfc2119>must</rfc2119> be an XSLTMatchPattern. <error code="C0023">It
+<rfc2119>must</rfc2119> be an XSLTSelectionPattern. <error code="C0023">It
 is a <glossterm>dynamic error</glossterm> if that expression matches
 anything other than element nodes.</error></para>
 
@@ -1520,29 +1524,27 @@ remains the same.</para>
 <title>p:load</title>
 
 <para>The <code>p:load</code> step has no inputs but produces as its
-result a document (or documents) specified by an IRI. If it is relative, it is 
-made absolute against the base URI of the element on which it is specified 
-(<tag>p:with-option</tag> or <tag>p:load</tag> in the case of a syntactic 
+result a document (or documents) specified by an IRI. If it is relative, it is
+made absolute against the base URI of the element on which it is specified
+(<tag>p:with-option</tag> or <tag>p:load</tag> in the case of a syntactic
 shortcut value).</para>
 
 <p:declare-step type="p:load">
   <p:output port="result" sequence="true" content-types="*/*"/>
   <p:option name="href" required="true" as="xs:anyURI"/>
   <p:option name="parameters" as="map(xs:QName,item())"/>
+  <p:option name="content-type" as="xs:string"/>
   <p:option name="document-properties" as="map(xs:QName, item())"/>
 </p:declare-step>
 
-<para>The document or documents identified by the
-<option>href</option> URI are loaded and
-returned. If the URI protocol supports redirection, then redirects
-<rfc2119>must</rfc2119> be followed. Implementations
-<rfc2119>should</rfc2119> support “globbing”. See
-<xref linkend="uri-globbing"/>.</para>
+  <para>The document or documents identified by the <option>href</option> URI are loaded and returned. If the URI
+    protocol supports redirection, then redirects <rfc2119>must</rfc2119> be followed.</para>
 
-<para><error code="D0011">It is a <glossterm>dynamic error</glossterm> 
-if the resource referenced by a <code>p:load</code> element does not exist, 
-cannot be accessed, or has an XML content type and is not a well-formed 
-XML document.</error></para>  
+
+<para><error code="D0011">It is a <glossterm>dynamic error</glossterm>
+if the resource referenced by a <code>p:load</code> element does not exist,
+cannot be accessed, or has an XML content type and is not a well-formed
+XML document.</error></para>
 
 <para>The behavior of this step depends on the content type of the
 document or documents loaded. The content type of each document is
@@ -1551,8 +1553,10 @@ determined as follows:</para>
 <orderedlist>
 <listitem>
 <para>If a <property>content-type</property> property is specified
-in <option>document-properties</option>, then each document
-<rfc2119>must</rfc2119> be interpreted according to that content type.
+in <option>document-properties</option> or <option>content-type</option> is present,
+then each document <rfc2119>must</rfc2119> be interpreted according to
+that content type. <error code="D0062">It is a <glossterm>dynamic error</glossterm>
+if content-type is specified and document-properties has an entry for "content-type".</error>
 </para>
 </listitem>
 <listitem>
@@ -1572,11 +1576,13 @@ parameters that may influence the way that content is loaded. The interpretation
 of this map varies according to the content type. Parameter names that are in
 no namespace are treated as strings using only the local-name where appropriate.</para>
 
-<para>Broadly speaking, there are four categories of data that might
+<para>Broadly speaking, there are five categories of data that might
 be loaded:
 <link linkend="c.load.xml">XML</link>,
 <link linkend="c.load.text">text</link>,
-<link linkend="c.load.json">JSON</link>, and “other”
+<link linkend="c.load.json">JSON</link>,
+<link linkend="c.load.html">HTML</link>,
+and “other”
 <link linkend="c.load.binary">binary</link> data.</para>
 
 <section xml:id="c.load.xml">
@@ -1599,7 +1605,12 @@ the processor does not support DTD validation.</error></para>
 
 <section xml:id="c.load.text">
 <title>Loading text data</title>
-<para>For a text media type, the content is loaded as a text document.</para>
+<para>For a text media type, the content is loaded as a text document. (A text
+document is an XPath data model document consisting of a single text node.)</para>
+
+<para><error code="D0060">It is a <glossterm>dynamic error</glossterm> if the
+<option>content-type</option> specifies an encoding, which is not supported
+by the processor.</error></para>
 
 <para><impl>Text parameters are <glossterm>implementation-defined</glossterm>.
 </impl></para>
@@ -1616,15 +1627,45 @@ in <biblioref linkend="xpath-functions"/>
 <rfc2119>must</rfc2119> be supported.
 <impl>Additional JSON parameters are <glossterm>implementation-defined</glossterm>.
 </impl></para>
+<para><error code="D0057">It is a <glossterm>dynamic error</glossterm> if the loaded content
+does not conform to the JSON grammar, unless the parameter <option>liberal</option> is
+<literal>true</literal> and the processor chooses to accept the deviation.</error></para>
 
+<para><error code="D0058">It is a <glossterm>dynamic error</glossterm> if the parameter
+<option>duplicates</option> is <literal>reject</literal> and the value of
+loaded content contains a JSON object with duplicate keys.</error></para>
+
+<para><error code="D0059">It is a <glossterm>dynamic error</glossterm> if the parameter
+map contains an entry whose key is defined in the specification of
+<code>fn:parse-json</code> and whose value is not valid for that key, or if it contains
+an entry with the key fallback when the parameter <option>escape</option> with
+<literal>true()</literal> is also present.</error></para>
 </section>
+
+<section xml:id="c.load.html">
+<title>Loading HTML data</title>
+
+<para>For an HTML media type, the content is loaded and parsed into an
+XPath data model
+document that contains a tree of elements, attributes, and other nodes.</para>
+
+<para><impl>The precise way in which HTML documents are parsed into the
+XPath data model is <glossterm>implementation-defined</glossterm>.</impl>
+</para>
+
+<para><impl>HTML parameters are <glossterm>implementation-defined</glossterm>.
+</impl></para>
+</section>
+
 <section xml:id="c.load.binary">
 <title>Loading binary data</title>
 
 <para>An XProc processor may load other, arbitrary data types. <impl>How a
 processor interprets other media types is <glossterm>implementation-defined</glossterm>.
 </impl>
-<impl>Parameters for other media types
+</para>
+
+<para><impl>Parameters for other media types
 are <glossterm>implementation-defined</glossterm>.
 </impl></para>
 </section>
@@ -1634,6 +1675,55 @@ are <glossterm>implementation-defined</glossterm>.
 <para feature="load-preserves-none">No document properties are preserved.
 The properties specified in <option>document-properties</option> are applied.
 </para>
+</simplesect>
+</section>
+<section xml:id="c.load-directory-list">
+<title>p:load-directory-list</title>
+
+  <para>The <code>p:load-directory-list</code> step has no inputs but produces as its result a sequence of documents
+    loaded from a directory, specified by an IRI. If the directory's IRI is relative, it is made absolute against the
+    base URI of the element on which it is specified (<tag>p:with-option</tag> or <tag>p:load-directory-list</tag> in
+    the case of a syntactic shortcut value).</para>
+
+<p:declare-step type="p:load-directory-list">
+  <p:output port="result" content-type="application/xml"/>
+  <p:option name="path" required="true" as="xs:anyURI"/>
+  <p:option name="include-filter" as="xs:string*" e:type="RegularExpression"/>
+  <p:option name="exclude-filter" as="xs:string*" e:type="RegularExpression"/>
+</p:declare-step>
+
+<para><impl>Conformant processors <rfc2119>must</rfc2119> support directory paths whose
+scheme is <code>file</code>. It is
+<glossterm>implementation-defined</glossterm> what other schemes are
+supported by <tag>p:load-directory-list</tag>, and what the interpretation
+of 'directory', 'file' and 'contents' is for those schemes.</impl>
+</para>
+
+<para><error code="C0017">It is a
+<glossterm>dynamic error</glossterm> if the absolute path does not
+identify a directory.</error> <error code="C0012">It is a
+<glossterm>dynamic error</glossterm> if the contents of the directory
+path are not available to the step due to access restrictions in the
+environment in which the pipeline is run.</error></para>
+
+<para>If present, the value of the <option>include-filter</option>
+or <option>exclude-filter</option>
+option <rfc2119>must</rfc2119> be a regular expression as specified in 
+    <biblioref linkend="xpath-functions"/>,section 7.61 “<literal>Regular Expression
+Syntax</literal>”.</para>
+
+<para>If the <option>include-filter</option> pattern matches a
+directory entry's name, the entry is included in the output. If the
+<option>exclude-filter</option> pattern matches a directory entry's name,
+the entry is excluded in the output. If both options are provided, the
+include filter is processed first, then the exclude filter. As a result: An
+item is included if it matches (at least) one of the
+  <option>include-filter</option> values and none of the
+  <option>exclude-filter</option> values.</para>
+
+<simplesect>
+<title>Document properties</title>
+<para feature="directory-list-preserves-none">No document properties are preserved.</para>
 </simplesect>
 </section>
 <section xml:id="c.make-absolute-uris">
@@ -1646,12 +1736,12 @@ result document.</para>
 <p:declare-step type="p:make-absolute-uris">
   <p:input port="source" content-types="application/xml text/xml */*+xml"/>
   <p:output port="result" content-types="application/xml"/>
-  <p:option name="match" required="true" as="xs:string" e:type="XSLTMatchPattern"/>
+  <p:option name="match" required="true" as="xs:string" e:type="XSLTSelectionPattern"/>
   <p:option name="base-uri" as="xs:anyURI"/>
 </p:declare-step>
 
 <para>The value of the <option>match</option> option <rfc2119>must</rfc2119> be an
-XSLTMatchPattern.
+XSLTSelectionPattern.
 <error code="C0023">It is a <glossterm>dynamic error</glossterm> if
 the pattern matches anything other than element or attribute
 nodes.</error></para>
@@ -1954,14 +2044,14 @@ processing-instruction targets in a document.</para>
 <p:declare-step type="p:rename">
   <p:input port="source" content-types="application/xml text/xml */*+xml"/>
   <p:output port="result" content-types="application/xml"/>
-  <p:option name="match" select="'/*'" as="xs:string" e:type="XSLTMatchPattern"/>
+  <p:option name="match" select="'/*'" as="xs:string" e:type="XSLTSelectionPattern"/>
   <p:option name="new-name" required="true" as="xs:QName"/>
   <p:option name="new-prefix" as="xs:NCName"/>
   <p:option name="new-namespace" as="xs:anyURI"/>
 </p:declare-step>
 
 <para>The value of the <option>match</option> option must be an
-XSLTMatchPattern. <error code="C0023">It is a <glossterm>dynamic
+XSLTSelectionPattern. <error code="C0023">It is a <glossterm>dynamic
 error</glossterm> if the pattern matches anything other than element,
 attribute or processing instruction nodes.</error></para>
 
@@ -2017,11 +2107,11 @@ its primary input with the document element of the
    <p:input port="source" primary="true" content-types="application/xml text/xml */*+xml"/>
    <p:input port="replacement" content-types="application/xml text/xml */*+xml"/>
    <p:output port="result" content-types="application/xml"/>
-   <p:option name="match" required="true" as="xs:string" e:type="XSLTMatchPattern"/>
+   <p:option name="match" required="true" as="xs:string" e:type="XSLTSelectionPattern"/>
 </p:declare-step>
 
 <para>The value of the <option>match</option> option
-<rfc2119>must</rfc2119> be an XSLTMatchPattern. <error code="C0023">It
+<rfc2119>must</rfc2119> be an XSLTSelectionPattern. <error code="C0023">It
 is a <glossterm>dynamic error</glossterm> if that pattern matches
 anything other than element, text, processing-instruction, or comment
 nodes. </error> Multiple matches are allowed, in which case multiple
@@ -2048,11 +2138,11 @@ matching elements.</para>
    <p:input port="source" primary="true" content-types="application/xml text/xml */*+xml"/>
    <p:input port="attributes" content-types="application/xml text/xml */*+xml"/>
    <p:output port="result" content-types="application/xml"/>
-   <p:option name="match" select="'/*'" as="xs:string" e:type="XSLTMatchPattern"/>
+   <p:option name="match" select="'/*'" as="xs:string" e:type="XSLTSelectionPattern"/>
 </p:declare-step>
 
  <para>The value of the <option>match</option> option <rfc2119>must</rfc2119> be an
- XSLTMatchPattern. <error code="C0023">It is a <glossterm>dynamic
+ XSLTSelectionPattern. <error code="C0023">It is a <glossterm>dynamic
  error</glossterm> if that pattern matches anything other than element
  nodes.</error></para>
 
@@ -2242,12 +2332,12 @@ with the string result of evaluating an XPath expression.</para>
 <p:declare-step type="p:string-replace">
    <p:input port="source" content-types="application/xml text/xml */*+xml"/>
    <p:output port="result" content-types="application/xml"/>
-   <p:option name="match" required="true" as="xs:string" e:type="XSLTMatchPattern"/>
+   <p:option name="match" required="true" as="xs:string" e:type="XSLTSelectionPattern"/>
    <p:option name="replace" required="true" as="xs:string" e:type="XPathExpression"/>
 </p:declare-step>
 
 <para>The value of the <option>match</option> option <rfc2119>must</rfc2119> be an
-XSLTMatchPattern.</para>
+XSLTSelectionPattern.</para>
 
 <para>The value of the <option>replace</option> option <rfc2119>must</rfc2119> be an
 XPathExpression.</para>
@@ -2390,11 +2480,11 @@ children.</para>
 <p:declare-step type="p:unwrap">
    <p:input port="source" content-types="application/xml text/xml */*+xml"/>
    <p:output port="result" content-types="application/xml"/>
-   <p:option name="match" select="'/*'" as="xs:string" e:type="XSLTMatchPattern"/>
+   <p:option name="match" select="'/*'" as="xs:string" e:type="XSLTSelectionPattern"/>
 </p:declare-step>
 
  <para>The value of the <option>match</option> option <rfc2119>must</rfc2119> be an
- XSLTMatchPattern. <error code="C0023">It is a <glossterm>dynamic
+ XSLTSelectionPattern. <error code="C0023">It is a <glossterm>dynamic
  error</glossterm> if that pattern matches anything other than element
  nodes.</error></para>
 
@@ -2428,12 +2518,12 @@ the <port>source</port> document.</para>
 <p:declare-step type="p:uuid">
   <p:input port="source" primary="true" content-types="application/xml text/xml */*+xml"/>
   <p:output port="result" content-types="application/xml"/>
-  <p:option name="match" select="'/*'" as="xs:string" e:type="XSLTMatchPattern"/>
+  <p:option name="match" select="'/*'" as="xs:string" e:type="XSLTSelectionPattern"/>
   <p:option name="version" as="xs:integer"/>
 </p:declare-step>
 
 <para>The value of the <option>match</option> option must be an
-XSLTMatchPattern. The value of the <option>version</option> option
+XSLTSelectionPattern. The value of the <option>version</option> option
 must be an integer.</para>
 
 <para>If the <option>version</option> is specified, that version of
@@ -2478,7 +2568,7 @@ documents and produces either a single document or a new sequence of
 documents.</para>
 
 <p:declare-step type="p:wrap-sequence">
-   <p:input port="source" content-types="application/xml text/xml */*+xml" sequence="true"/>
+   <p:input port="source" content-types="application/xml */*+xml text/*" sequence="true"/>
    <p:output port="result" sequence="true" content-types="application/xml"/>
    <p:option name="wrapper" required="true" as="xs:QName"/>
    <p:option name="wrapper-prefix" as="xs:NCName"/>
@@ -2539,7 +2629,7 @@ element.
    <p:option name="wrapper" required="true" as="xs:QName"/>
    <p:option name="wrapper-prefix" as="xs:NCName"/>
    <p:option name="wrapper-namespace" as="xs:anyURI"/>
-   <p:option name="match" required="true" as="xs:string" e:type="XSLTMatchPattern"/>
+   <p:option name="match" required="true" as="xs:string" e:type="XSLTSelectionPattern"/>
    <p:option name="group-adjacent" as="xs:string" e:type="XPathExpression"/>
 </p:declare-step>
 
@@ -2554,7 +2644,7 @@ to specify a new namespace or prefix if the lexical value of the specified
 name contains a colon.</error></para>
 
 <para>The value of the <option>match</option> option
-<rfc2119>must</rfc2119> be an XSLTMatchPattern. <error code="C0023">It
+<rfc2119>must</rfc2119> be an XSLTSelectionPattern. <error code="C0023">It
 is a <glossterm>dynamic error</glossterm> if the pattern matches
 anything other than document, element, text, processing instruction, and comment
 nodes.</error>
@@ -2649,11 +2739,11 @@ injects it into the <port>source</port> document.</para>
   <p:input port="source" primary="true" content-types="application/xml text/xml */*+xml"/>
   <p:output port="result" content-types="application/xml"/>
   <p:option name="parameters" as="map(xs:QName,item())"/>
-  <p:option name="match" required="true" as="xs:string" e:type="XSLTMatchPattern"/>
+  <p:option name="match" required="true" as="xs:string" e:type="XSLTSelectionPattern"/>
 </p:declare-step>
 
 <para>The value of the <option>match</option> option must be an
-XSLTMatchPattern.</para>
+XSLTSelectionPattern.</para>
 
 <para>The set of parameters is encoded as a single
 <literal>x-www-form-urlencoded</literal> string of name/value pairs.
@@ -2716,9 +2806,7 @@ if an XInclude error occurs during processing.</error> </para>
 <section xml:id="c.xslt">
 <title>p:xslt</title>
 
-<para>The <tag>p:xslt</tag> step applies an
-<biblioref linkend="xslt10"/> or
-<biblioref linkend="xslt20"/> stylesheet to a document.</para>
+<para>The <tag>p:xslt</tag> step applies an XSLT stylesheet to a document.</para>
 
 <p:declare-step type="p:xslt">
   <p:input port="source" content-types="application/xml text/xml */*+xml" sequence="true" primary="true"/>
@@ -2918,189 +3006,6 @@ how <glossterm role="unwrapped">implementation-defined</glossterm> features are 
 <?implementation-dependent-features?>
 </section>
 </appendix>
-<appendix xml:id="uri-globbing" version="5.0-extension w3c-xproc">
-<title>URI globbing</title>
-
-<para>A “glob” is a modified form of wildcard expansion designed for
-matching paths on a filesystem. <impl>A glob always applies to
-<literal>file:</literal> URIs; whether it applies to other URI schemes
-is <glossterm>implementation-defined</glossterm>.</impl>
-Given a set of absolute URIs, the rules below determine which URIs
-match the specified “glob”.
-Globs are
-applied to the path portion of the absolute URI of each potential
-match. Globs can be interpreted like regular expressions with the
-following special rules:</para>
-
-<orderedlist>
-<listitem>
-<para>The characters “<literal>\</literal>”, “<literal>?</literal>”,
-“<literal>*</literal>”, and “<literal>[</literal>” are special.
-All other characters match exactly and only themselves.
-</para>
-</listitem>
-<listitem>
-<para>Globs are always anchored. Any non-special characters at the
-start or end of the string must match exactly those characters
-<emphasis>at the start or end of the string</emphasis>.
-If a string begins or ends with special characters, then the matching
-rules for those characters apply to the start or end of the string.
-</para>
-</listitem>
-<listitem>
-<para>The character “<literal>\</literal>” escapes the character
-that follows it. The character that follows matches exactly and only
-itself, regardless of whatever special meaning it would have had
-if it had not been preceded by a “<literal>\</literal>”. If a
-“<literal>\</literal>” is the very last character of a string, it
-is interpreted as “<literal>\\</literal>”.
-</para>
-</listitem>
-<listitem>
-<para>The character “<literal>?</literal>” matches any single character
-except the path separator character, “<literal>/</literal>”.
-</para>
-</listitem>
-<listitem>
-<para>The character “<literal>*</literal>” matches zero or more characters
-except the path separator.
-</para>
-</listitem>
-<listitem>
-<para>The character sequence “<literal>**</literal>” matches zero or more
-characters, <emphasis>including</emphasis> the path separator.
-</para>
-</listitem>
-<listitem>
-<para>The character “<literal>[</literal>” begins a range.
-The range consists of all of the characters after “<literal>[</literal>” up to but
-excluding the first unescaped “<literal>]</literal>” that follows or the end of
-the string, whichever comes first. The closing “<literal>]</literal>”, if present,
-has no bearing on matches, it simply ends the range. A range matches any single
-character that is a member of the range.</para>
-<orderedlist>
-<listitem>
-<para>If the first character of a range is “<literal>^</literal>”, then the range
-consists of all of the characters that follow the “<literal>^</literal>” and the
-meaning of the range is inverted. It matches all of the characters
-<emphasis>not</emphasis> identified by the range.
-</para>
-</listitem>
-<listitem>
-<para>If the first or last character of a range is “<literal>-</literal>”, then the
-hyphen character is literally part of the range. If a hyphen appears anywhere else
-in a range, then it identifies an inclusive character sequence. The sequence begins
-with the character that precedes the hyphen and ends with the character that follows
-the hyphen. For the purposes of such a hyphen, the characters are ordered by
-Unicode code point. If the code point of the beginning character is greater than the
-code point of the ending character, then the sequence consists of no characters.
-If the same character appears more than once in a range, all of the multiple occurrences
-collapse to a single occurrence.
-</para>
-</listitem>
-</orderedlist>
-</listitem>
-</orderedlist>
-
-<para>Note that the path portion of a URI always begins with a single slash so
-most useful globs will have to start with a slash.</para>
-
-<para>Some examples follow. For the purpose of these examples, let’s consider
-the following URIs:</para>
-
-<orderedlist>
-<listitem>
-<simpara><uri>file:///a</uri></simpara>
-</listitem>
-<listitem>
-<simpara><uri>file:///ab</uri></simpara>
-</listitem>
-<listitem>
-<simpara><uri>file:///c.txt</uri></simpara>
-</listitem>
-<listitem>
-<simpara><uri>file:///d/e.txt</uri></simpara>
-</listitem>
-<listitem>
-<simpara><uri>file:///d/f/g.txt</uri></simpara>
-</listitem>
-<listitem>
-<simpara><uri>file:///file0.dat</uri></simpara>
-</listitem>
-<listitem>
-<simpara><uri>file:///fileA.dat</uri></simpara>
-</listitem>
-<listitem>
-<simpara><uri>file:///file-.dat</uri></simpara>
-</listitem>
-</orderedlist>
-
-<para>And the following globs:</para>
-
-<variablelist>
-<varlistentry>
-<term><literal>/?</literal></term>
-<listitem>
-<para>Matches “<literal>file:///a</literal>”, but not “<literal>file:///ab</literal>” or any
-other URI.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><literal>/*.txt</literal></term>
-<listitem>
-<para>Matches only “<literal>file:///c.txt</literal>”.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><literal>/*/*.txt</literal></term>
-<listitem>
-<para>Matches only “<literal>file:///d/e.txt</literal>”.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><literal>/**.txt</literal></term>
-<listitem>
-<para>Matches all three “<literal>.txt</literal>” files.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><literal>/d/**/*.txt</literal></term>
-<listitem>
-<para>Matches only “<literal>file:///d/f/g.txt</literal>” (but would also have
-matched “<literal>file:///d/f/h/i/j/k.txt</literal>” had it been present).
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><literal>/*[0-9].dat</literal></term>
-<listitem>
-<para>Matches only “<literal>file:///file0.dat</literal>”.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><literal>/*[^0-9].dat</literal></term>
-<listitem>
-<para>Matches “<literal>file:///fileA.dat</literal>” and
-“<literal>file:///file-.dat</literal>”.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><literal>/*[-0-9].dat</literal></term>
-<listitem>
-<para>Matches “<literal>file:///file0.dat</literal>” and
-“<literal>file:///file-.dat</literal>”.
-</para>
-</listitem>
-</varlistentry>
-</variablelist>
-
-</appendix>
 <appendix xml:id="references" version="5.0-extension w3c-xproc">
 
 <title>References</title>
@@ -3117,20 +3022,12 @@ Achim Berndzen, Gerrit Imsieke, Erik Siegel and Norman Walsh, editors.
 An Introduction</citetitle>.
 Achim Berndzen, Gerrit Imsieke, Erik Siegel and Norman Walsh, editors.
 </bibliomixed>
-    <bibliomixed xml:id="xslt10"><abbrev>XSLT 1.0</abbrev>
-<citetitle xlink:href="http://www.w3.org/TR/xslt">XSL Transformations (XSLT)
-Version 1.0</citetitle>. James Clark, editor.
-W3C Recommendation. 16 November 1999.</bibliomixed>
     <bibliomixed xml:id="xpath-functions"><abbrev>XPath and XQuery
 Functions and Operators 3.1</abbrev>
 <citetitle xlink:href="https://www.w3.org/TR/xpath-functions-31/">XPath and XQuery
 Functions and Operators 3.1</citetitle>.
 Michael Kay, editors
 W3C Recommendation. 21 March 2017.</bibliomixed>
-    <bibliomixed xml:id="xslt20"><abbrev>XSLT 2.0</abbrev>
-<citetitle xlink:href="http://www.w3.org/TR/xslt20/">XSL Transformations (XSLT)
-Version 2.0</citetitle>. Michael Kay, editor.
-W3C Recommendation. 23 January 2007.</bibliomixed>
     <bibliomixed xml:id="xinclude"><abbrev>XInclude</abbrev>
 <citetitle xlink:href="http://www.w3.org/TR/xinclude/">XML Inclusions
 (XInclude) Version 1.0 (Second Edition)</citetitle>. Jonathan Marsh,
@@ -3215,5 +3112,23 @@ how <glossterm role="unwrapped">implementation-defined</glossterm> features are 
 implementation has discretion in how it is performed.
 Implementations are not required to document or explain
 how <glossterm role="unwrapped">implementation-dependent</glossterm> features are performed.</para></glossdef></glossentry></glosslist></appendix>
+
+<appendix version="5.0-extension w3c-xproc" xml:id="ancillary-files">
+<title>Ancillary files</title>
+
+<para>This specification includes by reference a number of
+ancillary files.</para>
+
+<variablelist>
+<varlistentry>
+<term><link xlink:href="steps.xpl"/></term>
+<listitem>
+<para>An XProc step library for the declared steps.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+</appendix>
 
 </specification>

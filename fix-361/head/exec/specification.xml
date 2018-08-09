@@ -21,7 +21,7 @@
 </authorgroup>
 
 <abstract>
-<para>This specification describes the <code>p:validate-with-relax-ng</code>
+<para>This specification describes the <code>p:exec</code>
 step for
 <citetitle>XProc 3.0: An XML Pipeline Language</citetitle>.</para>
 </abstract>
@@ -302,5 +302,23 @@ how <glossterm role="unwrapped">implementation-defined</glossterm> features are 
 implementation has discretion in how it is performed.
 Implementations are not required to document or explain
 how <glossterm role="unwrapped">implementation-dependent</glossterm> features are performed.</para></glossdef></glossentry></glosslist></appendix>
+
+<appendix version="5.0-extension w3c-xproc" xml:id="ancillary-files">
+<title>Ancillary files</title>
+
+<para>This specification includes by reference a number of
+ancillary files.</para>
+
+<variablelist>
+<varlistentry>
+<term><link xlink:href="steps.xpl"/></term>
+<listitem>
+<para>An XProc step library for the declared steps.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+</appendix>
 
 </specification>
