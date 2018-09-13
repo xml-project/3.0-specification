@@ -832,12 +832,13 @@ declaration exists.</impl></para>
 <orderedlist>
 <listitem>
 <para>The <tag class="attribute">select</tag> expressions on static
-options and variables.</para>
+options and static variables.</para>
 </listitem>
 <listitem>
 <para>
 <link linkend="value-templates">Value templates</link> in the attributes
-or descendants of <tag>p:input</tag> and <tag>p:output</tag>.
+or descendants of <tag>p:input</tag> and <tag>p:output</tag>
+and map attributes on those descendants.
 </para>
 </listitem>
 <listitem>
@@ -3722,13 +3723,13 @@ arise within it from being exposed to the rest of the pipeline.</para>
 
 <e:rng-pattern name="Try"/>
 
-<para>The <tag>p:group</tag> represents the initial subpipeline and
+<para>The step begins with the initial subpipeline;
 the recovery (or “catch”) pipelines are identified with
 <tag>p:catch</tag> elements. The <tag>p:finally</tag> pipeline always
 runs after the <tag>p:try</tag>.</para>
 
 <para><error code="S0075">It is a <glossterm>static error</glossterm>
-if a <tag>p:try</tag> does not have exactly one <tag>p:group</tag> and
+if a <tag>p:try</tag> does not have at least one subpipeline step and
 at least one <tag>p:catch</tag> or exactly one <tag>p:finally</tag>.</error></para>
 
 <para>The <tag>p:try</tag> step evaluates the initial subpipeline and,
@@ -3741,7 +3742,7 @@ subpipelines.</para>
 <para>Each <tag>p:catch</tag> pipeline is considered in document
 order. All except the last <rfc2119>must</rfc2119> have a
 <tag class="attribute">code</tag> attribute. If any of the specified error
-codes matches the error that was raised in the <tag>p:group</tag>, then
+codes matches the error that was raised in the initial subpipeline, then
 that <tag>p:catch</tag> is selected as the recovery pipeline.
 If the last <tag>p:catch</tag> does not have a <tag class="attribute">code</tag>
 attribute, it is selected if no preceding <tag>p:catch</tag> has a
@@ -3996,57 +3997,7 @@ can provide some sort of default for the rest of the pipeline.</para>
         <error code="S0048">It is a <glossterm>static error</glossterm> to use a declared step as a
             <glossterm>compound step</glossterm>.</error></para>
 
-<section xml:id="option-shortcut">
-<title>Syntactic Shortcut for Option Values</title>
 
-<para>Namespace qualified attributes on a step are <glossterm baseform="extension attribute">extension attributes</glossterm>.
-Attributes, other than <tag class="attribute">name</tag>, that are
-not namespace qualified are treated as a syntactic shortcut for
-specifying the value of an option. In other words, the following two
-steps are equivalent:</para>
-
-<para>The first step uses the standard <tag>p:with-option</tag>
-syntax:</para>
-
-<programlisting language="xml">&lt;ex:stepType&gt;
-  &lt;p:with-option name="option-name" select="'some value'"/&gt;
-&lt;/ex:stepType&gt;</programlisting>
-
-<para>The second step uses the syntactic shortcut:</para>
-
-<programlisting language="xml">&lt;ex:stepType option-name="some value"/&gt;</programlisting>
-
-<para>There are some limitations to this shortcut
-syntax:</para>
-
-<orderedlist>
-<listitem>
-<para>It only applies to option names that are not in a
-namespace.</para>
-</listitem>
-<listitem>
-<para>It only applies to option names that are not otherwise used on
-the step, such as “<literal>name</literal>”.</para>
-</listitem>
-</orderedlist>
-
-<para>If the option value includes curly braces, it is treated as
-an <glossterm>attribute value template</glossterm>. The context node for
-attribute value templates in an option shortcut value comes from the
-default readable port for the step on which they occur. If there is no
-such port, the context node is undefined.</para>
-
-<para><error code="S0027">It is a <glossterm>static error</glossterm> if an
-option is specified with both the shortcut form and the long
-form.</error>
-<error code="S0031">It is a <glossterm>static error</glossterm> to use
-an option on an <glossterm>atomic step</glossterm> that is not
-declared on steps of that type.</error>
-</para>
-
-<para>The syntactic shortcuts apply equally to standard atomic steps
-and extension atomic steps.</para>
-</section>
 </section>
 </section>
 
@@ -4059,8 +4010,7 @@ and extension atomic steps.</para>
 <para>The declaration of an input identifies the name of the
 port, whether or not the port accepts a sequence, whether or not the
 port is a <glossterm>primary input port</glossterm>, what content types it
-accepts, and may provide a
-default connection for the port.</para>
+accepts, and may provide a connection to default inputs for the port.</para>
 
 <para>An input <emphasis>declaration</emphasis> has the following
 form:</para>
@@ -4172,16 +4122,16 @@ author to exclude some namespace declarations in inline content, see <tag>p:inli
 </variablelist>
 
 <para>On a <tag>p:declare-step</tag> for an atomic step, the
-<tag>p:input</tag> simply declares the input port. <error code="S0042">It is a <glossterm>static error</glossterm> to attempt to
+<tag>p:input</tag> can only declare the input port. <error code="S0042">It is a <glossterm>static error</glossterm> to attempt to
 provide a connection for an input port on the declaration of an atomic
 step.</error></para>
 
-<para xml:id="note-pipe-excl">The <tag>p:pipe</tag> element is explicitly excluded from a
-declaration because it would make the default value of an input
-dependent on the execution of some part of the pipeline. Default
-values are designed so that they can be computed statically. For the very
-same reason <tag class="attribute">href</tag> is neither an attribute value template
-on <tag>p:input</tag> nor on a <tag>p:document</tag> within a <tag>p:input</tag>.</para>
+<para xml:id="note-pipe-excl">The <tag>p:pipe</tag> element is
+explicitly excluded from a declaration because it would make the
+default value of an input dependent on the execution of some part of
+the pipeline. If a runtime binding is provided for an input port, implementations
+<rfc2119>must not</rfc2119> attempt to dereference the default
+bindings.</para>
 
 </section>
 <section xml:id="p.with-input">
@@ -4367,10 +4317,9 @@ port.</para>
 <section xml:id="p.output">
 <title>p:output</title>
 
-<para>A <tag>p:output</tag> identifies an output port, optionally
-connecting an input for it, if necessary.</para>
+<para>A <tag>p:output</tag> identifies an output port.</para>
 
-<e:rng-pattern name="OutputDeclaration"/>
+<e:rng-pattern name="AtomicOutputDeclaration"/>
 
 <para>The attributes that can appear on <tag>p:output</tag> are
 <link linkend="common-attr">the common attributes</link> and:</para>
@@ -4415,23 +4364,14 @@ port as primary.</error></para>
   if a document arrives on an output port whose content type is not accepted
   by the output port specification.</error></para>
 
-<note role="editorial">
-<title>Editorial Note</title>
-<para>Implementations are free to perform a static checking of the
-connected ports and indicate, that the content types of the connected
-ports will not match, however they <rfc2119>must not</rfc2119> raise a
-static error.
+<note>
+<para>Implementations are free to perform static checking of the
+connected ports and indicate that the content types of the connected
+ports will not match, however they <rfc2119>must not</rfc2119> raise an
+error statically.
 </para>
 </note>
 
-</listitem>
-</varlistentry>
-<varlistentry><term><tag class="attribute">serialization</tag></term>
-<listitem>
-<para>The <tag class="attribute">serialization</tag> attribute can
-be used to provide <link linkend="serialization">serialization
-parameters</link>.
-</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -4441,10 +4381,10 @@ steps</glossterm>, the declaration <rfc2119>may</rfc2119> be
 accompanied by a <glossterm>connection</glossterm> for the
 output.</para>
 
-<e:rng-pattern name="OutputConnection"/>
+<e:rng-pattern name="CompoundOutputDeclaration"/>
 
-<para>The additional attributes that can appear on an output connection
-are:</para>
+<para>The additional attributes that can appear on an output declaration
+on a compound step are:</para>
 
 <variablelist>
 <varlistentry><term><tag class="attribute">href</tag></term>
@@ -4465,6 +4405,24 @@ author to exclude some namespace declarations in inline content, see <tag>p:inli
 </listitem>
 </varlistentry>
 </variablelist>
+
+<para>Finally, on a <tag>p:declare-step</tag> that declares a pipeline,
+the <tag>p:output</tag> can specify serialization options.
+</para>
+
+<e:rng-pattern name="PipelineOutputDeclaration"/>
+
+<variablelist>
+<varlistentry><term><tag class="attribute">serialization</tag></term>
+<listitem>
+<para>The <tag class="attribute">serialization</tag> attribute can
+be used to provide <link linkend="serialization">serialization
+parameters</link>.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
 
 <para><error code="S0029">It is a <glossterm>static error</glossterm>
 to specify a connection for a <tag>p:output</tag> inside a
@@ -4489,8 +4447,7 @@ document</emphasis> and provide it on the output port. It
 attribute allows the user to request serialization parameters on an
 output port. These parameters control XML serialization as defined
 by <biblioref linkend="xpath-serialization"/>.
-The attribute value is an XPath expression which returns
-a map from strings to atomic values.</para>
+</para>
 
 <para>If the pipeline processor serializes the output on a port, it
 <rfc2119 feature="ser-must-use">must</rfc2119> use the serialization
@@ -5137,6 +5094,72 @@ author to exclude some namespace declarations in inline content, see <tag>p:inli
 error</glossterm> if a <tag>p:with-option</tag> attempts to change
 the value of an option that is declared static.</error>
 See <xref linkend="statics"/>.</para>
+  
+  <section xml:id="option-shortcut">
+    <title>Syntactic Shortcut for Option Values</title>
+    
+    <para>Namespace qualified attributes on a step are <glossterm baseform="extension attribute">extension attributes</glossterm>.
+      Attributes, other than <tag class="attribute">name</tag>, that are
+      not namespace qualified are treated as a syntactic shortcut for
+      specifying the value of an option. In other words, the following two
+      steps are equivalent:</para>
+    
+    <para>The first step uses the standard <tag>p:with-option</tag>
+      syntax:</para>
+    
+    <programlisting language="xml">&lt;ex:stepType&gt;
+  &lt;p:with-option name="option-name" select="'some value'"/&gt;
+&lt;/ex:stepType&gt;</programlisting>
+    
+    <para>The second step uses the syntactic shortcut:</para>
+    
+    <programlisting language="xml">&lt;ex:stepType option-name="some value"/&gt;</programlisting>
+    
+    <para>There are some limitations to this shortcut
+      syntax:</para>
+    
+    <orderedlist>
+      <listitem>
+        <para>It only applies to option names that are not in a
+          namespace.</para>
+      </listitem>
+      <listitem>
+        <para>It only applies to option names that are not otherwise used on
+          the step, such as “<literal>name</literal>”.</para>
+      </listitem>
+    </orderedlist>
+    
+    <para>For the value of an option's syntactic shortcut attribute, the following applies:</para>
+    <itemizedlist>
+      <listitem>
+              <para><termdef xml:id="dt-map-attribute">A <firstterm>map attribute</firstterm> is an option's syntactic
+                  shortcut attribute for which the option's sequence type is a map or array.</termdef> The attribute's value
+                is interpreted directly as an XPath expression, which must result in a value of the applicable
+                datatype.</para>
+        
+      </listitem>
+      <listitem>
+        <para>For any other option's sequence type it is considered an <glossterm>attribute value template</glossterm>.
+                The context node for the attribute value template comes from the default readable port for the step on
+                which they occur. If there is no such port, the context node is undefined.</para>
+       
+            <para>The attribute's string value, after the attribute value template expansion, is used as
+              the value of the option. It must be possible to convert this string to the option's sequence type.</para>
+      </listitem>
+    </itemizedlist>
+    
+    
+    <para><error code="S0027">It is a <glossterm>static error</glossterm> if an
+      option is specified with both the shortcut form and the long
+      form.</error>
+      <error code="S0031">It is a <glossterm>static error</glossterm> to use
+        an option on an <glossterm>atomic step</glossterm> that is not
+        declared on steps of that type.</error>
+    </para>
+    
+    <para>The syntactic shortcuts apply equally to standard atomic steps
+      and extension atomic steps.</para>
+  </section>
 </section>
 
 <section xml:id="statics">
@@ -5258,6 +5281,8 @@ on namespace bindings:</para>
 <para>In this example, the expression will match “<literal>p</literal>”
 elements in the XHTML namespace irrespective of any bindings that may or may
 not be in scope.</para>
+  
+  
 
 </section>
     </section>
@@ -5267,24 +5292,11 @@ not be in scope.</para>
 <title>p:declare-step</title>
 
 <para>A <tag>p:declare-step</tag> provides the type and
-<glossterm>signature</glossterm> of an <glossterm>atomic
-step</glossterm> or pipeline. It declares the inputs, outputs, and
-options for all steps of that type.</para>
-
-<e:rng-pattern name="DeclareStep"/>
-
-<para>The value of the <tag class="attribute">type</tag> can be from
-any namespace provided that the expanded-QName of the value has a
-non-null namespace URI. <error code="S0025">It is a <glossterm>static
-error</glossterm> if the expanded-QName value of the <tag class="attribute">type</tag> attribute is in no namespace or in the
-XProc namespace.</error> Except as described in <xref linkend="versioning-considerations"/>, the XProc namespace
-<rfc2119>must not</rfc2119> be used in the type of steps. Neither
-users nor implementers may define additional steps in the XProc
-namespace.</para>
-
-<para>The <glossterm>in-scope bindings</glossterm> at the beginning of
-a <tag>p:declare-step</tag> are limited to the lexically preceding,
-statically declared options and variables.</para>
+<glossterm>signature</glossterm> of a pipeline or
+an <glossterm>atomic step</glossterm>.
+Pipelines contain a subpipeline which defines what the declared
+step does. Atomic steps have an implementation defined elsewhere in some
+other way.</para>
 
 <para><impl>When a declared step is evaluated directly by the XProc
 processor (as opposed to occurring as an atomic step in some
@@ -5292,91 +5304,192 @@ processor (as opposed to occurring as an atomic step in some
 connected to documents is
 <glossterm>implementation-defined</glossterm>.</impl></para>
 
-<para>A step declaration is not a <link linkend="step-concept">step</link> in its own right. Sibling steps
-cannot refer to the inputs or outputs of a <tag>p:declare-step</tag>
-using <tag>p:pipe</tag>; only instances of the type can be
-referenced.</para>
+<para>A step declaration is not a
+<link linkend="step-concept">step</link> in its own right. Sibling
+steps cannot refer to the inputs or outputs of a
+<tag>p:declare-step</tag> using <tag>p:pipe</tag>; only instances of
+the type can be referenced.</para>
 
-<para>The <tag class="attribute">version</tag> attribute identifies the version
-of XProc for which this step declaration was authored. If the
-<tag>p:declare-step</tag>
-has no ancestors in the XProc namespace, then it <rfc2119>must</rfc2119>
-have a <tag class="attribute">version</tag> attribute.
+<para>Most pipeline authors use the <tag>p:declare-step</tag> element
+to declare a pipeline.</para>
+
+<section xml:id="declare-pipelines">
+<title>Declaring pipelines</title>
+
+<para>When a <tag>p:declare-step</tag> declares a pipeline, that
+pipeline encapsulates the behavior of the specified
+<glossterm>subpipeline</glossterm>. Its children declare inputs,
+outputs, and options that the pipeline exposes and identify the steps
+in its subpipeline.</para>
+
+<e:rng-pattern name="DeclarePipelineStep"/>
+
+<para>The attributes that can appear on <tag>p:declare-step</tag> are
+<link linkend="common-attr">the common attributes</link> and:</para>
+
+<variablelist>
+<varlistentry><term><tag class="attribute">name</tag></term>
+<listitem>
+<para>The <tag class="attribute">name</tag> attribute provides a
+name for the step. This name can be used within the subpipeline to
+refer back to the declaration, for example, to read from its inputs.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><tag class="attribute">type</tag></term>
+<listitem>
+<para>The <tag class="attribute">type</tag> attribute provides
+a type for the step. 
+The value of the <tag class="attribute">type</tag> can be from
+any namespace provided that the expanded-QName of the value has a
+non-null namespace URI. <error code="S0025">It is a <glossterm>static
+error</glossterm> if the expanded-QName value of the <tag class="attribute">type</tag> attribute is in no namespace or in the
+XProc namespace.</error> Except as described in <xref linkend="versioning-considerations"/>, the XProc namespace
+<rfc2119>must not</rfc2119> be used in the type of steps. Neither
+users nor implementers may define additional steps in the XProc
+namespace.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><tag class="attribute">psvi-required</tag></term>
+<listitem>
+<para>The <tag class="attribute">psvi-required</tag> attribute allows
+the author to declare that a step relies on the processor's ability to
+pass PSVI annotations between steps,
+see <xref linkend="psvi-support"/>.
+If the attribute is not specified, the value
+“<literal>false</literal>” is assumed. </para>
+</listitem>
+</varlistentry>
+<varlistentry><term><tag class="attribute">xpath-version</tag></term>
+<listitem>
+<para>The requested <tag class="attribute">xpath-version</tag>
+<rfc2119>must</rfc2119> be used to evaluate XPath expressions subject
+to the constraints outlined in <xref linkend="xpath-context"/>. If the
+attribute is not specified, the value “<literal>3.1</literal>” is
+assumed.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><tag class="attribute">exclude-inline-prefixes</tag></term>
+<listitem>
+<para>The a description of <tag class="attribute">exclude-inline-prefixes</tag>,
+see <tag>p:inline</tag>.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><tag class="attribute">version</tag></term>
+<listitem>
+<para>The <tag class="attribute">version</tag> attribute identifies
+the version of XProc for which this step declaration was authored. If
+the <tag>p:declare-step</tag> has no ancestors in the XProc namespace,
+then it <rfc2119>must</rfc2119> have a
+<tag class="attribute">version</tag> attribute.
+<error code="S0062">It is a <glossterm>static error</glossterm> if
+a required version attribute is not present.</error>
 See <xref linkend="versioning-considerations"/>.</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><tag class="attribute">visibility</tag></term>
+<listitem>
 
-<para>If the <tag>p:declare-step</tag> is a child of a <tag>p:library</tag> the
-<tag class="attribute">visibility</tag> attribute controls whether the step is
-visible to an importing pipeline. If <tag class="attribute">visibility</tag> is set to
-<literal>private</literal>, the step type is only visible inside the <tag>p:library</tag>
-but not visible to any pipeline importing the <tag>p:library</tag>. If the
-<tag class="attribute">visibility</tag> attribute is missing, <literal>public</literal>
-is assumed. If the <tag>p:declare-step</tag> is not a child of a <tag>p:library</tag> the
-attribute is ignored.</para>
+<para>If the <tag>p:declare-step</tag> is a child of a <tag>p:library</tag>
+the <tag class="attribute">visibility</tag> attribute controls whether
+the step is visible to an importing pipeline.
+If <tag class="attribute">visibility</tag> is set to
+<literal>private</literal>, the step type is only visible inside the
+<tag>p:library</tag> and is not visible to any pipeline importing the
+<tag>p:library</tag>. If the <tag class="attribute">visibility</tag>
+attribute is missing, <literal>public</literal> is assumed. If the
+<tag>p:declare-step</tag> is not a child of a <tag>p:library</tag> the
+attribute has no effect and is ignored.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
 
-<para>For a description of <tag class="attribute">psvi-required</tag>,
-see <xref linkend="psvi-support"/>. For <tag class="attribute">xpath-version</tag>, see <xref linkend="xpath-context"/>. For <tag class="attribute">exclude-inline-prefixes</tag>, see
-<tag>p:inline</tag>.</para>
+<para>Informally, the content of a step declaration can be divided
+into two sections: a prologue and a subpipeline. The
+<tag>p:import</tag> and <tag>p:import-functions</tag> elements occur
+at the start of the prologue. After that, the prologue consists of
+<tag>p:input</tag>, <tag>p:output</tag>, <tag>p:option</tag>, and
+<tag>p:variable</tag> elements. Any variables declared in the prologue
+must be static.</para>
 
-<para>In a <tag>p:declare-step</tag>, variables and options can be
-declared before the subpipline and variables can be declared (and redeclared)
-within the subpipeline. <error code="S0091">It is a <glossterm>static error</glossterm>
-if a <tag>p:option</tag> or <tag>p:variable</tag> declared before the subpipeline
-begins shadows another option or variable declared within the same
-<tag>p:declare-step</tag>.</error>
+<para>Neither options nor variables in the prologue may shadow
+each other. <error code="S0091">It is a <glossterm>static
+error</glossterm> if a <tag>p:option</tag> or <tag>p:variable</tag>
+declared before the subpipeline begins shadows another option or
+variable declared within the same <tag>p:declare-step</tag>.</error>
+(Within the subpipeline, variables may shadow options and lexically
+preceding (non-static) variables.)
 </para>
 
+<para>The prologue ends with additional <tag>p:declare-step</tag>
+elements, if any, and is followed by the subpipeline. Any step
+imported or declared in the prologue of a pipeline may be invoked as a
+step within the subpipeline of that pipeline.</para>
+
+<para>The environment inherited by the
+<glossterm>subpipeline</glossterm> is the <glossterm>empty
+environment</glossterm> with these modifications:</para>
+
+<itemizedlist>
+<listitem>
+<para>All of the declared inputs are added to the <glossterm>readable
+ports</glossterm> in the environment.</para>
+</listitem>
+<listitem>
+<para>If a <glossterm>primary input port</glossterm> is declared, that
+port is the <glossterm>default readable port</glossterm>, otherwise
+the default readable port is undefined.</para>
+</listitem>
+<listitem>
+<para>The <glossterm>in-scope bindings</glossterm> at the beginning of
+a <tag>p:declare-step</tag> are limited to the lexically preceding,
+statically declared options and variables.</para>
+</listitem>
+</itemizedlist>
+
+<para>If a <glossterm>primary output port</glossterm> is declared and
+that port has no <glossterm>connection</glossterm>, then it is
+connected to the <glossterm>primary output port</glossterm> of the
+<glossterm>last step</glossterm> in the
+<glossterm>subpipeline</glossterm>. <error code="S0006">It is a
+<glossterm>static error</glossterm> if the primary output port is
+unconnected and the <glossterm>last step</glossterm> in the
+subpipeline does not have a primary output port.</error></para>
+</section>
+
 <section xml:id="declare-atomic-steps">
-        <title>Declaring atomic steps</title>
-        <para>When declaring an atomic step, the subpipeline in the declaration
-            <rfc2119>must</rfc2119> be empty. And, conversely, if the subpipeline in a declaration
-          is empty, the declaration <rfc2119>must</rfc2119> be for an atomic step.</para>
-        <para><impl>Implementations may use <glossterm baseform="extension attribute">extension
-              attributes</glossterm> to provide <glossterm>implementation-dependent</glossterm>
-            information about a declared step.</impl> For example, such an attribute might identify
-          the code which implements steps of this type.</para>
-        <para>It is not an error for a pipeline to include declarations for steps that a particular
-          processor does not know how to implement. It is, of course, an error to attempt to
-          evaluate such steps.</para>
-      </section><section xml:id="declare-pipelines">
-        <title>Declaring pipelines</title>
-        <para>When a <tag>p:declare-step</tag> declares a pipeline, that pipeline encapsulates the
-          behavior of the specified <glossterm>subpipeline</glossterm>. Its children declare inputs,
-          outputs, and options that the pipeline exposes and identify the steps in its subpipeline. </para>
-        <para><impl>The subpipeline may include declarations of additional steps (e.g., other
-            pipelines or other step types that are provided by a particular implementation or in
-            some <glossterm>implementation-defined</glossterm> way) and import other
-            pipelines.</impl> If a pipeline has been imported, it may be invoked as a step within
-          the subpipeline that imported it.</para>
-        <para>The environment inherited by the <glossterm>subpipeline</glossterm> is the
-            <glossterm>empty environment</glossterm> with these modifications:</para>
-        <itemizedlist>
-          <listitem>
-            <para>All of the declared inputs are added to the <glossterm>readable ports</glossterm>
-              in the environment.</para>
-          </listitem>
-          <listitem>
-            <para>If a <glossterm>primary input port</glossterm> is declared, that port is the
-                <glossterm>default readable port</glossterm>, otherwise the default readable port is
-              undefined.</para>
-          </listitem>
-        </itemizedlist>
-        <para>If a <glossterm>primary output port</glossterm> is declared and that port has no
-            <glossterm>connection</glossterm>, then it is connected to the <glossterm>primary output
-            port</glossterm> of the <glossterm>last step</glossterm> in the
-            <glossterm>subpipeline</glossterm>. <error code="S0006">It is a <glossterm>static
-              error</glossterm> if the primary output port is unconnected and the <glossterm>last
-              step</glossterm> in the subpipeline does not have a primary output
-          port.</error></para>
-        <para>The requested <tag class="attribute">xpath-version</tag>
-          <rfc2119>must</rfc2119> be used to evaluate XPath expressions subject to the constraints
-          outlined in <xref linkend="xpath-context"/>. If the attribute is not specified, the value
-          “<literal>3.1</literal>” is assumed. </para>
-        <para>The <tag class="attribute">psvi-required</tag> attribute allows the author to declare
-          that a step relies on the processor's ability to pass PSVI annotations between steps, see
-            <xref linkend="psvi-support"/>. If the attribute is not specified, the value
-            “<literal>false</literal>” is assumed. </para>
-      </section></section>
-    <!-- ============================================================ -->
+<title>Declaring atomic steps</title>
+
+<para>The distinction between an atomic step declaration and a
+pipeline declaration hinges on the presence or absense of a
+subpipeline. An atomic step declaration does not have a subpipeline.
+</para>
+
+<para>Atomic step declarations may not import other pipelines or
+functions, may not declare static variables, and may not declare
+additional steps. In other words, the content of an atomic step
+declaration consists exclusively of <tag>p:input</tag>,
+<tag>p:output</tag>, and <tag>p:option</tag> elements.</para>
+
+<e:rng-pattern name="DeclareAtomicStep"/>
+
+<para><impl>Implementations may use
+<glossterm baseform="extension attribute">extension
+attributes</glossterm> to provide
+<glossterm>implementation-dependent</glossterm> information about a
+declared step.</impl> For example, such an attribute might identify
+the code which implements steps of this type.</para>
+
+<para>It is not an error for a pipeline to include declarations for
+steps that a particular processor does not know how to implement. It
+is, of course, an error to attempt to evaluate such steps.</para>
+</section>
+</section>
+
+<!-- ============================================================ -->
 
 <section xml:id="p.library">
 <title>p:library</title>
@@ -5762,19 +5875,12 @@ that would be treated as an implicit inline.</error>
 <e:rng-pattern name="Document"/>
 
 <para>The value of the <tag class="attribute">href</tag> attribute,
-after expanding any
-<glossterm baseform="attribute value template">attribute value templates</glossterm>,
-is a URI.
-<error code="D0064">It is a <glossterm>dynamic error</glossterm>
-if the URI is not a valid <type>xs:anyURI</type>.</error>
-The URI is interpreted
-as an IRI reference. If it is relative, it is made absolute against
-the base URI of the <tag>p:document</tag> element.
+after expanding any <glossterm baseform="attribute value template">attribute value templates</glossterm>, is a URI.
+<error code="D0064">It is a <glossterm>dynamic error</glossterm> if
+the URI is not a valid <type>xs:anyURI</type>.</error> The URI is
+interpreted as an IRI reference. If it is relative, it is made
+absolute against the base URI of the <tag>p:document</tag> element.
 </para>
-
-<para>The document's content type is determined statically. If a
-content-type is specified, that is the content type. Otherwise, the
-content type is “application/xml”.</para>
 
 <para>The semantics of <tag>p:document</tag> are the same as a the
 semantics of <tag>p:load</tag> where the <option>href</option> option
@@ -5785,14 +5891,6 @@ is the URI, the
 <tag class="attribute">document-properties</tag> attribute, and the
 <option>parameters</option> option comes from the
 <tag class="attribute">parameters</tag> attribute.
-</para>
-
-<para><error code="D0011">It is a <glossterm>dynamic error</glossterm>
-if the resource referenced by a <tag>p:document</tag> element does not
-exist, cannot be accessed, or has an XML content type and is not a
-well-formed XML document.</error> <error code="D0023">It is a
-<glossterm>dynamic error</glossterm> if a DTD validation is performed
-and the document is not valid.</error>
 </para>
 
 <note xml:id="note-document"><para>A <tag>p:document</tag> always <emphasis>reads</emphasis> from
@@ -6186,7 +6284,8 @@ how <glossterm role="unwrapped">implementation-dependent</glossterm> features ar
                      <glossterm>readable ports</glossterm> and a set of option bindings used to
                   construct the <glossterm>in-scope bindings</glossterm>.</para></glossdef></glossentry><glossentry><glossterm>inline document</glossterm><glossdef><para>An <firstterm>inline document</firstterm> is
                 specified directly in the body of the element to which it connects.</para></glossdef></glossentry><glossentry><glossterm>last step</glossterm><glossdef><para>The <firstterm>last step</firstterm> in a subpipeline is its
-          last step in document order.</para></glossdef></glossentry><glossentry><glossterm>matches</glossterm><glossdef><para>A step <firstterm>matches</firstterm> its signature if and
+          last step in document order.</para></glossdef></glossentry><glossentry><glossterm>map attribute</glossterm><glossdef><para>A <firstterm>map attribute</firstterm> is an option's syntactic
+                  shortcut attribute for which the option's sequence type is a map or array.</para></glossdef></glossentry><glossentry><glossterm>matches</glossterm><glossdef><para>A step <firstterm>matches</firstterm> its signature if and
           only if it specifies an input for each declared input, it specifies no inputs that are not
           declared, it specifies an option for each option that is declared to be required, and it
           specifies no options that are not declared.</para></glossdef></glossentry><glossentry><glossterm>multi-container

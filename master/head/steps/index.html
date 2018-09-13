@@ -1,4 +1,4 @@
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>XProc 3.0: Standard Step Library</title><meta charset="utf-8" /><link rel="alternate" title="XML" href="specification.xml" /><link rel="alternate" title="Latest editor's draft" href="http://www.w3.org/XML/XProc/docs/langspec.html" /><link rel="alternate" title="Latest Public Working Draft" href="http://www.w3.org/TR/xproc/" /><meta name="generator" content="DocBook XSL 2.0 Stylesheets V2.3.2" /><meta name="description" content="Abstract This specification describes the standard step vocabulary of&#xA;  XProc 3.0: An XML Pipeline Language." /><link href="css/prism.css" rel="stylesheet" type="text/css" /><link href="css/db-prism.css" rel="stylesheet" type="text/css" /><link rel="stylesheet" type="text/css" href="css/base.css" /><link rel="stylesheet" type="text/css" href="css/xproc.css" /><link rel="stylesheet" type="text/css" href="css/base.css" /><script type="text/javascript" src="js/dbmodnizr.js"></script></head><body><div class="specification"><div class="head" id="spec.head"><h1>XProc 3.0: Standard Step Library</h1><h2>Editor's Draft  <time datetime="2018-08-13T16:57:11Z">13 August 2018 at 16:57 UTC (<a href="https://github.com/xml-project/3.0-specification/commit/41cd855b9be1687c2fd9dbc90c8d0e3a1ef5eb07">build 249</a>)</time></h2><dl><dt>This Version:</dt><dd><a href="https://xml-project.github.io/3.0-specification/master/head/steps/">https://xml-project.github.io/3.0-specification/master/head/steps/</a></dd><dt>Latest Version:</dt><dd><a href="http://spec.xproc.org/master/head/steps/">http://spec.xproc.org/master/head/steps/</a></dd><dt>Editors:</dt><dd><span class="personname">Achim Berndzen</span></dd><dd><span class="personname">Gerrit Imsieke</span></dd><dd><span class="personname">Erik Siegel</span></dd><dd><span class="personname">Norman Walsh</span></dd><dt>Repository:</dt><dd><a href="http://github.com/xml-project/3.0-specification">This specification on GitHub</a></dd><dd><a href="http://github.com/xproc/3.0-specification/issues">Report an issue</a></dd><dt>Changes:</dt><dd><a href="http://github.com/xml-project/3.0-specification/commits/master">Commits for this specification</a></dd></dl><p>This document is also available in these non-normative formats: <a href="specification.xml">XML</a>.</p><p class="copyright"><span class="copyright">Copyright © <span class="years">2018</span> <span class="holders"><span class="holder">@@FIXME:</span></span></span></p><hr /><div class="abstract"><h2>Abstract</h2>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>XProc 3.0: Standard Step Library</title><meta charset="utf-8" /><link rel="alternate" title="XML" href="specification.xml" /><link rel="alternate" title="Latest editor's draft" href="http://www.w3.org/XML/XProc/docs/langspec.html" /><link rel="alternate" title="Latest Public Working Draft" href="http://www.w3.org/TR/xproc/" /><meta name="generator" content="DocBook XSL 2.0 Stylesheets V2.3.6" /><meta name="description" content="Abstract This specification describes the standard step vocabulary of&#xA;  XProc 3.0: An XML Pipeline Language." /><link href="css/prism.css" rel="stylesheet" type="text/css" /><link href="css/db-prism.css" rel="stylesheet" type="text/css" /><link rel="stylesheet" type="text/css" href="css/base.css" /><link rel="stylesheet" type="text/css" href="css/xproc.css" /><link rel="stylesheet" type="text/css" href="css/base.css" /><script type="text/javascript" src="js/dbmodnizr.js"></script></head><body><div class="specification"><div class="head" id="spec.head"><h1>XProc 3.0: Standard Step Library</h1><h2>Editor's Draft  <time datetime="2018-09-13T13:59:20Z">13 September 2018 at 13:59 UTC (<a href="https://github.com/xml-project/3.0-specification/commit/376777d32699ba6c23706278078a76f1dadd7cff">build 250</a>)</time></h2><dl><dt>This Version:</dt><dd><a href="https://xml-project.github.io/3.0-specification/master/head/steps/">https://xml-project.github.io/3.0-specification/master/head/steps/</a></dd><dt>Latest Version:</dt><dd><a href="http://spec.xproc.org/master/head/steps/">http://spec.xproc.org/master/head/steps/</a></dd><dt>Editors:</dt><dd><span class="personname">Achim Berndzen</span></dd><dd><span class="personname">Gerrit Imsieke</span></dd><dd><span class="personname">Erik Siegel</span></dd><dd><span class="personname">Norman Walsh</span></dd><dt>Repository:</dt><dd><a href="http://github.com/xml-project/3.0-specification">This specification on GitHub</a></dd><dd><a href="http://github.com/xproc/3.0-specification/issues">Report an issue</a></dd><dt>Changes:</dt><dd><a href="http://github.com/xml-project/3.0-specification/commits/master">Commits for this specification</a></dd></dl><p>This document is also available in these non-normative formats: <a href="specification.xml">XML</a>.</p><p class="copyright"><span class="copyright">Copyright © <span class="years">2018</span> <span class="holders"><span class="holder">@@FIXME:</span></span></span></p><hr /><div class="abstract"><h2>Abstract</h2>
   <p>This specification describes the standard step vocabulary of
   <em class="citetitle">XProc 3.0: An XML Pipeline Language</em>.</p>
 </div><div class="status"><h2>Status of this Document</h2><p><strong>This document is an editor's  draft that has no official standing.</strong></p>
@@ -242,7 +242,7 @@ media type will be preserved in the
 <code class="tag-attribute">content-type</code> attribute on the
 <a href="#c.data"><code class="tag-element">c:data</code></a> element.</p>
 
-<p id="d359e0" class="element-syntax element-syntax-step-vocabulary"><code>&lt;c:data<br />  <strong>content-type</strong> = <var>ContentType</var><br />  charset? = <var>string</var><br />  encoding? = <var>string</var>&gt;<br />    <var>string</var><br />&lt;/c:data&gt;</code></p>
+<p id="d360e0" class="element-syntax element-syntax-step-vocabulary"><code>&lt;c:data<br />  <strong>content-type</strong> = <var>ContentType</var><br />  charset? = <var>string</var><br />  encoding? = <var>string</var>&gt;<br />    <var>string</var><br />&lt;/c:data&gt;</code></p>
 
 <p>The content of the <a href="#c.data"><code class="tag-element">c:data</code></a> element is the base64 encoded
 representation of the non-XML content.</p>
@@ -409,18 +409,28 @@ see <a href="#dir-list-details" title="Directory list details">Section 2.7.1, �
 
 <p>If present, the value of the <code class="option">include-filter</code>
 or <code class="option">exclude-filter</code>
-option <span class="rfc2119" id="c.directory-list.7.3">must</span> be a regular expression as specified in [<a href="#xpath-functions"><span class="abbrev">XPath and XQuery
+option <span class="rfc2119" id="c.directory-list.7.3">must</span> be a list of regular expression as specified in [<a href="#xpath-functions"><span class="abbrev">XPath and XQuery
 Functions and Operators 3.1</span></a>], section 7.61 “<code class="literal">Regular Expression
 Syntax</code>”.</p>
 
-  <p>If the <code class="option">include-filter</code> pattern matches a directory
-    entry's name, the entry is included in the output. If the
-      <code class="option">exclude-filter</code> pattern matches a directory entry's name,
-    the entry is excluded in the output. If both options are provided, the
-    include filter is processed first, then the exclude filter. As a result: An
-    item is included if it matches (at least) one of the
-      <code class="option">include-filter</code> values and none of the
-      <code class="option">exclude-filter</code> values.</p>
+<p>If any <code class="option">include-filter</code> pattern matches a
+directory entry's name, the entry is included in the output. If any
+<code class="option">exclude-filter</code> pattern matches a directory entry's
+name, the entry is excluded in the output. If both options are
+provided, the include filter is processed first, then the exclude
+filter. As a result: an item is included if it matches (at least) one
+of the <code class="option">include-filter</code> values and none of the
+<code class="option">exclude-filter</code> values.</p>
+
+<div class="note admonition"><h3>Note</h3><div class="admonition-body">
+<p>There is no way to specify a list of values using attribute value
+templates. If the option shortcut syntax is used to provide the
+<code class="option">include-filter</code> or <code class="option">exclude-filter</code> option,
+it will consist of a single regular expression. To specify a list of
+regular expressions, you must use the  <code class="tag-element">p:with-option</code>
+syntax.
+</p>
+</div></div>
 
 <p id="cv.directory">The result document produced for
 the specified directory path has a <a href="#cv.directory"><code class="tag-element">c:directory</code></a> document
@@ -428,7 +438,7 @@ element whose base URI is the directory path and whose
 <code class="tag-attribute">name</code> attribute is the last segment
 of the directory path (that is, the directory's (local) name).</p>
 
-<p id="d490e0" class="element-syntax element-syntax-step-vocabulary"><code>&lt;c:directory<br />  <strong>name</strong> = <var>string</var>&gt;<br />    (<a href="#cv.file">c:file</a> | <br />     <a href="#cv.directory">c:directory</a> | <br />     <a href="#cv.other">c:other</a>)*<br />&lt;/c:directory&gt;</code></p>
+<p id="d499e0" class="element-syntax element-syntax-step-vocabulary"><code>&lt;c:directory<br />  <strong>name</strong> = <var>string</var>&gt;<br />    (<a href="#cv.file">c:file</a> | <br />     <a href="#cv.directory">c:directory</a> | <br />     <a href="#cv.other">c:other</a>)*<br />&lt;/c:directory&gt;</code></p>
 
 <p>Its contents are determined as follows, based on the entries in
 the directory identified by the directory path. For each entry in the
@@ -448,14 +458,14 @@ determined to be special.</p>
 </li><li>
 <p id="cv.file">A <a href="#cv.file"><code class="tag-element">c:file</code></a> is produced for each file
 not determined to be special.</p>
-<p id="d500e0" class="element-syntax element-syntax-step-vocabulary"><code>&lt;c:file<br />  <strong>name</strong> = <var>string</var><br />  content-types? = <var>ContentTypes</var> /&gt;</code></p>
+<p id="d509e0" class="element-syntax element-syntax-step-vocabulary"><code>&lt;c:file<br />  <strong>name</strong> = <var>string</var><br />  content-types? = <var>ContentTypes</var> /&gt;</code></p>
 </li><li>
 <p id="cv.other"><span id="impl-10">Any file or directory determined to be
 special by the <code class="tag-element">p:directory-list</code> step may be output using a
 <a href="#cv.other"><code class="tag-element">c:other</code></a> element but the criteria for marking a file as
 special are <em class="glossterm"><a href="#dt-implementation-defined">implementation-defined</a></em>.</span>
 </p>
-<p id="d504e0" class="element-syntax element-syntax-step-vocabulary"><code>&lt;c:other<br />  <strong>name</strong> = <var>string</var> /&gt;</code></p>
+<p id="d513e0" class="element-syntax element-syntax-step-vocabulary"><code>&lt;c:other<br />  <strong>name</strong> = <var>string</var> /&gt;</code></p>
 </li></ul></div>
 
 <p>When a directory entry is a subdirectory, that directory's entries are not
@@ -508,7 +518,7 @@ meaningful value, the attribute may be omitted.</p>
 are <em class="glossterm"><a href="#dt-implementation-defined">implementation-defined</a></em>.</span></p>
 </div></section>
 
-<section id="c.directory-list.16" class="simplesect"><div class="section-titlepage"><h4>Document properties</h4></div><div class="content">
+<section id="c.directory-list.17" class="simplesect"><div class="section-titlepage"><h4>Document properties</h4></div><div class="content">
 
 <p>No document properties are preserved.</p>
 </div></section>
@@ -721,7 +731,7 @@ occurs in constructing a request.</p>
 if the document element of the document that arrives on the
 <code class="port">source</code> port is not <a href="#cv.request"><code class="tag-element">c:request</code></a>.</p>
 
-<div id="ednote-json" class="note admonition"><h3>Editorial Note</h3><div class="admonition-body">
+<div id="ednote-json" class="note editorial admonition"><h3>Editorial Note</h3><div class="admonition-body">
 
 <p>Can the input document be JSON?</p>
 </div></div>
@@ -731,7 +741,7 @@ if the document element of the document that arrives on the
 
 <p>An HTTP request is represented by a <code class="tag-element">c:request</code> element.</p>
 
-<p id="d719e0" class="element-syntax element-syntax-step-vocabulary"><code>&lt;c:request<br />  <strong>method</strong> = <var>NCName</var><br />  href? = <var>anyURI</var><br />  detailed? = <var>boolean</var><br />  status-only? = <var>boolean</var><br />  username? = <var>string</var><br />  password? = <var>string</var><br />  auth-method? = <var>string</var><br />  send-authorization? = <var>boolean</var><br />  override-content-type? = <var>ContentType</var><br />  timeout? = <var>positiveInteger</var><br />  fail-on-timeout? = <var>boolean</var>&gt;<br />    (<a href="#cv.header">c:header</a>*,<br />     (<a href="#cv.multipart">c:multipart</a> | <br />      <a href="#cv.body">c:body</a>)?)<br />&lt;/c:request&gt;</code></p>
+<p id="d728e0" class="element-syntax element-syntax-step-vocabulary"><code>&lt;c:request<br />  <strong>method</strong> = <var>NCName</var><br />  href? = <var>anyURI</var><br />  detailed? = <var>boolean</var><br />  status-only? = <var>boolean</var><br />  username? = <var>string</var><br />  password? = <var>string</var><br />  auth-method? = <var>string</var><br />  send-authorization? = <var>boolean</var><br />  override-content-type? = <var>ContentType</var><br />  timeout? = <var>positiveInteger</var><br />  fail-on-timeout? = <var>boolean</var>&gt;<br />    (<a href="#cv.header">c:header</a>*,<br />     (<a href="#cv.multipart">c:multipart</a> | <br />      <a href="#cv.body">c:body</a>)?)<br />&lt;/c:request&gt;</code></p>
 
 <p><a id="err.inline.C0006"></a>It is a <em class="glossterm"><a href="#dt-dynamic-error">dynamic error</a></em> (<a href="#err.C0006"><code class="errqname">err:XC0006</code></a>) if the
 <code class="tag-attribute">method</code> is not specified on a <code class="tag-element">c:request</code>.
@@ -996,7 +1006,7 @@ Content-Type: application/xml; charset="utf-8"
 <section id="c.request_response" class="section"><div class="section-titlepage"><h4>2.12.3 Managing the response</h4></div><div class="content">
 
 
-<div id="ednote-content-types" class="note admonition"><h3>Note</h3><div class="admonition-body">
+<div id="ednote-content-types" class="note editorial admonition"><h3>Note</h3><div class="admonition-body">
 <p>Where do we say that for URI schemes (such as
 <code class="code">file:</code> and <code class="code">ftp:</code>) where a content type is not
 provided by the underlying request, the content type is
@@ -1071,7 +1081,7 @@ entity is decoded if necessary, then parsed as an XML document:</p>
 <span class="rfc2119" id="c.request_response.12.1.2.1.1.2">must</span> process the external subset; all general and
 external parsed entities <span class="rfc2119" id="c.request_response.12.1.2.1.1.3">must</span> be fully expanded.</p>
 
-<div id="ednote-parser" class="note admonition"><h3>Editorial Note</h3><div class="admonition-body">
+<div id="ednote-parser" class="note editorial admonition"><h3>Editorial Note</h3><div class="admonition-body">
 
 <p>The requirement to process the external subset comes from p:load,
 we probably don't want to impose that on all p:http-request calls.
@@ -1167,7 +1177,7 @@ and then returned as text children of the <a href="#cv.body"><code class="tag-el
 If the content is base64-encoded, the <code class="tag-attribute">encoding</code> attribute on <a href="#cv.body"><code class="tag-element">c:body</code></a> must
 be set to “<code class="literal">base64</code>”.</p>
 
-<div id="ednote-non-xml" class="note admonition"><h3>Editorial Note</h3><div class="admonition-body">
+<div id="ednote-non-xml" class="note editorial admonition"><h3>Editorial Note</h3><div class="admonition-body">
 
 <p>This section hasn't been updated to reflect the fact that
 non-XML documents are now possible. It should probably say
@@ -1202,7 +1212,7 @@ body as necessary, then parsing it with an XML parser.</p>
 <span class="rfc2119" id="c.response_body.8.1.1.2">must</span> process the external subset; all general and
 external parsed entities <span class="rfc2119" id="c.response_body.8.1.1.3">must</span> be fully expanded.</p>
 
-<div id="ednote-parser" class="note admonition"><h3>Editorial Note</h3><div class="admonition-body">
+<div id="ednote-parser" class="note editorial admonition"><h3>Editorial Note</h3><div class="admonition-body">
 
 <p>The requirement to process the external subset comes from p:load,
 we probably don't want to impose that on all p:http-request calls.
@@ -1227,7 +1237,7 @@ XML</em>.</p>
 <p>If the content
 is not well-formed, the step fails.</p>
 
-<div id="ednote-combine-parsing" class="note admonition"><h3>Editorial Note</h3><div class="admonition-body">
+<div id="ednote-combine-parsing" class="note editorial admonition"><h3>Editorial Note</h3><div class="admonition-body">
 
 <p>This prose should be consolidated into a single place.</p>
 </div></div>
@@ -1497,21 +1507,25 @@ remains the same.</p>
 
 
 <p>The <code class="code">p:load</code> step has no inputs but produces as its
-result a document (or documents) specified by an IRI. If it is relative, it is
-made absolute against the base URI of the element on which it is specified
-(<code class="tag-element">p:with-option</code> or <code class="tag-element">p:load</code> in the case of a syntactic
-shortcut value).</p>
+result a document (or documents) specified by an IRI.</p>
 
 <p class="element-syntax element-syntax-declare-step"><span class="decl"><code>&lt;p:declare-step</code> <code class="attr type-attr">type</code><code>="</code><code class="value type-value">p:load</code><code>"</code><code>&gt;</code></span><br />     <span class="input"><code>&lt;p:output</code> <code class="attr port-attr">port</code><code>="</code><code class="value port-value">result</code><code>"</code> <code class="attr sequence-attr">sequence</code><code>="</code><code class="value sequence-value">true</code><code>"</code> <code class="attr content-types-attr">content-types</code><code>="</code><code class="value content-types-value">*/*</code><code>"</code><code>/&gt;</code></span><br />     <span class="opt-req"><code>&lt;p:option</code> <code class="attr name-attr">name</code><code>="</code><code class="value name-value">href</code><code>"</code> <code class="attr required-attr">required</code><code>="</code><code class="value required-value">true</code><code>"</code> <code class="attr as-attr">as</code><code>="</code><code class="value as-value">xs:anyURI</code><code>"</code><code>/&gt;</code><code>        </code></span><br />     <span class="opt-opt"><code>&lt;p:option</code> <code class="attr name-attr">name</code><code>="</code><code class="value name-value">parameters</code><code>"</code> <code class="attr as-attr">as</code><code>="</code><code class="value as-value">map(xs:QName,item())</code><code>"</code><code>/&gt;</code><code>       </code></span><br />     <span class="opt-opt"><code>&lt;p:option</code> <code class="attr name-attr">name</code><code>="</code><code class="value name-value">content-type</code><code>"</code> <code class="attr as-attr">as</code><code>="</code><code class="value as-value">xs:string</code><code>"</code><code>/&gt;</code><code>                </code></span><br />     <span class="opt-opt"><code>&lt;p:option</code> <code class="attr name-attr">name</code><code>="</code><code class="value name-value">document-properties</code><code>"</code> <code class="attr as-attr">as</code><code>="</code><code class="value as-value">map(xs:QName, item())</code><code>"</code><code>/&gt;</code><code></code></span><br /><code>&lt;/p:declare-step&gt;</code></p>
 
-  <p>The document or documents identified by the <code class="option">href</code> URI are loaded and returned. If the URI
-    protocol supports redirection, then redirects <span class="rfc2119" id="c.load.4.2">must</span> be followed.</p>
+<p><a id="err.inline.D0064"></a>It is a <em class="glossterm"><a href="#dt-dynamic-error">dynamic error</a></em> (<a href="#err.D0064"><code class="errqname">err:XD0064</code></a>) if
+the <code class="option">href</code> URI is not a valid <code class="type">xs:anyURI</code>. 
+If the <code class="option">href</code> is relative, it is made absolute
+against the base URI of the element on which it is specified
+(<code class="tag-element">p:with-option</code> or <code class="tag-element">p:load</code> in the case of a
+syntactic shortcut value).</p>
 
+<p>The document or documents identified by the
+<code class="option">href</code> URI are loaded and returned. If the URI protocol
+supports redirection, then redirects <span class="rfc2119" id="c.load.5.2">must</span> be
+followed.</p>
 
 <p><a id="err.inline.D0011"></a>It is a <em class="glossterm"><a href="#dt-dynamic-error">dynamic error</a></em> (<a href="#err.D0011"><code class="errqname">err:XD0011</code></a>)
-if the resource referenced by a <code class="code">p:load</code> element does not exist,
-cannot be accessed, or has an XML content type and is not a well-formed
-XML document.</p>
+if the resource referenced by a <code class="code">p:load</code> element does not exist
+or cannot be accessed.</p>
 
 <p>The behavior of this step depends on the content type of the
 document or documents loaded. The content type of each document is
@@ -1524,14 +1538,16 @@ determined as follows:</p>
 <ol style="list-style: decimal;"><li>
 <p>If a <span class="property">content-type</span> property is specified
 in <code class="option">document-properties</code> or <code class="option">content-type</code> is present,
-then each document <span class="rfc2119" id="c.load.7.1.1.4">must</span> be interpreted according to
+then each document <span class="rfc2119" id="c.load.8.1.1.4">must</span> be interpreted according to
 that content type. <a id="err.inline.D0062"></a>It is a <em class="glossterm"><a href="#dt-dynamic-error">dynamic error</a></em> (<a href="#err.D0062"><code class="errqname">err:XD0062</code></a>)
-if content-type is specified and document-properties has an entry for "content-type".
+if the <code class="tag-attribute">content-type</code> is specified and the
+document-properties has a “<code class="code">content-type</code>” that is not the
+same.
 </p>
 </li><li>
 <p>If the documents are retrieved with a URI protocol that specifies
 a content type (for example, <code class="literal">http:</code>), then the document
-<span class="rfc2119" id="c.load.7.2.1.2">must</span> be interpreted according to that content type.
+<span class="rfc2119" id="c.load.8.2.1.2">must</span> be interpreted according to that content type.
 </p>
 </li><li>
 <p><span id="impl-21">In the absence of an explicit type, the content
@@ -1556,6 +1572,9 @@ and “other”
 
 
 <p>For an XML media type, the content is loaded and parsed as XML.</p>
+
+<p><a id="err.inline.D0049"></a>It is a <em class="glossterm"><a href="#dt-dynamic-error">dynamic error</a></em> (<a href="#err.D0049"><code class="errqname">err:XD0049</code></a>) if
+the loaded content is not a well-formed XML document.</p>
 
 <p>If the <code class="option">dtd-validate</code> parameter is <code class="literal">true</code>
 and the document has a <code class="literal">doctype</code> declaration,
@@ -1638,7 +1657,7 @@ are <em class="glossterm"><a href="#dt-implementation-defined">implementation-de
 </span></p>
 </div></section>
 
-<section id="c.load.15" class="simplesect"><div class="section-titlepage"><h4>Document properties</h4></div><div class="content">
+<section id="c.load.16" class="simplesect"><div class="section-titlepage"><h4>Document properties</h4></div><div class="content">
 
 <p>No document properties are preserved.
 The properties specified in <code class="option">document-properties</code> are applied.
@@ -1920,7 +1939,7 @@ that contains the step.</p>
 <p>A <code class="tag-element">c:param</code> represents a parameter on a parameter
 input.</p>
 
-<p id="d1424e0" class="element-syntax element-syntax-step-vocabulary"><code>&lt;c:param<br />  <strong>name</strong> = <var>EQName</var><br />  namespace? = <var>anyURI</var><br />  <strong>value</strong> = <var>string</var> /&gt;</code></p>
+<p id="d1438e0" class="element-syntax element-syntax-step-vocabulary"><code>&lt;c:param<br />  <strong>name</strong> = <var>EQName</var><br />  namespace? = <var>anyURI</var><br />  <strong>value</strong> = <var>string</var> /&gt;</code></p>
 
 <p>The <code class="tag-attribute">name</code> attribute of the
 <code class="tag-element">c:param</code> must have the lexical form of a QName.</p>
@@ -1959,7 +1978,7 @@ appear on a <code class="tag-element">c:param</code> element.</p>
 <p>A <code class="tag-element">c:param-set</code> represents a set of parameters on a
 parameter input.</p>
 
-<p id="d1451e0" class="element-syntax element-syntax-step-vocabulary"><code>&lt;c:param-set&gt;<br />    <a href="#cv.param">c:param</a>*<br />&lt;/c:param-set&gt;</code></p>
+<p id="d1465e0" class="element-syntax element-syntax-step-vocabulary"><code>&lt;c:param-set&gt;<br />    <a href="#cv.param">c:param</a>*<br />&lt;/c:param-set&gt;</code></p>
 
 <p>The <code class="tag-element">c:param-set</code> contains zero or more
 <a href="#cv.param"><code class="tag-element">c:param</code></a> elements. <a id="err.inline.D0018"></a>It is a

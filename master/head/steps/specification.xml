@@ -472,17 +472,27 @@ see <xref linkend="dir-list-details"/>.</para>
 
 <para>If present, the value of the <option>include-filter</option>
 or <option>exclude-filter</option>
-option <rfc2119>must</rfc2119> be a regular expression as specified in <biblioref linkend="xpath-functions"/>, section 7.61 “<literal>Regular Expression
+option <rfc2119>must</rfc2119> be a list of regular expression as specified in <biblioref linkend="xpath-functions"/>, section 7.61 “<literal>Regular Expression
 Syntax</literal>”.</para>
 
-  <para>If the <option>include-filter</option> pattern matches a directory
-    entry's name, the entry is included in the output. If the
-      <option>exclude-filter</option> pattern matches a directory entry's name,
-    the entry is excluded in the output. If both options are provided, the
-    include filter is processed first, then the exclude filter. As a result: An
-    item is included if it matches (at least) one of the
-      <option>include-filter</option> values and none of the
-      <option>exclude-filter</option> values.</para>
+<para>If any <option>include-filter</option> pattern matches a
+directory entry's name, the entry is included in the output. If any
+<option>exclude-filter</option> pattern matches a directory entry's
+name, the entry is excluded in the output. If both options are
+provided, the include filter is processed first, then the exclude
+filter. As a result: an item is included if it matches (at least) one
+of the <option>include-filter</option> values and none of the
+<option>exclude-filter</option> values.</para>
+
+<note>
+<para>There is no way to specify a list of values using attribute value
+templates. If the option shortcut syntax is used to provide the
+<option>include-filter</option> or <option>exclude-filter</option> option,
+it will consist of a single regular expression. To specify a list of
+regular expressions, you must use the  <tag>p:with-option</tag>
+syntax.
+</para>
+</note>
 
 <para xml:id="cv.directory">The result document produced for
 the specified directory path has a <tag>c:directory</tag> document
@@ -1615,10 +1625,7 @@ remains the same.</para>
 <title>p:load</title>
 
 <para>The <code>p:load</code> step has no inputs but produces as its
-result a document (or documents) specified by an IRI. If it is relative, it is
-made absolute against the base URI of the element on which it is specified
-(<tag>p:with-option</tag> or <tag>p:load</tag> in the case of a syntactic
-shortcut value).</para>
+result a document (or documents) specified by an IRI.</para>
 
 <p:declare-step type="p:load">
   <p:output port="result" sequence="true" content-types="*/*"/>
@@ -1628,14 +1635,21 @@ shortcut value).</para>
   <p:option name="document-properties" as="map(xs:QName, item())"/>
 </p:declare-step>
 
-  <para>The document or documents identified by the <option>href</option> URI are loaded and returned. If the URI
-    protocol supports redirection, then redirects <rfc2119>must</rfc2119> be followed.</para>
+<para><error code="D0064">It is a <glossterm>dynamic error</glossterm> if
+the <option>href</option> URI is not a valid <type>xs:anyURI</type>.</error> 
+If the <option>href</option> is relative, it is made absolute
+against the base URI of the element on which it is specified
+(<tag>p:with-option</tag> or <tag>p:load</tag> in the case of a
+syntactic shortcut value).</para>
 
+<para>The document or documents identified by the
+<option>href</option> URI are loaded and returned. If the URI protocol
+supports redirection, then redirects <rfc2119>must</rfc2119> be
+followed.</para>
 
 <para><error code="D0011">It is a <glossterm>dynamic error</glossterm>
-if the resource referenced by a <code>p:load</code> element does not exist,
-cannot be accessed, or has an XML content type and is not a well-formed
-XML document.</error></para>
+if the resource referenced by a <code>p:load</code> element does not exist
+or cannot be accessed.</error></para>
 
 <para>The behavior of this step depends on the content type of the
 document or documents loaded. The content type of each document is
@@ -1647,7 +1661,9 @@ determined as follows:</para>
 in <option>document-properties</option> or <option>content-type</option> is present,
 then each document <rfc2119>must</rfc2119> be interpreted according to
 that content type. <error code="D0062">It is a <glossterm>dynamic error</glossterm>
-if content-type is specified and document-properties has an entry for "content-type".</error>
+if the <tag class="attribute">content-type</tag> is specified and the
+document-properties has a “<code>content-type</code>” that is not the
+same.</error>
 </para>
 </listitem>
 <listitem>
@@ -1680,6 +1696,9 @@ and “other”
 <title>Loading XML data</title>
 
 <para>For an XML media type, the content is loaded and parsed as XML.</para>
+
+<para><error code="D0049">It is a <glossterm>dynamic error</glossterm> if
+the loaded content is not a well-formed XML document.</error></para>
 
 <para>If the <option>dtd-validate</option> parameter is <literal>true</literal>
 and the document has a <literal>doctype</literal> declaration,
