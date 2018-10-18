@@ -679,11 +679,13 @@ content types, that they accept. Input documents must
                </para>
             </listitem>
          </itemizedlist>
-         <para>When an input accepts a sequence of documents, the documents can come from any
-            combination of these locations.</para>
-         <para>In contrast, output ports are connected when they are referenced by another input
-            port, <glossterm baseform="declared outputs">declared output</glossterm> or other
-            expression and may be connected to:</para>
+
+<para>When an input accepts a sequence of documents, the documents can
+come from any combination of these locations.</para>
+
+<para>In contrast, output ports are connected when they are referenced
+by another input port, <glossterm baseform="declared outputs">declared
+output</glossterm> or other expression and may be connected to:</para>
 
 <itemizedlist>
 <listitem>
@@ -692,6 +694,14 @@ content types, that they accept. Input documents must
 <listitem>
   <para>An option assigned with <tag>p:with-option</tag> or a
 <tag>p:variable</tag> in a compound step.</para>
+</listitem>
+<listitem>
+  <para>A <glossterm>value template</glossterm> in an immediately following step.
+This can be an AVT in an
+<link xlink:href="#option-shortcut">option shortcut</link>,
+an AVT on a <tag>p:document</tag> element, or a
+value template in a <tag>p:inline</tag>.
+  </para>
 </listitem>
 <listitem>
   <para>One of the outputs declared on its container. </para>
@@ -1998,7 +2008,7 @@ static analysis is <glossterm>implementation-defined</glossterm>.</impl></para>
 circumstances, contain embedded expressions enclosed between curly
 brackets. Attributes and text nodes that use (or are permitted to use)
 this mechanism are referred to respectively as <glossterm baseform="attribute value template">attribute value
-templates</glossterm> and <glossterm baseform="text value template">text value templates.</glossterm>.</para>
+templates</glossterm> (AVTs) and <glossterm baseform="text value template">text value templates.</glossterm> (TVTs).</para>
 
 <para><termdef xml:id="dt-value-template">Collectively,
 attribute value templates and text value templates are referred to as
@@ -2031,7 +2041,7 @@ XPath error code.</para>
 
 <para>
 <error code="D0050">It is a <glossterm>dynamic error</glossterm> if the
-XPath expression in an AVT or TVT can not be evaluated.</error>
+XPath expression in a value template can not be evaluated.</error>
 </para>
 
 <para>
@@ -2040,6 +2050,13 @@ expression in an AVT or TVT evaluates to something to other than a sequence
 containing atomic values or nodes.</error> Function, array and map items are
 explicitly excluded here because they do not have a string representation.
 </para>
+
+<para>The context item used for evaluating value templates comes from
+the <glossterm>default readable port</glossterm>.
+<error code="D0065">It is a <glossterm>dynamic error</glossterm>
+if the context item for a value template is a sequence of more than one
+item.</error> If the value template appears in a context where no default
+readable port exists, then the context item is undefined.</para>
 
 <section xml:id="attribute-value-templates">
 <title>Attribute Value Templates</title>
@@ -3820,10 +3837,30 @@ fails.</para>
 
 <e:rng-pattern name="Finally"/>
 
-<para>The <tag>p:finally</tag> has no inputs and no outputs. It exists
-only to handle recovery and resource cleanup tasks. If cleanup tasks
-require access to readable ports, put them in the <tag>p:catch</tag>
-block of an enclosing <tag>p:try</tag>.</para>
+<para>The environment inherited by the <glossterm>contained
+steps</glossterm> of the <tag>p:finally</tag> is the
+<glossterm>inherited environment</glossterm> with this
+modification:</para>
+
+<itemizedlist>
+<listitem>
+<para>The port named “<port>error</port>” on the <tag>p:finally</tag> is
+added to the <glossterm>readable ports</glossterm>.</para>
+</listitem>
+</itemizedlist>
+
+<para>If no error occurred, there will be no documents on the
+<port>error</port> port.
+</para>
+
+<para>The <tag>p:finally</tag> exists only to handle recovery and
+resource cleanup tasks. Because the <tag>p:finally</tag> will always
+be evaluated, it must not have output ports that might conflict with
+the output ports of either the initial subpipline or any <tag>p:catch</tag>.
+<error code="S0072">It is a <glossterm>static error</glossterm>
+if the name of any output port on the <tag>p:finally</tag> is the same
+as the name of any other output port in the <tag>p:try</tag> or any
+of its sibling <tag>p:catch</tag> elements.</error></para>
 
 <section xml:id="err-vocab">
 <title>The Error Vocabulary</title>
@@ -4071,7 +4108,8 @@ expression is ignored.</para>
 <listitem>
 <para>The <tag class="attribute">content-types</tag> attribute lists one
 or more (space separated) content types that this input port will
-accept. A content type must be of the form
+accept. If the attribute is not specified, <literal>*/*</literal> is assumed. 
+A content type must be of the form
 “<literal><replaceable>type</replaceable>/<replaceable>subtype</replaceable>+<replaceable>ext</replaceable></literal>”
 where any of <replaceable>type</replaceable>,
 <replaceable>subtype</replaceable>, and <replaceable>ext</replaceable>
