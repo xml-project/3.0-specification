@@ -68,7 +68,7 @@ and have no substructure as far as the pipeline is concerned. Compound
 steps and multi-container steps control the execution of other steps,
 which they include in the form of one or more subpipelines.</para>
 
-<para><biblioref linkend="xproc30-steps"/>
+<para><biblioref linkend="steps30"/>
 defines a standard library of steps. Pipeline implementations
 <rfc2119>may</rfc2119> support additional types of steps as well.
 </para>
@@ -207,7 +207,7 @@ performs XSLT processing; a Validate with XML Schema step validates
 one input with respect to some set of XML Schemas, etc.</para>
 
       <para>There are many <emphasis>types</emphasis> of atomic steps. The standard library of
-        atomic steps is described in <biblioref linkend="std-components"/>, but implementations
+        atomic steps is described in <biblioref linkend="steps30"/>, but implementations
           <rfc2119>may</rfc2119> provide others as well. <impl>It is
             <glossterm>implementation-defined</glossterm> what additional step types, if any, are
           provided. </impl> Each use, or instance, of an atomic step invokes the processing defined
@@ -363,21 +363,53 @@ defined properties.</para>
 <section xml:id="document-types">
 <title>Document Types</title>
 
-<para>From an XProc perspective, there are two kinds of documents: XML
-documents and non-XML documents. Non-XML documents can be further subdivided
-into text documents and binary documents. Text documents are called
-out specially because they can be easily represented inline within a
-pipeline.</para>
+<para>XProc 3.0 has been designed to make it possible to process any kind of
+document. Each document has a representation in the <biblioref linkend="xpath-datamodel"/>.
+This is necessary so that any kind of document can be passed as an argument to XPath functions,
+such as <tag>p:document-properties</tag>.
+Practically speaking, there are five kinds of documents:</para>
+
+<orderedlist>
+<listitem>
+<para><link linkend="xml-documents">XML documents</link>
+</para>
+</listitem>
+<listitem>
+<para><link linkend="html-documents">HTML documents</link>
+</para>
+</listitem>
+<listitem>
+<para><link linkend="text-documents">Text documents</link>
+</para>
+</listitem>
+<listitem>
+<para><link linkend="json-documents">JSON documents</link>
+</para>
+</listitem>
+<listitem>
+<para><link linkend="other-documents">Other documents</link>
+</para>
+</listitem>
+</orderedlist>
 
 <section xml:id="xml-documents">
 <title>XML Documents</title>
 
-<para>Representations of XML documents are instances of
-the <biblioref linkend="xpath-datamodel"/>. They are identified by
-an XML media type. <termdef xml:id="dt-XML-media-type">The
+<para>Representations of XML documents are general instances of the XDM.
+They are documents that contain a mixture
+of other node types (elements, text, comments, and processing
+instructions). This definition is intentionally broader than the
+definition of a well-formed XML document because it is often
+convenient for intermediate stages in a pipeline to produce
+more-or-less arbitrary fragments of XML that can be combined together
+by later stages.
+XML documents are identified by an XML media type.
+<termdef xml:id="dt-XML-media-type">The
 “<literal>application/xml</literal>” and “<literal>text/xml</literal>
 media types and all media types of the form
 “<literal>application/<replaceable>something</replaceable>+xml</literal>”
+(except for “<literal>application/xhtml+xml</literal>” which is explicitly
+an <glossterm>HTML media type</glossterm>)
 are <firstterm baseform="XML media type">XML media types</firstterm>.
 </termdef>
 </para>
@@ -394,34 +426,99 @@ in an XProc pipeline is <glossterm>implementation-defined</glossterm>.</impl>
 </para>
 </section>
 
+<section xml:id="html-documents">
+<title>HTML Documents</title>
+
+<para>Representations of HTML documents are general instances of the XDM.
+Within XProc, they are
+<xref linkend="xml-documents"/>.
+HTML documents are identified by an HTML media type.
+<termdef xml:id="dt-HTML-media-type">The
+“<literal>text/html</literal>” and “<literal>application/xhtml+xml</literal>
+media types
+are <firstterm baseform="HTML media type">HTML media types</firstterm>.
+</termdef>
+</para>
+
+<para>The distinction between XML documents and HTML documents is apparent
+in two places:</para>
+
+<orderedlist>
+<listitem>
+<para>When an HTML document is <emphasis>parsed</emphasis>, for example when it
+is the result of querying a web service or is loaded from a file on disk, an
+HTML parser <rfc2119>must</rfc2119> be used. An HTML parser will construct a
+balanced tree even if the HTML document would not be seen as
+well-formed XML if it was parsed by an XML parser.  An HTML parser may also
+add elements not found in the original (for example table body elements inside tables).
+</para>
+<note xml:id="inline-html">
+<para>The HTML parsing rules only apply when the content is parsed. HTML content
+in an unencoded <tag>p:inline</tag> must be well-formed XML (because it is literally
+in the pipeline) and will not be transformed in any way.</para>
+</note>
+</listitem>
+<listitem>
+<para>When an HTML document is serialized, it may be serialized using the
+HTML serializer (see <xref linkend="xml-serialization-31"/>) by default.
+</para>
+</listitem>
+</orderedlist>
+</section>
+
 <section xml:id="text-documents">
 <title>Text Documents</title>
 
-<para>Text documents are non-XML documents. A text document is represented by
-a single text node wrapped in a document node as instances of the
-<biblioref linkend="xpath-datamodel"/>.</para>
-
-<para>Text documents are identified by a text media type.
+<para>Representations of text documents are XDM documents that contain a single text node.
+Text documents are identified by a
+text media type.
 <termdef xml:id="dt-text-media-type">Media types of the form
 “<literal>text/<replaceable>something</replaceable></literal>”
 are <firstterm baseform="text media type">text media types</firstterm> with the
 exception of “<literal>text/xml</literal>” which is an XML media type.
+and “<literal>text/html</literal>” which is an HTML media type.
 </termdef>
 </para>
 </section>
 
-<section xml:id="non-xml-documents">
-<title>Non-XML Documents</title>
+<section xml:id="json-documents">
+<title>JSON Documents</title>
 
-<para><impl>Representations of non-XML documents are
-are <glossterm>implementation-dependent</glossterm>.</impl>
-They are identified by media types that are not
-<glossterm baseform="XML media type">XML media types</glossterm>.
+<para>Representations of JSON documents are instances of the XDM.
+They are maps, arrays, or
+atomic values.
+JSON documents are identified by a
+JSON media type.
+<termdef xml:id="dt-JSON-media-type">The
+“<literal>application/json</literal>”
+media type and all media types of the form
+“<literal>application/<replaceable>something</replaceable>+json</literal>”
+are <firstterm baseform="JSON media type">JSON media types</firstterm>.
+</termdef>
 </para>
 
-<para>Implementors are free to optimize by storing them in convenient
-formats, caching them on disk, etc.</para>
+<note xml:id="json-documents-xdm" role="editorial">
+<title>Editorial Note</title>
+<para>This definition doesn’t say that JSON documents are represented by
+<emphasis>document nodes</emphasis> that contain something (because document nodes
+can’t contain maps or arrays). Can we get away with that?</para>
+</note>
+</section>
 
+<section xml:id="other-documents">
+<title>Other documents</title>
+
+<para>Representations of other kinds of documents are empty XDM documents.
+<impl>The <emphasis>underlying</emphasis> representations of other
+kinds of documents are
+<glossterm>implementation-defined</glossterm>.</impl>
+Other kinds of documents are identified by media types that are not
+<glossterm baseform="XML media type">XML media types</glossterm>,
+<glossterm baseform="HTML media type">HTML media types</glossterm>,
+<glossterm baseform="text media type">text media types</glossterm>,
+or
+<glossterm baseform="JSON media type">JSON media types</glossterm>.
+</para>
 </section>
 </section>
 
@@ -646,11 +743,19 @@ content types, that they accept. Input documents must
         does not apply to <tag>p:declare-step</tag>; step declarations must provide explicit names
         for all of their outputs.</para>
     </section>
-    <section xml:id="connections">
-      <title>Connections</title>
-      <para>Steps are connected together by their input ports and output ports. <error code="S0001">It is a <glossterm>static error</glossterm> if there are any loops in the connections
-          between steps: no step can be connected to itself nor can there be any sequence of
-          connections through other steps that leads back to itself.</error></para>
+
+<section xml:id="connections">
+<title>Connections</title>
+
+<para>Steps are connected together by their input ports, output
+ports, and bindings to variables and options. Variables and options
+are also steps by the output ports from which they receive
+context.
+<error code="S0001">It is a <glossterm>static error</glossterm>
+if there are any loops in the connections between steps, variables,
+and options: no step, variable, or option can be connected to itself
+nor can there be any sequence of connections through other steps that
+leads back to itself.</error></para>
 
          <para><termdef xml:id="dt-connection">A <firstterm>connection</firstterm> associates an
                input or output port with some data source.</termdef>  Such a connection represents a
@@ -758,7 +863,7 @@ value template in a <tag>p:inline</tag>.
           for <glossterm>namespace fixup</glossterm>. In particular, processors are encouraged to
           take account of prefix information in creating new namespace bindings, to minimize
           negative impact on prefixed names in content.</para>
-        <para><impl>Except for cases which are specifically called out in <biblioref linkend="std-components"/>, the extent to which namespace fixup, and other checks for
+        <para><impl>Except for cases which are specifically called out in <biblioref linkend="steps30"/>, the extent to which namespace fixup, and other checks for
             outputs which cannot be serialized, are performed on intermediate outputs is
               <glossterm>implementation-defined</glossterm>.</impl></para>
         <para>Whenever an implementation serializes pipeline contents, for example for pipeline
@@ -1781,16 +1886,52 @@ of a document as an XML document.</para>
 <methodparam><type>item()</type><parameter>doc</parameter></methodparam>
 </methodsynopsis>
 
-<para>The document returned is a <code>c:document-properties</code>
+<para>The document returned is a <tag>c:document-properties</tag>
 document that contains (exclusively) the document properties
-associated with the <parameter>doc</parameter> specified. Each key in the
-properties becomes an element, each value becomes the content of that element.
-For atomic values other than string, an
-<tag class="attribute">xsi:type</tag> attribute is added to identify the
-type of the value.</para>
+associated with the <parameter>doc</parameter> specified.
+If the item is not associated with a document, the <tag>c:document-properties</tag>
+element will be empty.</para>
 
-<para>If the item is not associated with a document, the resulting document
-will be empty.</para>
+<para>The underlying properties are serialized as follows:</para>
+
+<itemizedlist>
+<listitem>
+<para>Each property/value pair in the map becomes an element in the
+document. The property name is used as the name of the element and the
+value becomes the element content.
+</para>
+</listitem>
+<listitem>
+<para>If the property value is a sequence, then the element is
+repeated for each item in the sequence.
+</para>
+</listitem>
+<listitem>
+<para>If a map appears as a value, the property element will have an
+attribute named <tag class="attribute">map</tag> with the value “<code>true</code>”.
+<impl>It is <glossterm>implementation-defined</glossterm> how or if a
+processor attempts to serialize maps that appear in document properties.</impl>
+If the implementation does not serialize maps, the property element will be empty.
+</para>
+</listitem>
+<listitem>
+<para>If an array appears as a value, the property element will have an
+attribute named <tag class="attribute">array</tag> with the value “<code>true</code>”.
+<impl>It is <glossterm>implementation-defined</glossterm> how or if a
+processor attempts to serialize arrays that appear in document properties.</impl>
+If the implementation does not serialize arrays, the property element will be empty.
+</para>
+</listitem>
+<listitem>
+<para>For atomic values other than maps, arrays, and strings, an <tag class="attribute">xsi:type</tag> attribute is added to the element to
+identify the type of the value.
+</para>
+</listitem>
+</itemizedlist>
+
+<para>If any values in the properties map cannot be serialized, an empty string
+is used for their value. Construction of the <tag>c:document-properties</tag> document
+never fails.</para>
 
 <para>The <function>p:document-properties-document</function> function behaves
 normally during static analysis.</para>
@@ -2589,7 +2730,9 @@ appear on the <code>messages</code> port.</para>
         </varlistentry>
       </variablelist>
       <para>This specification also makes use of the prefix “<literal>xs:</literal>” to refer to the
-          <biblioref linkend="xmlschema-1"/> namespace <uri type="xmlnamespace">http://www.w3.org/2001/XMLSchema</uri>. </para>
+          <biblioref linkend="xmlschema-1"/> namespace <uri type="xmlnamespace">http://www.w3.org/2001/XMLSchema</uri> and the prefix “<literal>xsi:</literal>”
+          to refer to the namepace <uri type="xmlnamespace">http://www.w3.org/2001/XMLSchema-instance</uri>
+      </para>
     </section>
     <section xml:id="scoping">
       <title>Scoping of Names</title>
@@ -2888,6 +3031,9 @@ explicitly in the XProc namespace. They are in no namespace when they
 appear on an XProc element; they are in the XProc namespace when they
 are on an element in any other namespace. In this way, they do not
 conflict with the names used in other vocabularies.
+<error code="S0097">It is a <glossterm>static error</glossterm> if an
+attribute in the XProc namespace appears on an element in the XProc
+namespace.</error>
 </para>
 
 <section xml:id="expand-text-attribute">
@@ -2933,8 +3079,8 @@ nodes <emphasis>are</emphasis> value templates.</para>
 
 <!-- feature="no-p-expand-text-on-p"-->
 <para><error code="S0084">It is a <glossterm>static error</glossterm>
-if the <tag class="attribute">p:inline-expand-text</tag> attribute appears on
-any element in the XProc namespace that is not a descendant of a
+if the <tag class="attribute">[p:]inline-expand-text</tag> attribute appears on
+any element that is not a descendant of a
 <tag>p:inline</tag> element or implicit inline.</error>
 </para>
 </section>
@@ -3053,6 +3199,92 @@ begins.</para>
 </section>
 </section>
 
+<section xml:id="qname-options">
+<title>QNames as option values</title>
+
+<para>Some steps have options whose values are QNames, for example
+“<tag class="attribute">attribute-name</tag>” on
+<tag>p:add-attribute</tag>. If these attributes had a required type of
+<type>xs:QName</type>, they would be tedious to specify. As a
+convenience for pipeline authors, the declared type of these options
+is <type>xs:anyAtomicType</type>.</para>
+
+<orderedlist>
+<listitem>
+<para>If the value supplied for the option is an instance of
+<type>xs:QName</type> then that value is used.
+</para>
+</listitem>
+<listitem>
+<para>If the value supplied for the option is an instance of
+<type>xs:string</type> (or a type derived from
+<type>xs:string</type>), the QName is constructed by following the
+<link xlink:href="https://www.w3.org/TR/xpath-31/#doc-xpath31-EQName">EQName
+production rules</link> in <biblioref linkend="xpath31"/>. That is, it
+can be written as a local-name only, as a prefix plus local-name, or as
+a URI qualified name (using the <code>Q{namespace}local-name</code> syntax).
+<error code="D0061">It is a 
+<glossterm>dynamic error</glossterm> if the string value is not syntactically an
+EQName.</error>
+<error code="D0069">It is a 
+<glossterm>dynamic error</glossterm> if the string value contains a colon and
+the designated prefix is not declared in the in-scope namespaces.</error>
+</para>
+</listitem>
+<listitem>
+<para><error code="D0068">It is a <glossterm>dynamic error</glossterm>
+if the supplied value is neither an instance of <type>xs:QName</type>
+nor an instance of <type>xs:string</type>.</error>
+</para>
+</listitem>
+</orderedlist> 
+
+<para>Steps with a QName-valued option also often provide two
+additional attributes to separately identify a prefix and a namespace URI.
+Although their names vary from step to step, in this section
+they’re identified as the <code>qname-value</code>,
+<code>prefix-value</code>, and <code>namespace-value</code>
+attributes. The rules described here apply regardless of their actual
+names.</para>
+
+<para>When <code>prefix-value</code> and <code>namespace-value</code>
+attributes are available, several additional co-constraints apply:</para>
+
+<orderedlist>
+<listitem>
+<para>If the supplied value of the name is an <code>xs:QName</code>, you may not specify
+the <code>prefix-value</code> or <code>namespace-value</code>.
+<error code="D0066">It is a <glossterm>dynamic error</glossterm>
+to separately specify a prefix or namespace URI if the supplied value
+has the type <code>xs:QName</code>.</error>
+</para>
+</listitem>
+<listitem>
+<para>If the string value of the <code>qname-value</code> attribute
+contains a colon, you may not specify a <code>prefix-value</code> or
+<code>namespace-value</code>.
+<error code="D0034">It is a <glossterm>dynamic error</glossterm>
+to specify a prefix or namespace URI if the QName value contains a colon.</error>
+</para>
+</listitem>
+<listitem>
+<para>If you specify a <code>prefix-value</code>, you must also specify
+a namespace (either with the <code>namespace-value</code> or through a
+URI qualified name).
+<error code="D0070">It is a <glossterm>dynamic error</glossterm>
+to specify a prefix without also specifying a namespace URI.</error>
+</para>
+</listitem>
+<listitem>
+<para>If the specified value is of type <code>xs:QName</code> or is
+a URI qualified name, you may not specify a <code>namespace-value</code>.
+<error code="D0067">It is a <glossterm>dynamic error</glossterm>
+to separately specify a namespace URI if the value is a URI qualified name.</error>
+</para>
+</listitem>
+</orderedlist>
+</section>
+
 <section xml:id="syntax-summaries"><title>Syntax Summaries</title>
 
 <para>The description of each element in the pipeline namespace is
@@ -3158,8 +3390,8 @@ are allowed anywhere, and attributes that are
     </para>
   </listitem>
   <listitem>
-    <para><type>QNameList</type>: As a whitespace separated list of
-    QNames, per the definition above.
+    <para><type>EQNameList</type>: As a whitespace separated list of
+    EQNames, per the definition above.
     </para>
   </listitem>
   <listitem>
@@ -3282,7 +3514,7 @@ are allowed anywhere, and attributes that are
     <title>Steps</title>
     <para>This section describes the core language steps of XProc; the full
 vocabulary of standard, atomic steps is described in
-<biblioref linkend="std-components"/>.</para>
+<biblioref linkend="steps30"/>.</para>
 
 <para>The following dynamic errors are described in the atomic step vocabulary.
 They are repeated here so that the list of dynamic errors is wholly contained
@@ -3852,9 +4084,9 @@ If there is no matching <tag>p:catch</tag>, the <tag>p:try</tag> fails.
 <error code="S0064">It is a <glossterm>static error</glossterm>
 if the <tag class="attribute">code</tag> attribute is missing from
 any but the last <tag>p:catch</tag> or if any error code is
-repeated.</error> <error code="XS0083">It is a <glossterm>static 
+repeated.</error> <error code="S0083">It is a <glossterm>static 
 error</glossterm> if the value of the <tag class="attribute">code</tag>
-attribute is not a whitespace separated list of QNames.</error></para>
+attribute is not a whitespace separated list of EQNames.</error></para>
 
 <para>If the recovery subpipeline is evaluated, the outputs of the
 recovery subpipeline are the outputs of the <tag>p:try</tag> step. If
@@ -4085,7 +4317,7 @@ can provide some sort of default for the rest of the pipeline.</para>
 
 <section xml:id="p.atomic"><title>Atomic Steps</title><para>In addition to the six step types
         described in the preceding sections, XProc provides a standard library of atomic step types.
-        The full vocabulary of standards steps is described in <biblioref linkend="std-components"/>.</para>
+        The full vocabulary of standards steps is described in <biblioref linkend="steps30"/>.</para>
 <para>All of the standard, atomic steps are invoked in the same way:</para>
       <e:rng-pattern name="OtherAtomicStep"/>
       <para>Where “<replaceable>p:atomic-step</replaceable>” <rfc2119>must</rfc2119> be in the XProc
@@ -4856,6 +5088,11 @@ a <glossterm>static error</glossterm> if the name attribute on
 <tag>p:option</tag> or <tag>p:variable</tag> has a prefix which is not
 bound to a namespace.</error>
 </para>
+<para><error code="S0088">It is
+a <glossterm>static error</glossterm> if the qualified name of a
+<tag>p:variable</tag> <glossterm baseform="shadow">shadows</glossterm>
+the name of a static variable or option.</error>
+</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><tag class="attribute">as</tag></term>
@@ -5016,6 +5253,11 @@ a <glossterm>static error</glossterm> if the name attribute on
 <tag>p:option</tag> or <tag>p:variable</tag> has a prefix which is not
 bound to a namespace.</error>
 </para>
+<para><error code="S0088">It is
+a <glossterm>static error</glossterm> if the qualified name of a
+<tag>p:option</tag> <glossterm baseform="shadow">shadows</glossterm>
+the name of a static variable or option.</error>
+</para>
 </listitem>
 </varlistentry>
 <varlistentry><term><tag class="attribute">as</tag></term>
@@ -5146,6 +5388,7 @@ is operating in
 <para><error code="S0080">It is a <glossterm>static error</glossterm>
 to include more than one <tag>p:with-option</tag> with the same option
 name as part of the same step invocation.</error></para>
+
 </listitem>
 </varlistentry>
 <varlistentry><term><tag class="attribute">as</tag></term>
@@ -5292,13 +5535,15 @@ See <xref linkend="statics"/>.</para>
     </itemizedlist>
     
     
-    <para><error code="S0027">It is a <glossterm>static error</glossterm> if an
-      option is specified with both the shortcut form and the long
-      form.</error>
-      <error code="S0031">It is a <glossterm>static error</glossterm> to use
-        an option on an <glossterm>atomic step</glossterm> that is not
-        declared on steps of that type.</error>
-    </para>
+<para><error code="S0027">It is a <glossterm>static error</glossterm>
+if an option is specified with both the shortcut form and the long
+form.</error>
+<error code="S0031">It is a <glossterm>static error</glossterm>
+to use an option on an <glossterm>atomic step</glossterm>
+that is not declared on steps of that type.</error>
+<error code="S0092">It is a <glossterm>static error</glossterm> to
+specify a value for an option that is declared static.</error>
+</para>
     
     <para>The syntactic shortcuts apply equally to standard atomic steps
       and extension atomic steps.</para>
@@ -5838,10 +6083,9 @@ encoding specified is not supported by the implementation.</error>
 the body is not correctly encoded per the value of the <tag class="attribute">encoding</tag> attribute.</error>
 </para>
 
-<para><error code="S0088">It is a <glossterm>static error</glossterm>
-if a text node designated as a <link linkend="text-value-templates">text
-value template</link> appears in a <tag>p:inline</tag> where an
-<tag class="attribute">encoding</tag> is specified.</error></para>
+<para>If an <tag class="attribute">encoding</tag> attribute is present,
+value templates are never expanded. The value of
+<tag class="attribute">[p:]expand-text</tag> is irrelevant and always ignored.</para>
 
 <para>The interpretation of the (possibily decoded) content
 depends on the document's content type.
@@ -6247,11 +6491,10 @@ in the PSVI, are preserved between steps.</impl></para>
 <section xml:id="normative-references">
   <title>Normative References</title>
   <bibliolist>
-    <bibliomixed xml:id="std-components"><abbrev>XProc 2.0: Standard Step Library</abbrev>
-<citetitle xlink:href="http://www.w3.org/TR/xproc20-steps/">XProc 2.0:
-Standard Step Library</citetitle>.
-Alex Milowski, Henry Thompson, and Norman Walsh editors.
-W3C Working Group Note 21 July 2016.
+    <bibliomixed xml:id="steps30"><abbrev>Steps 3.0</abbrev>
+<citetitle xlink:href="http://spec.xproc.org/">XProc 3.0: Standard
+Step Library</citetitle>.
+Norman Walsh, Achim Berndzen, Gerrit Imsieke and Erik Siegel, editors.
 </bibliomixed>
     <bibliomixed xml:id="xml-infoset-rec"><abbrev>Infoset</abbrev>
 <citetitle xlink:href="http://www.w3.org/TR/xml-infoset/">XML
@@ -6278,9 +6521,6 @@ editors. W3C Recommendation 16 August 2006.</bibliomixed>
 in XML 1.1 (Second Edition)</citetitle>. Tim Bray,
 Dave Hollander, Andrew Layman, et. al.,
 editors. W3C Recommendation 16 August 2006.</bibliomixed>
-    <bibliomixed xml:id="lastcall-xslt30"><abbrev>XSLT 3.0</abbrev>
-   <citetitle xlink:href="http://www.w3.org/TR/xslt-30/">XSL Transformations (XSLT) Version 3.0</citetitle>. Michael Kay,
-   W3C Recommendation 8 June 2017</bibliomixed>
     <bibliomixed xml:id="xpath31"><abbrev>XPath 3.1</abbrev>
 <citetitle xlink:href="http://www.w3.org/TR/xpath31/">XML Path Language (XPath)
 	3.1</citetitle>. Jonathan Robie, Michael Dyck, Josh Spiegel, editors.
@@ -6291,7 +6531,10 @@ Model (XDM)</abbrev>
 XPath 2.0 Data Model (XDM)</citetitle>.
 Mary Fernández, Ashok Malhotra, Jonathan Marsh, <foreignphrase>et. al.</foreignphrase>, editors.
 W3C Recommendation. 23 January 2007.</bibliomixed>
-    <bibliomixed role="error" xml:id="xml-serialization-31">@@FIXME:MISSING </bibliomixed>
+    <bibliomixed xml:id="xml-serialization-31"><abbrev>Serialization</abbrev>
+<citetitle xlink:href="https://www.w3.org/TR/xslt-xquery-serialization-31/">XSLT
+and XQuery Serialization 3.1</citetitle>.
+Andrew Coleman and C. M. Sperberg-McQueen, editors. W3C Recommendation. 21 March 2017.</bibliomixed>
     <bibliomixed xml:id="xpath31-functions"><abbrev>XPath and XQuery Functions and Operators 3.1</abbrev>
 <citetitle xlink:href="https://www.w3.org/TR/xpath-functions-31/">XPath and XQuery Functions and  Operators 3.1</citetitle>. Michael Kay, editor.
 W3C Recommendation. 21 March 2017</bibliomixed>
@@ -6353,7 +6596,16 @@ November, 1996.</bibliomixed>
   </bibliolist>
 </section>
 </appendix>
-<appendix xmlns:db="http://docbook.org/ns/docbook" xml:id="glossary"><title>Glossary</title><glosslist><glossentry><glossterm>Namespaces
+<appendix xmlns:db="http://docbook.org/ns/docbook" xml:id="glossary"><title>Glossary</title><glosslist><glossentry><glossterm>HTML media type</glossterm><glossdef><para>The
+“<literal>text/html</literal>” and “<literal>application/xhtml+xml</literal>
+media types
+are <firstterm baseform="HTML media type">HTML media types</firstterm>.
+</para></glossdef></glossentry><glossentry><glossterm>JSON media type</glossterm><glossdef><para>The
+“<literal>application/json</literal>”
+media type and all media types of the form
+“<literal>application/<replaceable>something</replaceable>+json</literal>”
+are <firstterm baseform="JSON media type">JSON media types</firstterm>.
+</para></glossdef></glossentry><glossentry><glossterm>Namespaces
           in XML</glossterm><glossdef><para>Unless otherwise noted, the term <firstterm>Namespaces
           in XML</firstterm> refers equally to <biblioref linkend="xmlns10"/> and <biblioref linkend="xmlns11"/>.</para></glossdef></glossentry><glossentry><glossterm>XML</glossterm><glossdef><para>XProc is intended to work equally well with <biblioref linkend="xml10"/> and
           <biblioref linkend="xml11"/>. Unless otherwise noted, the term
@@ -6361,6 +6613,8 @@ November, 1996.</bibliomixed>
 “<literal>application/xml</literal>” and “<literal>text/xml</literal>
 media types and all media types of the form
 “<literal>application/<replaceable>something</replaceable>+xml</literal>”
+(except for “<literal>application/xhtml+xml</literal>” which is explicitly
+an <glossterm>HTML media type</glossterm>)
 are <firstterm baseform="XML media type">XML media types</firstterm>.
 </para></glossdef></glossentry><glossentry><glossterm>ancestors</glossterm><glossdef><para>The <firstterm>ancestors</firstterm> of a step, if it has
           any, are its <glossterm>container</glossterm> and the ancestors of its
@@ -6477,6 +6731,7 @@ and detecting static errors.</para></glossdef></glossentry><glossentry><glosster
 “<literal>text/<replaceable>something</replaceable></literal>”
 are <firstterm baseform="text media type">text media types</firstterm> with the
 exception of “<literal>text/xml</literal>” which is an XML media type.
+and “<literal>text/html</literal>” which is an HTML media type.
 </para></glossdef></glossentry><glossentry><glossterm>text value template</glossterm><glossdef><para>In a text node that is
 designated as a <firstterm>text value template</firstterm>,
 expressions can be used by surrounding each expression with curly
@@ -7035,6 +7290,18 @@ schemas; they are included into this one.</para>
 </varlistentry>
 </variablelist>
 
+</appendix>
+<appendix version="5.0-extension w3c-xproc" xml:id="credits">
+<title>Credits</title>
+
+<para>This document is derived from
+<link xlink:href="https://www.w3.org/TR/2010/REC-xproc-20100511/">XProc:
+An XML Pipeline Language</link> published by the W3C. It was developed
+by the <citetitle>XML Processing Model Working Group</citetitle> and edited by
+Norman Walsh, Alex Miłowski, and Henry Thompson.</para>
+
+<para>The editors of this specification extend their gratitude to everyone
+who contributed to this document and all of the versions that came before it.</para>
 </appendix>
 
 <appendix xml:id="changelog">
