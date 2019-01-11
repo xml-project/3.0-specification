@@ -63,16 +63,27 @@ pipeline itself, or from the outputs of other steps in the pipeline.
 The outputs from a step are consumed by other steps, are outputs of
 the pipeline as a whole, or are discarded.</para>
 
-<para>There are three kinds of steps: atomic steps, compound steps,
-and multi-container steps. Atomic steps carry out single operations
-and have no substructure as far as the pipeline is concerned. Compound
-steps and multi-container steps control the execution of other steps,
-which they include in the form of one or more subpipelines.</para>
+<para>There are two kinds of steps:
+<glossterm baseform="atomic step">atomic steps</glossterm> and
+<glossterm baseform="compound step">compound steps</glossterm>.
+Atomic steps carry out a single operation and have no substructure as
+far as the pipeline is concerned. Compound steps control the execution
+of other steps, which they include in the form of one or more
+subpipelines.</para>
 
 <para><biblioref linkend="steps30"/>
 defines a standard library of steps. Pipeline implementations
 <rfc2119>may</rfc2119> support additional types of steps as well.
 </para>
+
+    <para>The media type for pipeline documents is <literal>application/xml</literal>. Often,
+      pipeline documents are identified by the extension <filename class="extension">.xpl</filename>.</para>
+    <para>In this specification the words <rfc2119>must</rfc2119>, <rfc2119>must not</rfc2119>,
+        <rfc2119>should</rfc2119>, <rfc2119>should not</rfc2119>, <rfc2119>may</rfc2119> and
+        <rfc2119>recommended</rfc2119> are to be interpreted as described in <biblioref linkend="rfc2119"/>.</para>
+
+<section xml:id="intro-examples">
+<title>Pipeline examples</title>
 
 <para><xref linkend="fig-xival"/> is a graphical representation of a
 simple pipeline that performs XInclude processing and validation on a
@@ -208,11 +219,9 @@ prefer. This example also takes advantage of using the <tag class="attribute">hr
 attribute directly on <tag>p:with-input</tag> as a shortcut for the
 <tag>p:document</tag> connection.</para>
 
-    <para>The media type for pipeline documents is <literal>application/xml</literal>. Often,
-      pipeline documents are identified by the extension <filename class="extension">.xpl</filename>.</para>
-    <para>In this specification the words <rfc2119>must</rfc2119>, <rfc2119>must not</rfc2119>,
-        <rfc2119>should</rfc2119>, <rfc2119>should not</rfc2119>, <rfc2119>may</rfc2119> and
-        <rfc2119>recommended</rfc2119> are to be interpreted as described in <biblioref linkend="rfc2119"/>.</para>
+</section>
+
+
   </section>
 
   <section xml:id="pipeline-concepts">
@@ -231,72 +240,74 @@ functional (that is, that their outputs depend only on their
 <glossterm baseform="option">options</glossterm>) or side-effect
 free.</para>
 
-    <para>The pattern of connections between steps will not always completely determine their order
-      of evaluation. <impl>The evaluation order of steps not connected to one another is
-          <glossterm>implementation-dependent</glossterm></impl>.</para>
-    <section xml:id="step-concept">
-      <title>Steps</title>
-      <para><termdef xml:id="dt-step">A <firstterm>step</firstterm> is the basic computational unit
-          of a pipeline.</termdef> A typical step has zero or more inputs, from which it receives
-        documents to process, zero or more outputs, to which it sends document results, and
-        can have options.</para>
-      <para>There are three kinds of steps: <glossterm baseform="atomic step">atomic</glossterm>,
-          <glossterm baseform="compound step">compound</glossterm>, and <glossterm baseform="multi-container step">multi-container</glossterm>.</para>
+<para>The pattern of connections between steps will not always
+completely determine their order of evaluation. <impl>The evaluation
+order of steps not connected to one another is
+<glossterm>implementation-dependent</glossterm></impl>.</para>
+
+<section xml:id="step-concept">
+<title>Steps</title>
+
+<para><termdef xml:id="dt-step">A <firstterm>step</firstterm> is the
+basic computational unit of a pipeline.</termdef> A typical step has
+inputs, from which it receives documents to process, outputs, to which
+it sends result documents, and options which influence its behavior.</para>
+
+<para>There are two kinds of steps: atomic and compound:</para>
 
 <para><termdef xml:id="dt-atomic-step">An <firstterm>atomic
 step</firstterm> is a step that performs a unit of processing
 on its input,
-such as XInclude or transformation, and has no internal
-<glossterm>subpipeline</glossterm>. </termdef> Atomic steps carry out
+such as validation or transformation, and has no internal
+<glossterm>subpipeline</glossterm>.</termdef> Atomic steps carry out
 fundamental operations and can perform arbitrary amounts of
-computation, but they are indivisible. An XSLT step, for example,
-performs XSLT processing; a Validate with XML Schema step validates
-one input with respect to some set of XML Schemas, etc.</para>
+computation, but they are indivisible.</para>
 
-      <para>There are many <emphasis>types</emphasis> of atomic steps. The standard library of
-        atomic steps is described in <biblioref linkend="steps30"/>, but implementations
-          <rfc2119>may</rfc2119> provide others as well. <impl>It is
-            <glossterm>implementation-defined</glossterm> what additional step types, if any, are
-          provided. </impl> Each use, or instance, of an atomic step invokes the processing defined
-        by that type of step. A pipeline may contain instances of many types of steps and many
-        instances of the same type of step.</para>
-      <para>Compound steps, on the other hand, control and organize the flow of documents through a
-        pipeline, reconstructing familiar programming language functionality such as conditionals,
-        iterators and exception handling. They contain other steps, whose evaluation they
-        control.</para>
-      <para><termdef xml:id="dt-compound-step">A <firstterm>compound step</firstterm> is a step that
-          contains a <glossterm>subpipeline</glossterm>.</termdef> That is, a compound step differs
-        from an atomic step in that its semantics are at least partially determined by the steps
-        that it contains.</para>
-      <para>Finally, there are two “multi-container steps”: <tag>p:choose</tag> and
-        <tag>p:try</tag>. <termdef xml:id="dt-multi-container-step">A <firstterm>multi-container
-            step</firstterm> is a step that contains several alternate <glossterm baseform="subpipeline">subpipelines</glossterm>. </termdef> Each subpipeline is
-        identified by a non-step wrapper element: <tag>p:when</tag> and <tag>p:otherwise</tag> in
-        the case of <tag>p:choose</tag>, <tag>p:group</tag> and <tag>p:catch</tag> in the case of
-          <tag>p:try</tag>. </para>
-      <para>The output of a multi-container step is the output of exactly one of its subpipelines.
-        In this sense, a multi-container step functions like a <glossterm>compound step</glossterm>.
-        However, evaluating a multi-container step may involve evaluating, or partially evaluating,
-        more than one of its subpipelines. It's possible for steps in a partially evaluated pipeline
-        to have side effects that are visible outside the processor, even if the final output of the
-        multi-container step is the result of some other subpipeline. For example, a web server
-        might record that some interaction was performed, or a file on the local file system might
-        have been modified.</para>
-      <para><termdef xml:id="dt-container">A compound step or multi-container step is a
-            <firstterm>container</firstterm> for the steps directly within it or within non-step
-          wrappers directly within it.</termdef>
-        <termdef xml:id="dt-contained-steps">The steps that occur directly within, or within
-          non-step wrappers directly within, a step are called that step's <firstterm>contained
-            steps</firstterm>. In other words, “container” and “contained steps” are inverse
-          relationships.</termdef>
-        <termdef xml:id="dt-ancestors">The <firstterm>ancestors</firstterm> of a step, if it has
-          any, are its <glossterm>container</glossterm> and the ancestors of its
-          container.</termdef>
-      </para>
-      <para><termdef xml:id="dt-subpipeline">Sibling steps (and the connections between them) form a
-            <firstterm>subpipeline</firstterm>.</termdef>
-        <termdef xml:id="dt-last-step">The <firstterm>last step</firstterm> in a subpipeline is its
-          last step in document order.</termdef></para>
+<para>There are many <emphasis>types</emphasis> of atomic steps. The
+standard library of atomic steps is described in <biblioref linkend="steps30"/>, but implementations <rfc2119>may</rfc2119>
+provide others as well. <impl>It is
+<glossterm>implementation-defined</glossterm> what additional step
+types, if any, are provided. </impl> Each use, or instance, of an
+atomic step invokes the processing defined by that type of step. A
+pipeline may contain instances of many types of steps and many
+instances of the same type of step.</para>
+
+<para>Compound steps, on the other hand, control and organize the flow
+of documents through a pipeline, providing familiar programming
+language functionality such as conditionals, iterators and exception
+handling. They contain other steps, whose evaluation they
+control.</para>
+
+<para><termdef xml:id="dt-compound-step">A <firstterm>compound
+step</firstterm> is a step that contains one or more
+<glossterm baseform="subpipeline">subpipelines</glossterm>.</termdef>
+That is, a compound step differs from an atomic step in that its
+semantics are at least partially determined by the steps that it
+contains.</para>
+
+<para>Compound steps either directly contain a single subpipeline or
+contain several subpipelines and select one or more to evaluate
+dynamically. In the latter case, alternate subpipelines are identified
+by non-step wrapper elements that each contain a single subpipeline.
+</para>
+
+<para><termdef xml:id="dt-container">A <firstterm>container</firstterm>
+is either a compound step or one
+of the non-step wrapper elements in a compound step that contains
+several subpipelines.</termdef>
+<termdef xml:id="dt-contained-steps">The steps that occur directly
+within a container are called
+that step’s <firstterm>contained steps</firstterm>. In other words,
+“container” and “contained steps” are inverse relationships.</termdef>
+<termdef xml:id="dt-ancestors">The <firstterm>ancestors</firstterm> of
+a step, if it has any, are its <glossterm>container</glossterm> and
+the ancestors of its container.</termdef>
+</para>
+
+<para><termdef xml:id="dt-subpipeline">Sibling steps and variables (and the
+connections between them) form a
+<firstterm>subpipeline</firstterm>.</termdef> <termdef xml:id="dt-last-step">The <firstterm>last step</firstterm> in a
+subpipeline is its last step in document order.</termdef></para>
 
       <para xml:id="p.subpipeline" role="element-syntax element-syntax-language-construct hanging-indent">
         <code>subpipeline</code> = (<tag>p:variable</tag>|<tag>p:for-each</tag>|<tag>p:viewport</tag>|<tag>p:choose</tag>|<tag>p:if</tag>|<tag>p:group</tag>|<tag>p:try</tag>|<code xlink:href="#p.atomic">p:<replaceable>standard-step</replaceable></code>|<code xlink:href="#p.atomic"><replaceable>pfx:user-pipeline</replaceable></code>)+ </para>
@@ -311,8 +322,7 @@ one input with respect to some set of XML Schemas, etc.</para>
       </note>
       <para>Steps have “ports” into which inputs and outputs are connected. Each step has a number
         of input ports and a number of output ports; a step can have zero input ports and/or zero
-        output ports. (All steps have an implicit output port for reporting errors that
-          <rfc2119>must not</rfc2119> be declared.) The names of all ports on each step must be
+        output ports. The names of all ports on each step must be
         unique on that step (you can't have two input ports named “source”, nor can you have an
         input port named “schema” and an output port named “schema”). </para>
       <para>A Step may have zero or more <link linkend="options">options</link>, all with unique
@@ -330,7 +340,8 @@ one input with respect to some set of XML Schemas, etc.</para>
             “<replaceable>m</replaceable>” is the position (in the sense of counting sibling
           elements) of the step's highest ancestor element within the pipeline document or library
           which contains it, “<replaceable>n</replaceable>” is the position of the next-highest
-          ancestor, and so on, including both steps and non-step wrappers. For example, consider the
+          ancestor, and so on, including all of the elements in the pipeline document
+(that were not <glossterm>effectively excluded</glossterm>). For example, consider the
           pipeline in <xref linkend="ex2"/>. The <tag>p:declare-step</tag> step has no name, so it gets
           the default name “<literal>!1</literal>”; the <tag>p:choose</tag> gets the name
             “<literal>!1.1</literal>”; the first <tag>p:when</tag> gets the name
@@ -784,7 +795,7 @@ content types, that they accept. Input documents must
               <glossterm>implementation-defined</glossterm>.</impl>
         </para>
         <para>Version 3.0 of XProc does not require implementations to guarantee that multiple
-          attempts to dereference the same URI always produce consistent results.</para>
+          attempts to dereference the same URI always produce the same results.</para>
         <note xml:id="note-unsatisfying">
           <para>On the one hand, this is a somewhat unsatisfying state of affairs because it leaves
             room for interoperability problems. On the other, it is not expected to cause such
@@ -821,8 +832,8 @@ content types, that they accept. Input documents must
         two steps appear sequentially in a subpipeline, then the primary output of the first step
         will automatically be connected to the primary input of the second.</para>
 
-<para>Additionally, if a compound step, or non-step wrapper that can
-declare outputs, has no declared outputs and the
+<para>Additionally, if a container, that can have
+declared outputs, has no declared outputs and the
 <glossterm>last step</glossterm> in its subpipeline has an unconnected
 primary output, then an implicit primary output port will be added to
 the compound step (and consequently the last step's primary output
@@ -1091,15 +1102,28 @@ the document provided dynamically on the <port>source</port> port,
 any attempt to refer to <code>$D</code> in the expression(s) that
 initialize <code>$A</code> and <code>$B</code> would be an error.</para>
 
+<note>
+<title>Note</title>
+<para>There is no guarantee that the document read from <uri>doc.xml</uri> during
+static anlaysis will be the same as the document read later during dynamic evaluation.
+See <xref linkend="external-docs"/> for further discussion.</para>
+</note>
+
 <para>The results of XProc extension functions may differ during static analysis,
 as described in the description of each function.</para>
+
+<para>Any errors that occur while evaluating expressions during static analysis will
+be raised statically.</para>
 
 </section>
 
 <section xml:id="dynamic-evaluation">
 <title>Dynamic evaluation of the pipeline</title>
 
-<para>FIXME: write an introduction.</para>
+<para>Dynamic evaluation of the pipeline occurs when it begins to process documents.
+The processor evaluates any expressions necessary to provide all of the input documents
+and options required. The step processes the input documents and produces outputs which
+flow through the pipeline.</para>
 
     <section xml:id="environment">
       <title>Environment</title>
@@ -1255,497 +1279,9 @@ and inputs, in <tag class="attribute">match</tag> attributes on
 <tag>p:viewport</tag>, and in <tag class="attribute">test</tag>
 attributes on <tag>p:when</tag> and <tag>p:if</tag> steps.</para>
 
-        <section xml:id="xproc-xpath-context-31">
-          <title>Processor XPath Context</title>
-<para>When the XProc processor evaluates an XPath expression using
-XPath, unless otherwise indicated by a particular step, it does so
-with the following static context:</para>
-          <variablelist>
-            <varlistentry>
-              <term>XPath 1.0 compatibility mode</term>
-              <listitem>
-                <para>False</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Statically known namespaces</term>
-              <listitem>
-                <para>The namespace declarations in-scope for the containing element. </para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Default element/type namespace</term>
-              <listitem>
-                <para>The null namespace.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Default function namespace</term>
-              <listitem>
-                <para>The default function namespace is <literal>http://www.w3.org/2005/xpath-functions</literal>, as defined in
-                  <biblioref linkend="xpath31-functions"/>. Function names that do
-                  not contain a colon always refer to the default function namespace, any in-scope
-                  binding for the default namespace <emphasis>does not</emphasis> apply. This
-                  specification does not provide a mechanism to override the default function
-                  namespace.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>In-scope schema definitions</term>
-              <listitem>
-                <para>A basic XPath 3.1 XProc processor includes the following named type
-                  definitions in its in-scope schema definitions:</para>
-                <itemizedlist>
-                  <listitem>
-                    <para>All the primitive atomic types defined in <biblioref linkend="xmlschema-2"/>, with the exception of <literal>xs:NOTATION</literal>. That is:
-<literal>xs:anyAtomicType</literal>,
-<literal>xs:anySimpleType</literal>,
-<literal>xs:anyURI</literal>,
-<literal>xs:base64Binary</literal>,
-<literal>xs:boolean</literal>,
-<literal>xs:date</literal>,
-<literal>xs:dateTime</literal>,
-<literal>xs:decimal</literal>,
-<literal>xs:double</literal>,
-<literal>xs:duration</literal>,
-<literal>xs:float</literal>,
-<literal>xs:gDay</literal>,
-<literal>xs:gMonth</literal>,
-<literal>xs:gMonthDay</literal>,
-<literal>xs:gYear</literal>,
-<literal>xs:gYearMonth</literal>,
-<literal>xs:hexBinary</literal>,
-<literal>xs:QName</literal>,
-<literal>xs:string</literal>, and
-<literal>xs:time</literal>.
-                    </para>
-                  </listitem>
-                  <listitem>
-                    <para>The derived atomic type <literal>xs:integer</literal> defined in
-                        <biblioref linkend="xmlschema-2"/>. </para>
-                  </listitem>
-                  <listitem>
-                    <para>The types <literal>xs:anyType</literal>,
-                      <literal>xs:yearMonthDuration</literal>,
-                      <literal>xs:dayTimeDuration</literal>, 
-                        <literal>xs:untyped</literal>, and <literal>xs:untypedAtomic</literal>
-                      defined in <biblioref linkend="xpath-datamodel"/>. </para>
-                  </listitem>
-                </itemizedlist>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>In-scope variables</term>
-              <listitem>
-<para>Variables and options are lexically scoped. The union of the
-options and the variables that
-are “visible” from the step's lexical position are available
-as variable bindings to the XPath processor.
-Variables and options can shadow each other, only the lexically most
-recent bindings are visible.</para>
-
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Context item static type</term>
-              <listitem>
-                <para>Document.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Function signatures</term>
-              <listitem>
-                <para>The signatures of the <biblioref linkend="xpath31-functions"/> in namespaces <literal>http://www.w3.org/2005/xpath-functions</literal>,
-                  <literal>http://www.w3.org/2005/xpath-functions/math</literal>, <literal>http://www.w3.org/2005/xpath-functions/map</literal> and
-                  <literal>http://www.w3.org/2005/xpath-functions/array</literal>. Additionally the function signatures defined in <xref linkend="xpath-extension-functions"/>. </para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Statically known collations</term>
-              <listitem>
-                <para>Implementation-defined but <rfc2119>must</rfc2119> include the Unicode code
-                  point collation. <impl>The version of Unicode supported is
-                      <glossterm>implementation-defined</glossterm>, but it is recommended that the
-                    most recent version of Unicode be used.</impl>
-                </para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Default collation</term>
-              <listitem>
-                <para>Unicode code point collation.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Static base URI</term>
-              <listitem>
-                <para>The base URI of the element on which the expression occurs.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Statically known documents</term>
-              <listitem>
-                <para>None.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Statically known collections</term>
-              <listitem>
-                <para>None.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Statically known default collection type</term>
-              <listitem>
-                <para><literal>item()*</literal></para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Statically known decimal formats</term>
-              <listitem>
-                <para>None.</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-          <para>And the following dynamic context:</para>
-          <variablelist>
-            <varlistentry>
-              <term>context item</term>
-              <listitem>
-<para>The context item. The context item is either specified with a
-<glossterm>connection</glossterm> or is taken from the
-<glossterm>default readable port</glossterm>. <error code="D0008">It
-is a <glossterm>dynamic error</glossterm> if a sequence of items
-appears where an item to be used as the context item is
-expected.</error>
-</para>
-
-<para>The context item used for an XML, text, or JSON document is
-the XDM representation of that item.
-<impl>The context item used for binary documents is
-<glossterm>implementation-defined</glossterm>.</impl></para>
-
-<para>If there is no explicit connection and there is no default
-readable port then the context node is undefined.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>context position and context size</term>
-              <listitem>
-                <para>The context position and context size are both “1”. </para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Variable values</term>
-              <listitem>
-                <para>The union of the in-scope options and variables are available as variable
-                  bindings to the XPath processor. </para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Named functions</term>
-              <listitem>
-                <para>The <biblioref linkend="xpath31-functions"/> and the <xref linkend="xpath-extension-functions"/>. </para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Current dateTime</term>
-              <listitem>
-                <para><impl>The point in time returned as the current dateTime is
-                      <glossterm>implementation-defined</glossterm>.</impl>
-                </para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Implicit timezone</term>
-              <listitem>
-                <para><impl>The implicit timezone is
-                    <glossterm>implementation-defined</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Default language</term>
-              <listitem>
-                <para><impl>The default language is <glossterm>implementation-defined</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Default calendar</term>
-              <listitem>
-                <para><impl>The default calendar is <glossterm>implementation-defined</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Default place</term>
-              <listitem>
-                <para><impl>The default place is <glossterm>implementation-defined</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Available documents</term>
-              <listitem>
-                <para><impl>The set of available documents (those that may be retrieved with a URI)
-                    is <glossterm>implementation-dependent</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Available text resources</term>
-              <listitem>
-                <para><impl>The set of available text resources (those that may be retrieved with a URI)
-                is <glossterm>implementation-dependent</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Available collections</term>
-              <listitem>
-                <para><impl>The set of available collections is
-                      <glossterm>implementation-dependent</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Default collection</term>
-              <listitem>
-                <para>None. </para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Available URI collections</term>
-              <listitem>
-                <para><impl>The set of available URI collections is <glossterm>implementation-dependent</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Default URI collection</term>
-              <listitem>
-                <para><impl>The default URI collection is <glossterm>implementation-dependent</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Environment variables</term>
-              <listitem>
-                <para><impl>The list of available environment variables is <glossterm>implementation-defined</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-        </section>
-        <section xml:id="step-xpath-context-31">
-          <title>Step XPath Context</title>
-          <para>When a step evaluates an XPath expression using XPath 3.1, unless otherwise
-            indicated by a particular step, it does so with the following static context:</para>
-          <variablelist>
-            <varlistentry>
-              <term>XPath 1.0 compatibility mode</term>
-              <listitem>
-                <para>False</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Statically known namespaces</term>
-              <listitem>
-                <para>The namespace declarations in-scope for the containing element.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Default element/type namespace</term>
-              <listitem>
-                <para>The null namespace.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Default function namespace</term>
-              <listitem>
-                <para>The default function namespace is <literal>http://www.w3.org/2005/xpath-functions</literal>, as defined in
-                  <biblioref linkend="xpath31-functions"/>. Function names that do
-                  not contain a colon always refer to the default function namespace, any in-scope
-                  binding for the default namespace <emphasis>does not</emphasis> apply. This
-                  specification does not provide a mechanism to override the default function
-                  namespace.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>In-scope schema definitions</term>
-              <listitem>
-                <para>The same as the <xref linkend="xproc-xpath-context-31"/>. </para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>In-scope variables</term>
-              <listitem>
-                <para>None, unless otherwise specified by the step. </para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Context item static type</term>
-              <listitem>
-                <para>Document.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Function signatures</term>
-              <listitem>
-                <para>The signatures of the <biblioref linkend="xpath31-functions"/> in namespaces <literal>http://www.w3.org/2005/xpath-functions</literal>,
-                  <literal>http://www.w3.org/2005/xpath-functions/math</literal>, <literal>http://www.w3.org/2005/xpath-functions/map</literal> and
-                  <literal>http://www.w3.org/2005/xpath-functions/array</literal>.
-                </para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Statically known collations</term>
-              <listitem>
-                <para>Implementation-defined but <rfc2119>must</rfc2119> include the Unicode code
-                  point collation.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Default collation</term>
-              <listitem>
-                <para>Unicode code point collation.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Static base URI</term>
-              <listitem>
-                <para>The base URI of the element on which the expression occurs.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Statically known documents</term>
-              <listitem>
-                <para>None.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Statically known collections</term>
-              <listitem>
-                <para>None.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Statically known default collection type</term>
-              <listitem>
-                <para>item()*</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Statically known decimal formats</term>
-              <listitem>
-                <para>None.</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-          <para>And the following initial dynamic context:</para>
-          <variablelist>
-            <varlistentry>
-              <term>context item</term>
-              <listitem>
-                <para>The document node of the document that appears on the primary input of the
-                  step, unless otherwise specified by the step.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>context position and context size</term>
-              <listitem>
-                <para>The context position and context size are both “1”, unless otherwise specified
-                  by the step. </para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Variable values</term>
-              <listitem>
-                <para>None, unless otherwise specified by the step. </para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Named functions</term>
-              <listitem>
-                <para>The <biblioref linkend="xpath31-functions"/>.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Current dateTime</term>
-              <listitem>
-                <para>An implementation-defined point in time. </para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Implicit timezone</term>
-              <listitem>
-                <para><impl>The implicit timezone is
-                    <glossterm>implementation-defined</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Default language</term>
-              <listitem>
-                <para><impl>The default language is <glossterm>implementation-defined</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Default calendar</term>
-              <listitem>
-                <para><impl>The default calendar is <glossterm>implementation-defined</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Default place</term>
-              <listitem>
-                <para><impl>The defualt place is <glossterm>implementation-defined</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Available documents</term>
-              <listitem>
-                <para><impl>The set of available documents (those that may be retrieved with a URI)
-                    is <glossterm>implementation-dependent</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Available text resources</term>
-              <listitem>
-                <para><impl>The set of available text resources (those that may be retrieved with a URI)
-                  is <glossterm>implementation-dependent</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Available collections</term>
-              <listitem>
-                <para>None. </para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Default collection</term>
-              <listitem>
-                <para>None. </para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Available URI collections</term>
-              <listitem>
-                <para><impl>The set of available URI collections is <glossterm>implementation-dependent</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Default URI collection</term>
-              <listitem>
-                <para><impl>The default URI collection is <glossterm>implementation-dependent</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Environment variables</term>
-              <listitem>
-                <para><impl>The list of available environment variables is <glossterm>implementation-defined</glossterm>.</impl></para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-          <note xml:id="note-amendments">
-            <para>Some steps may also provide for implementation-defined or implementation-dependent
-              amendments to the contexts. Those amendments are in addition to any specified by
-              XProc.</para>
-          </note>
-        </section>
+<para>See <xref linkend="xproc-and-step-xpath-context"/> for a detailed description of the context.</para>
     </section>
-
-</section>
+  </section>
 </section>
 
 <section xml:id="xpath-extension-functions">
@@ -2263,6 +1799,29 @@ return them unchanged, to silently omit them, or to raise an error. It
   </simplesect>
 </section>
 
+<section xml:id="f.function-library-importable">
+<title>Function library importable</title>
+
+<para>The <function>p:function-library-importable</function> function
+reports whether or not function libraries of a particular type can be imported.
+</para>
+
+<methodsynopsis>
+<type>xs:boolean</type>
+<methodname>p:function-library-importable</methodname>
+<methodparam><type>xs:string</type><parameter>library-type</parameter></methodparam>
+</methodsynopsis>
+
+<para>The <varname>$library-type</varname> string is interpreted as a content type.
+If the processor understands
+(<foreignphrase>i.e.</foreignphrase> if <tag>p:import-functions</tag> understands)
+how to load function libraries of that type, this function returns
+<literal>true()</literal>, otherewise it returns <literal>false()</literal>.
+</para>
+
+<para>The <function>p:function-library-importable</function> function behaves
+normally during static analysis.</para>
+</section>
 
 <section xml:id="other-xpath-extension-functions">
   <title>Other XPath Extension Functions</title>
@@ -2715,7 +2274,7 @@ expression such that it returns the string values:</para>
 
       <para>Variables and options may declare that they have a type using the <tag class="attribute">as</tag> attribute.
         The attribute value <rfc2119>must</rfc2119> be an <biblioref linkend="xpath31"/>
-        <link xlink:href="https://www.w3.org/TR/xpath-31/#dt-sequence-type">sequence Type</link>. <error code="S0096">It
+        <link xlink:href="https://www.w3.org/TR/xpath-31/#dt-sequence-type">sequence type</link>. <error code="S0096">It
           is a <glossterm>static error</glossterm> if the sequence type is not syntactically valid.</error> The sequence
         type <literal>item()*</literal> is assumed if no explicit type is provided. </para>
 
@@ -3478,21 +3037,16 @@ any element that is not a descendant of a
 <section xml:id="use-when">
 <title>Conditional Element Exclusion</title>
 
-<para xml:id="p.use-when">The
-<tag class="attribute">[p:]use-when</tag> attribute controls whether
-or not an element (and its descendants) appear in the pipeline. The
-value of the attribute <rfc2119>must</rfc2119> contain an XPath
-expression that can be evaluated statically (See
-<link linkend="statics"/>.) If the attribute is present and the
-effective boolean value of the expression is false, then the element
-and all of its descendants are effectively excluded from the pipeline document. If
-a node is effectively excluded, the processor <rfc2119>must</rfc2119>
-behave as if the element was not present in the document.
+<para xml:id="p.use-when">The <tag class="attribute">[p:]use-when</tag> attribute controls whether or not
+an element (and its descendants) appear in the pipeline. The value of
+the attribute <rfc2119>must</rfc2119> contain an XPath expression that
+can be evaluated statically (See <link linkend="statics"/>.) <termdef xml:id="dt-effectively-excluded">If the effective boolean value of the
+<tag class="attribute">[p:]use-when</tag> expression is false, then
+the element and all of its descendants are <firstterm>effectively
+excluded</firstterm> from the pipeline document.</termdef> If a node is
+effectively excluded, the processor <rfc2119>must</rfc2119> behave as
+if the element was not present in the document.
 </para>
-  
-  <para>Exception: <tag class="attribute">[p:]use-when</tag> attributes on descendant
-    <tag>p:inline</tag> elements and in implicit inlines carry no special meaning and are considered part of the inlined
-    contents.</para>
 
 <para>Conditional element exclusion occurs during <link linkend="initiating">static analysis</link> of the pipeline.</para>
 
@@ -3667,8 +3221,15 @@ the element's syntax:</para>
         </listitem>
         <listitem>
           <para>If an attribute value is an attribute value template, its type is shown
-          in curly brackets: “<code>{ some-type }</code>”.</para>
+          in curly brackets: “<code>{ some-type }</code>”. If <literal>some-type</literal> is 
+          <type>xs:QName</type> or a map type with key type <type>xs:QName</type> the conversion described in
+            <xref linkend="qname-handling"/> applies.</para>
         </listitem>
+          <listitem>
+            <para>An attribute value with a map type marks an <type>XPathExpression</type> expected to
+              deliver a map of the indicated type. If the map type has key type <type>xs:QName</type> 
+              the conversion described in <xref linkend="qname-handling"/> applies.</para>
+          </listitem>
 
 </itemizedlist>
 
@@ -3824,46 +3385,6 @@ are allowed anywhere, and attributes that are
     <para>This section describes the core language steps of XProc; the full
 vocabulary of standard, atomic steps is described in
 <biblioref linkend="steps30"/>.</para>
-
-<para>The following dynamic errors are described in the atomic step vocabulary.
-They are repeated here so that the list of dynamic errors is wholly contained
-within this specification.</para>
-
-<note xml:id="ednote-dup-derrs" role="editorial">
-<title>Editorial Note</title>
-<para>This is not the right long term solution.</para>
-</note>
-
-<itemizedlist>
-<listitem>
-<para><error code="D0014">It is a
-<glossterm>dynamic error</glossterm> for any unqualified attribute
-names other than “<literal>name</literal>”,
-“<literal>namespace</literal>”, or “<literal>value</literal>” to
-appear on a <code>c:param</code> element.</error></para>
-</listitem>
-<listitem>
-<para><error code="D0025">It is a <glossterm>dynamic
-error</glossterm> if the <tag class="attribute">namespace</tag>
-attribute is specified on <code>c:param</code>,
-the <tag class="attribute">name</tag> contains
-a colon, and the specified namespace is not the same as the in-scope
-namespace binding for the specified prefix.</error></para>
-</listitem>
-<listitem>
-<para><error code="D0018">It is a
-<glossterm>dynamic error</glossterm> if the <code>c:parameter-set</code>
-parameter list contains
-any elements other than <tag>c:param</tag>.</error></para>
-</listitem>
-<listitem>
-<para><error code="D0034">On steps which allow independent specification
-of a namespace and a name, it is a
-<glossterm>dynamic error</glossterm> to specify a new namespace or
-prefix if the lexical value of the specified name contains a
-colon.</error></para>
-</listitem>
-</itemizedlist>
 
 <section xml:id="pipelines">
 <title>Pipelines</title>
@@ -4147,12 +3668,12 @@ on the output.</para>
 <section xml:id="p.choose">
 <title>p:choose</title>
 
-<para>A choose is specified by the <tag>p:choose</tag> element. It is
-a <glossterm>multi-container step</glossterm> that selects exactly one
-of a list of alternative <glossterm baseform="subpipeline">subpipelines</glossterm> based on the evaluation of XPath
+<para>A choose step is specified by the <tag>p:choose</tag> element.
+It is a <glossterm>compound step</glossterm> that contains several, alternate subpipelines. One
+subpipeline is selected based on the evaluation of XPath
 expressions.</para>
 
-      <e:rng-pattern name="Choose"/>
+<e:rng-pattern name="Choose"/>
 
 <para>A <tag>p:choose</tag> contains an arbitrary number of
 alternative <glossterm baseform="subpipeline">subpipelines</glossterm>, exactly one of which
@@ -4361,10 +3882,14 @@ on the <tag>p:if</tag> will produce any documents.</para>
 <section xml:id="p.try">
 <title>p:try</title>
 
-<para>A try/catch is specified by the <tag>p:try</tag> element. It is
-a <glossterm>multi-container step</glossterm> that isolates a
-<glossterm>subpipeline</glossterm>, preventing any dynamic errors that
-arise within it from being exposed to the rest of the pipeline.</para>
+<para>A try/catch step is specified by the <tag>p:try</tag> element.
+It is a <glossterm>compound step</glossterm> that isolates its initial
+subpipeline, preventing dynamic errors that arise within it from being
+exposed to the rest of the pipeline.
+The <tag>p:try</tag> includes alternate
+recovery subpipelines, and may include a “finally”
+subpipeline to perform post-processing irrespective of the outcome of
+the <tag>p:try</tag>.</para>
 
 <e:rng-pattern name="Try"/>
 
@@ -4386,6 +3911,15 @@ that it might have generated, and considers the recovery
 subpipelines.
 If there is no matching recovery subpipeline, the <tag>p:try</tag> fails.
 </para>
+
+<note>
+<para>If the initial subpipeline fails, none of its outputs will be
+visible outside of the <tag>p:try</tag>, but it's still possible for
+steps in the partially evaluated pipeline to have side effects that
+are visible outside the processor. For example, a web server might
+record that some interaction was performed, or a file on the local
+file system might have been modified.</para>
+</note>
 
 <para>If a recovery subpipeline is evaluated, the outputs of the
 recovery subpipeline are the outputs of the <tag>p:try</tag> step. If
@@ -4889,7 +4423,9 @@ author to exclude some namespace declarations in inline content, see <tag>p:inli
 <para>On a <tag>p:declare-step</tag> for an atomic step, the
 <tag>p:input</tag> can only declare the input port. <error code="S0042">It is a <glossterm>static error</glossterm> to attempt to
 provide a connection for an input port on the declaration of an atomic
-step.</error></para>
+step.</error> On <tag>p:declare-step</tag>, any binding provided in
+<tag>p:input</tag> is a default connection for the port, if no other
+connection is provided, see <xref linkend="conn-prec"/>.</para>
 
 <para xml:id="note-pipe-excl">The <tag>p:pipe</tag> element is
 explicitly excluded from a declaration because it would make the
@@ -5048,37 +4584,69 @@ author to exclude some namespace declarations in inline content, see <tag>p:inli
 </varlistentry>
 </variablelist>
 
-<para>An input declaration may include a default connection. If no
-connection is provided for an input port which has a default
-connection, then the input is treated as if the default connection
-appeared.</para>
-
 <para>A <tag>p:with-input</tag> element with no children
 (<foreignphrase>e.g.</foreignphrase>, “<code>&lt;p:with-input/&gt;</code>”)
-is equivalent to an
-input connection that contains only “<code>&lt;p:pipe/&gt;</code>”, which is
+is treated implicitly as if it contained only “<code>&lt;p:pipe/&gt;</code>”, which is
 in turn equivalent to a binding to the default readable port.
 </para>
 
-<para>An input declaration may contain foreign element, scoped outside of XProc vocabulary
-(<uri type="xmlnamespace">http://www.w3.org/ns/xproc</uri>) namespace. Each element is treated
-as if wrapped with a <tag>p:inline</tag> element. For definition of this implicit behaviour
-see <tag>p:inline</tag>.</para>
+<para>If the <tag>p:with-input</tag> contains elements not in the XProc namespace,
+they are <link linkend="implicit-inlines">implicit inlines</link>.</para>
 
-<para>A default connection does not satisfy the requirement that a
-primary input port is automatically connected by the processor, nor is
-it used when no default readable port is defined. In other words, a
-<tag>p:declare-step</tag> can define
-defaults for all of its inputs, whether they are primary or not, but
-defining a default for a primary input usually has no effect. It's
-never used by an atomic step since the step, when it's called, will
-always connect the primary input port to the default readable port (or
-cause a static error). The only case where it has value is on a
-<tag>p:declare-step</tag> when that pipeline is invoked directly by the
-processor. In that case, the processor <rfc2119>must</rfc2119> use the
-default connection if no external connection is provided for the
-port.</para>
+<section xml:id="conn-prec">
+<title>Connection precedence</title>
 
+<para>XProc 3.0 introduces a number of new connection defaulting
+mechanisms to make pipeline authoring easier. Defaults only apply
+if there’s no explicit connection, and they apply differently to
+primary and secondary inputs.</para>
+
+<variablelist>
+<varlistentry>
+<term>Primary input ports</term>
+<listitem>
+<para>For a given primary input port:</para>
+<orderedlist>
+<listitem>
+<para>If there is a <tag>p:with-input</tag> for that port and it provides a
+binding, even an implicit one, that binding is used.
+</para>
+</listitem>
+<listitem>
+<para>If there’s no <tag>p:with-input</tag> for that port and there is a default
+readable port, the input will be connected to the default readable port.
+</para>
+</listitem>
+<listitem>
+<para>If there’s no <tag>p:with-input</tag> for that port and there’s no default
+readable port, then the default connection from the declaration’s <tag>p:input</tag>
+will be used. It will be a static error if there is no default connection.
+</para>
+</listitem>
+</orderedlist>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>Secondary input ports</term>
+<listitem>
+<para>For a given secondary input port:</para>
+<orderedlist>
+<listitem>
+<para>If there is a <tag>p:with-input</tag> for that port and it provides a
+binding, even an implicit one, that binding is used.
+</para>
+</listitem>
+<listitem>
+<para>If there’s no <tag>p:with-input</tag> for that port
+then the default connection from the declaration’s <tag>p:input</tag>
+will be used. It will be a static error if there is no default connection.
+</para>
+</listitem>
+</orderedlist>
+</listitem>
+</varlistentry>
+</variablelist>
+</section>
 </section>
 
 <!-- ============================================================ -->
@@ -6258,9 +5826,69 @@ See also <xref linkend="handling-imports"/>.</para></section>
 
 <section xml:id="p.import-functions"><title>p:import-functions</title>
 
-<para>FIXME: T.B.D.</para>
+<para>An <tag>p:import-functions</tag> element identifies a library of externally
+defined functions to be imported into the pipeline. After the functions have been
+imported, they are available in the processor XPath context.</para>
 
 <e:rng-pattern name="ImportFunctions"/>
+
+<variablelist>
+<varlistentry><term><tag class="attribute">href</tag></term>
+<listitem><para>The <tag class="attribute">href</tag> attribute
+identifies the URI of the function library. <error code="S0103">It is
+a <glossterm>static error</glossterm> if the URI of a
+<tag>p:import-functions</tag> element cannot be retrieved or if, once
+retrieved, it points to a library that the processor cannot
+import.</error>
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><tag class="attribute">content-type</tag></term>
+<listitem>
+<para>The <tag class="attribute">content-type</tag> specifies what kind of library
+is expected at the URI. <impl>If no type is specified, the way that the processor
+determines the type of the library is <glossterm>implementation-defined</glossterm>.</impl>
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term><tag class="attribute">namespace</tag></term>
+<listitem>
+<para>If a <tag class="attribute">namespace</tag> is specified, it provides a list
+of namespace URIs. Only functions
+in those namespaces will be loaded.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+<para>The ability to import functions is optional. <impl>Whether or not a processor
+can import functions, and if it can, what kinds of function libraries it can import
+from is <glossterm>implementation-defined</glossterm>.</impl> Pipeline authors can
+use <function>p:function-library-importable</function> to test whether or not a particular
+kind of library can be loaded.
+</para>
+
+<para>Importing functions from a library implies loading and processing that library
+according to its conventions (loading imports, resolving dependencies, etc.).
+<error code="S0104">It is a <glossterm>static error</glossterm> if the processor
+cannot load the function library.</error> This may occur because the format is
+unknown, because it is a version of the library that the processor does
+not recognize, or if it’s uninterpretable for any other reason.
+<error code="S0106">It is a
+<glossterm>static error</glossterm> if the processor detects that a
+particular library is unloadable.</error> This may occur
+if the processor is, in principle, able to load libraries of the specified format,
+but detects that the particuar library requested is somehow ill-formed
+(syntactically invalid, has unsatisfiable dependencies or circular
+imports, etc.).
+</para>
+
+<para>Imported functions must be unique (they must not have the same name, namespace, and
+arity). <error code="S0105">It is a <glossterm>static error</glossterm> if a function
+imported from a library has the same name and arity as a function already imported.</error>
+</para>
+
+
 </section>
 
 <!-- ============================================================ -->
@@ -6814,6 +6442,500 @@ additional information items and properties, particularly those made available
 in the PSVI, are preserved between steps.</impl></para>
 </section>
 </appendix>
+<appendix xml:id="xproc-and-step-xpath-context">
+<title>XPath contexts in XProc</title>
+
+<para>FIXME: write an introduction</para>
+
+<section xml:id="xproc-xpath-context-31">
+<title>Processor XPath Context</title>
+<para>When the XProc processor evaluates an XPath expression using
+XPath, unless otherwise indicated by a particular step, it does so
+with the following static context:</para>
+          <variablelist>
+            <varlistentry>
+              <term>XPath 1.0 compatibility mode</term>
+              <listitem>
+                <para>False</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Statically known namespaces</term>
+              <listitem>
+                <para>The namespace declarations in-scope for the containing element. </para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Default element/type namespace</term>
+              <listitem>
+                <para>The null namespace.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Default function namespace</term>
+              <listitem>
+                <para>The default function namespace is <literal>http://www.w3.org/2005/xpath-functions</literal>, as defined in
+                  <biblioref linkend="xpath31-functions"/>. Function names that do
+                  not contain a colon always refer to the default function namespace, any in-scope
+                  binding for the default namespace <emphasis>does not</emphasis> apply. This
+                  specification does not provide a mechanism to override the default function
+                  namespace.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>In-scope schema definitions</term>
+              <listitem>
+                <para>A basic XPath 3.1 XProc processor includes the following named type
+                  definitions in its in-scope schema definitions:</para>
+                <itemizedlist>
+                  <listitem>
+                    <para>All the primitive atomic types defined in <biblioref linkend="xmlschema-2"/>, with the exception of <literal>xs:NOTATION</literal>. That is:
+<literal>xs:anyAtomicType</literal>,
+<literal>xs:anySimpleType</literal>,
+<literal>xs:anyURI</literal>,
+<literal>xs:base64Binary</literal>,
+<literal>xs:boolean</literal>,
+<literal>xs:date</literal>,
+<literal>xs:dateTime</literal>,
+<literal>xs:decimal</literal>,
+<literal>xs:double</literal>,
+<literal>xs:duration</literal>,
+<literal>xs:float</literal>,
+<literal>xs:gDay</literal>,
+<literal>xs:gMonth</literal>,
+<literal>xs:gMonthDay</literal>,
+<literal>xs:gYear</literal>,
+<literal>xs:gYearMonth</literal>,
+<literal>xs:hexBinary</literal>,
+<literal>xs:QName</literal>,
+<literal>xs:string</literal>, and
+<literal>xs:time</literal>.
+                    </para>
+                  </listitem>
+                  <listitem>
+                    <para>The derived atomic type <literal>xs:integer</literal> defined in
+                        <biblioref linkend="xmlschema-2"/>. </para>
+                  </listitem>
+                  <listitem>
+                    <para>The types <literal>xs:anyType</literal>,
+                      <literal>xs:yearMonthDuration</literal>,
+                      <literal>xs:dayTimeDuration</literal>, 
+                        <literal>xs:untyped</literal>, and <literal>xs:untypedAtomic</literal>
+                      defined in <biblioref linkend="xpath-datamodel"/>. </para>
+                  </listitem>
+                </itemizedlist>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>In-scope variables</term>
+              <listitem>
+<para>Variables and options are lexically scoped. The union of the
+options and the variables that
+are “visible” from the step's lexical position are available
+as variable bindings to the XPath processor.
+Variables and options can shadow each other, only the lexically most
+recent bindings are visible.</para>
+
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Context item static type</term>
+              <listitem>
+                <para>Document.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Function signatures</term>
+              <listitem>
+                <para>The signatures of the <biblioref linkend="xpath31-functions"/> in namespaces <literal>http://www.w3.org/2005/xpath-functions</literal>,
+                  <literal>http://www.w3.org/2005/xpath-functions/math</literal>, <literal>http://www.w3.org/2005/xpath-functions/map</literal> and
+                  <literal>http://www.w3.org/2005/xpath-functions/array</literal>. Additionally the function signatures defined in <xref linkend="xpath-extension-functions"/>. </para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Statically known collations</term>
+              <listitem>
+                <para>Implementation-defined but <rfc2119>must</rfc2119> include the Unicode code
+                  point collation. <impl>The version of Unicode supported is
+                      <glossterm>implementation-defined</glossterm>, but it is recommended that the
+                    most recent version of Unicode be used.</impl>
+                </para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Default collation</term>
+              <listitem>
+                <para>Unicode code point collation.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Static base URI</term>
+              <listitem>
+                <para>The base URI of the element on which the expression occurs.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Statically known documents</term>
+              <listitem>
+                <para>None.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Statically known collections</term>
+              <listitem>
+                <para>None.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Statically known default collection type</term>
+              <listitem>
+                <para><literal>item()*</literal></para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Statically known decimal formats</term>
+              <listitem>
+                <para>None.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+          <para>And the following dynamic context:</para>
+          <variablelist>
+            <varlistentry>
+              <term>context item</term>
+              <listitem>
+<para>The context item. The context item is either specified with a
+<glossterm>connection</glossterm> or is taken from the
+<glossterm>default readable port</glossterm>. <error code="D0008">It
+is a <glossterm>dynamic error</glossterm> if a sequence of items
+appears where an item to be used as the context item is
+expected.</error>
+</para>
+
+<para>The context item used for an XML, text, or JSON document is
+the XDM representation of that item.
+<impl>The context item used for binary documents is
+<glossterm>implementation-defined</glossterm>.</impl></para>
+
+<para>If there is no explicit connection and there is no default
+readable port then the context node is undefined.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>context position and context size</term>
+              <listitem>
+                <para>The context position and context size are both “1”. </para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Variable values</term>
+              <listitem>
+                <para>The union of the in-scope options and variables are available as variable
+                  bindings to the XPath processor. </para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Named functions</term>
+              <listitem>
+                <para>The <biblioref linkend="xpath31-functions"/> and the <xref linkend="xpath-extension-functions"/>. </para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Current dateTime</term>
+              <listitem>
+                <para><impl>The point in time returned as the current dateTime is
+                      <glossterm>implementation-defined</glossterm>.</impl>
+                </para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Implicit timezone</term>
+              <listitem>
+                <para><impl>The implicit timezone is
+                    <glossterm>implementation-defined</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Default language</term>
+              <listitem>
+                <para><impl>The default language is <glossterm>implementation-defined</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Default calendar</term>
+              <listitem>
+                <para><impl>The default calendar is <glossterm>implementation-defined</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Default place</term>
+              <listitem>
+                <para><impl>The default place is <glossterm>implementation-defined</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Available documents</term>
+              <listitem>
+                <para><impl>The set of available documents (those that may be retrieved with a URI)
+                    is <glossterm>implementation-dependent</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Available text resources</term>
+              <listitem>
+                <para><impl>The set of available text resources (those that may be retrieved with a URI)
+                is <glossterm>implementation-dependent</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Available collections</term>
+              <listitem>
+                <para><impl>The set of available collections is
+                      <glossterm>implementation-dependent</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Default collection</term>
+              <listitem>
+                <para>None. </para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Available URI collections</term>
+              <listitem>
+                <para><impl>The set of available URI collections is <glossterm>implementation-dependent</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Default URI collection</term>
+              <listitem>
+                <para><impl>The default URI collection is <glossterm>implementation-dependent</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Environment variables</term>
+              <listitem>
+                <para><impl>The list of available environment variables is <glossterm>implementation-defined</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </section>
+        <section xml:id="step-xpath-context-31">
+          <title>Step XPath Context</title>
+          <para>When a step evaluates an XPath expression using XPath 3.1, unless otherwise
+            indicated by a particular step, it does so with the following static context:</para>
+          <variablelist>
+            <varlistentry>
+              <term>XPath 1.0 compatibility mode</term>
+              <listitem>
+                <para>False</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Statically known namespaces</term>
+              <listitem>
+                <para>The namespace declarations in-scope for the containing element.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Default element/type namespace</term>
+              <listitem>
+                <para>The null namespace.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Default function namespace</term>
+              <listitem>
+                <para>The default function namespace is <literal>http://www.w3.org/2005/xpath-functions</literal>, as defined in
+                  <biblioref linkend="xpath31-functions"/>. Function names that do
+                  not contain a colon always refer to the default function namespace, any in-scope
+                  binding for the default namespace <emphasis>does not</emphasis> apply. This
+                  specification does not provide a mechanism to override the default function
+                  namespace.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>In-scope schema definitions</term>
+              <listitem>
+                <para>The same as the <xref linkend="xproc-xpath-context-31"/>. </para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>In-scope variables</term>
+              <listitem>
+                <para>None, unless otherwise specified by the step. </para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Context item static type</term>
+              <listitem>
+                <para>Document.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Function signatures</term>
+              <listitem>
+                <para>The signatures of the <biblioref linkend="xpath31-functions"/> in namespaces <literal>http://www.w3.org/2005/xpath-functions</literal>,
+                  <literal>http://www.w3.org/2005/xpath-functions/math</literal>, <literal>http://www.w3.org/2005/xpath-functions/map</literal> and
+                  <literal>http://www.w3.org/2005/xpath-functions/array</literal>.
+                </para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Statically known collations</term>
+              <listitem>
+                <para>Implementation-defined but <rfc2119>must</rfc2119> include the Unicode code
+                  point collation.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Default collation</term>
+              <listitem>
+                <para>Unicode code point collation.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Static base URI</term>
+              <listitem>
+                <para>The base URI of the element on which the expression occurs.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Statically known documents</term>
+              <listitem>
+                <para>None.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Statically known collections</term>
+              <listitem>
+                <para>None.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Statically known default collection type</term>
+              <listitem>
+                <para>item()*</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Statically known decimal formats</term>
+              <listitem>
+                <para>None.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+          <para>And the following initial dynamic context:</para>
+          <variablelist>
+            <varlistentry>
+              <term>context item</term>
+              <listitem>
+                <para>The document node of the document that appears on the primary input of the
+                  step, unless otherwise specified by the step.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>context position and context size</term>
+              <listitem>
+                <para>The context position and context size are both “1”, unless otherwise specified
+                  by the step. </para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Variable values</term>
+              <listitem>
+                <para>None, unless otherwise specified by the step. </para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Named functions</term>
+              <listitem>
+                <para>The <biblioref linkend="xpath31-functions"/>.</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Current dateTime</term>
+              <listitem>
+                <para>An implementation-defined point in time. </para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Implicit timezone</term>
+              <listitem>
+                <para><impl>The implicit timezone is
+                    <glossterm>implementation-defined</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Default language</term>
+              <listitem>
+                <para><impl>The default language is <glossterm>implementation-defined</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Default calendar</term>
+              <listitem>
+                <para><impl>The default calendar is <glossterm>implementation-defined</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Default place</term>
+              <listitem>
+                <para><impl>The defualt place is <glossterm>implementation-defined</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Available documents</term>
+              <listitem>
+                <para><impl>The set of available documents (those that may be retrieved with a URI)
+                    is <glossterm>implementation-dependent</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Available text resources</term>
+              <listitem>
+                <para><impl>The set of available text resources (those that may be retrieved with a URI)
+                  is <glossterm>implementation-dependent</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Available collections</term>
+              <listitem>
+                <para>None. </para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Default collection</term>
+              <listitem>
+                <para>None. </para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Available URI collections</term>
+              <listitem>
+                <para><impl>The set of available URI collections is <glossterm>implementation-dependent</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Default URI collection</term>
+              <listitem>
+                <para><impl>The default URI collection is <glossterm>implementation-dependent</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Environment variables</term>
+              <listitem>
+                <para><impl>The list of available environment variables is <glossterm>implementation-defined</glossterm>.</impl></para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+          <note xml:id="note-amendments">
+            <para>Some steps may also provide for implementation-defined or implementation-dependent
+              amendments to the contexts. Those amendments are in addition to any specified by
+              XProc.</para>
+          </note>
+        </section>
+      </appendix>
 <appendix xml:id="references" version="5.0-extension w3c-xproc">
 <title>References</title>
 <section xml:id="normative-references">
@@ -6943,14 +7065,14 @@ media types and all media types of the form
 (except for “<literal>application/xhtml+xml</literal>” which is explicitly
 an <glossterm>HTML media type</glossterm>)
 are <firstterm baseform="XML media type">XML media types</firstterm>.
-</para></glossdef></glossentry><glossentry><glossterm>ancestors</glossterm><glossdef><para>The <firstterm>ancestors</firstterm> of a step, if it has
-          any, are its <glossterm>container</glossterm> and the ancestors of its
-          container.</para></glossdef></glossentry><glossentry><glossterm>atomic
+</para></glossdef></glossentry><glossentry><glossterm>ancestors</glossterm><glossdef><para>The <firstterm>ancestors</firstterm> of
+a step, if it has any, are its <glossterm>container</glossterm> and
+the ancestors of its container.</para></glossdef></glossentry><glossentry><glossterm>atomic
 step</glossterm><glossdef><para>An <firstterm>atomic
 step</firstterm> is a step that performs a unit of processing
 on its input,
-such as XInclude or transformation, and has no internal
-<glossterm>subpipeline</glossterm>. </para></glossdef></glossentry><glossentry><glossterm>attribute value
+such as validation or transformation, and has no internal
+<glossterm>subpipeline</glossterm>.</para></glossdef></glossentry><glossentry><glossterm>attribute value
 template</glossterm><glossdef><para>In an attribute
 that is designated as an <firstterm>attribute value
 template</firstterm>, an expression can be used by surrounding the
@@ -6964,15 +7086,17 @@ templates</glossterm></para></glossdef></glossentry><glossentry><glossterm>bag-m
                   source</glossterm><glossdef><para>A document is specified <firstterm>by
                   source</firstterm> if it references a specific port on another step.</para></glossdef></glossentry><glossentry><glossterm>by URI</glossterm><glossdef><para>A document is specified
 <firstterm>by URI</firstterm> if it is referenced with a
-URI.</para></glossdef></glossentry><glossentry><glossterm>compound step</glossterm><glossdef><para>A <firstterm>compound step</firstterm> is a step that
-          contains a <glossterm>subpipeline</glossterm>.</para></glossdef></glossentry><glossentry><glossterm>connection</glossterm><glossdef><para>A <firstterm>connection</firstterm> associates an
-               input or output port with some data source.</para></glossdef></glossentry><glossentry><glossterm>contained
-            steps</glossterm><glossdef><para>The steps that occur directly within, or within
-          non-step wrappers directly within, a step are called that step's <firstterm>contained
-            steps</firstterm>. In other words, “container” and “contained steps” are inverse
-          relationships.</para></glossdef></glossentry><glossentry><glossterm>container</glossterm><glossdef><para>A compound step or multi-container step is a
-            <firstterm>container</firstterm> for the steps directly within it or within non-step
-          wrappers directly within it.</para></glossdef></glossentry><glossentry><glossterm>declared inputs</glossterm><glossdef><para>The input ports declared on a step are its
+URI.</para></glossdef></glossentry><glossentry><glossterm>compound
+step</glossterm><glossdef><para>A <firstterm>compound
+step</firstterm> is a step that contains one or more
+<glossterm baseform="subpipeline">subpipelines</glossterm>.</para></glossdef></glossentry><glossentry><glossterm>connection</glossterm><glossdef><para>A <firstterm>connection</firstterm> associates an
+               input or output port with some data source.</para></glossdef></glossentry><glossentry><glossterm>contained steps</glossterm><glossdef><para>The steps that occur directly
+within a container are called
+that step’s <firstterm>contained steps</firstterm>. In other words,
+“container” and “contained steps” are inverse relationships.</para></glossdef></glossentry><glossentry><glossterm>container</glossterm><glossdef><para>A <firstterm>container</firstterm>
+is either a compound step or one
+of the non-step wrapper elements in a compound step that contains
+several subpipelines.</para></glossdef></glossentry><glossentry><glossterm>declared inputs</glossterm><glossdef><para>The input ports declared on a step are its
             <firstterm>declared inputs</firstterm>.</para></glossdef></glossentry><glossentry><glossterm>declared outputs</glossterm><glossdef><para>The output ports declared on a step are its
             <firstterm>declared outputs</firstterm>.</para></glossdef></glossentry><glossentry><glossterm>default readable port</glossterm><glossdef><para>The
                 <firstterm>default readable port</firstterm>, which may be undefined, is a specific
@@ -6984,7 +7108,11 @@ URI.</para></glossdef></glossentry><glossentry><glossterm>compound step</glosste
       error</firstterm> is one which occurs while a pipeline is being
       evaluated (and cannot be detected before evaluation begins).</para></glossdef></glossentry><glossentry><glossterm>dynamic evaluation</glossterm><glossdef><para><firstterm baseform="dynamic evaluation">Dynamic
 evaluation</firstterm> consists of tasks which, in general,
-cannot be performed out until a source document is available.</para></glossdef></glossentry><glossentry><glossterm>empty environment</glossterm><glossdef><para>The <firstterm>empty environment</firstterm>
+cannot be performed out until a source document is available.</para></glossdef></glossentry><glossentry><glossterm>effectively
+excluded</glossterm><glossdef><para>If the effective boolean value of the
+<tag class="attribute">[p:]use-when</tag> expression is false, then
+the element and all of its descendants are <firstterm>effectively
+excluded</firstterm> from the pipeline document.</para></glossdef></glossentry><glossentry><glossterm>empty environment</glossterm><glossdef><para>The <firstterm>empty environment</firstterm>
           contains no readable ports, an undefined default readable port and no in-scope
           bindings.</para></glossdef></glossentry><glossentry><glossterm>empty sequence</glossterm><glossdef><para>An <firstterm>empty sequence</firstterm> of
                 documents is specified with the <tag>p:empty</tag> element.</para></glossdef></glossentry><glossentry><glossterm>environment</glossterm><glossdef><para>The <firstterm>environment</firstterm> is a
@@ -7009,14 +7137,12 @@ how <glossterm role="unwrapped">implementation-dependent</glossterm> features ar
                      environment</firstterm> is a <glossterm>connection</glossterm> for each of the
                      <glossterm>readable ports</glossterm> and a set of option bindings used to
                   construct the <glossterm>in-scope bindings</glossterm>.</para></glossdef></glossentry><glossentry><glossterm>inline document</glossterm><glossdef><para>An <firstterm>inline document</firstterm> is
-                specified directly in the body of the element to which it connects.</para></glossdef></glossentry><glossentry><glossterm>last step</glossterm><glossdef><para>The <firstterm>last step</firstterm> in a subpipeline is its
-          last step in document order.</para></glossdef></glossentry><glossentry><glossterm>map attribute</glossterm><glossdef><para>A <firstterm>map attribute</firstterm> is an option's syntactic
+                specified directly in the body of the element to which it connects.</para></glossdef></glossentry><glossentry><glossterm>last step</glossterm><glossdef><para>The <firstterm>last step</firstterm> in a
+subpipeline is its last step in document order.</para></glossdef></glossentry><glossentry><glossterm>map attribute</glossterm><glossdef><para>A <firstterm>map attribute</firstterm> is an option's syntactic
                   shortcut attribute for which the option's sequence type is a map or array.</para></glossdef></glossentry><glossentry><glossterm>matches</glossterm><glossdef><para>A step <firstterm>matches</firstterm> its signature if and
           only if it specifies an input for each declared input, it specifies no inputs that are not
           declared, it specifies an option for each option that is declared to be required, and it
-          specifies no options that are not declared.</para></glossdef></glossentry><glossentry><glossterm>multi-container
-            step</glossterm><glossdef><para>A <firstterm>multi-container
-            step</firstterm> is a step that contains several alternate <glossterm baseform="subpipeline">subpipelines</glossterm>. </para></glossdef></glossentry><glossentry><glossterm>namespace fixup</glossterm><glossdef><para>To produce a serializable
+          specifies no options that are not declared.</para></glossdef></glossentry><glossentry><glossterm>namespace fixup</glossterm><glossdef><para>To produce a serializable
               <glossterm>XML</glossterm> document, the XProc processor must sometimes add additional
             namespace nodes, perhaps even renaming prefixes, to satisfy the constraints of
               <glossterm>Namespaces in XML</glossterm>. This process is referred to as
@@ -7049,11 +7175,12 @@ alone, including the binding of
 computation of serialization properties and document-properties,
 <link linkend="use-when">evaluation of <code>use-when</code> expressions</link>,
 and detecting static errors.</para></glossdef></glossentry><glossentry><glossterm>static error</glossterm><glossdef><para>A <firstterm>static error</firstterm> is one which can
-          be detected before pipeline evaluation is even attempted.</para></glossdef></glossentry><glossentry><glossterm>step</glossterm><glossdef><para>A <firstterm>step</firstterm> is the basic computational unit
-          of a pipeline.</para></glossdef></glossentry><glossentry><glossterm>step type exports</glossterm><glossdef><para>The <firstterm>step type exports</firstterm> of an
+          be detected before pipeline evaluation is even attempted.</para></glossdef></glossentry><glossentry><glossterm>step</glossterm><glossdef><para>A <firstterm>step</firstterm> is the
+basic computational unit of a pipeline.</para></glossdef></glossentry><glossentry><glossterm>step type exports</glossterm><glossdef><para>The <firstterm>step type exports</firstterm> of an
         XProc element, against the background of a set of URIs of resources already visited (call
-        this set <emphasis>Visited</emphasis>), are defined by cases.</para></glossdef></glossentry><glossentry><glossterm>subpipeline</glossterm><glossdef><para>Sibling steps (and the connections between them) form a
-            <firstterm>subpipeline</firstterm>.</para></glossdef></glossentry><glossentry><glossterm>text media type</glossterm><glossdef><para>Media types of the form
+        this set <emphasis>Visited</emphasis>), are defined by cases.</para></glossdef></glossentry><glossentry><glossterm>subpipeline</glossterm><glossdef><para>Sibling steps and variables (and the
+connections between them) form a
+<firstterm>subpipeline</firstterm>.</para></glossdef></glossentry><glossentry><glossterm>text media type</glossterm><glossdef><para>Media types of the form
 “<literal>text/<replaceable>something</replaceable></literal>”
 are <firstterm baseform="text media type">text media types</firstterm> with the
 exception of “<literal>text/xml</literal>” which is an XML media type.
