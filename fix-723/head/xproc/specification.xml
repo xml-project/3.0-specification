@@ -7150,10 +7150,6 @@ W3C Recommendation. 9 September 2005.</bibliomixed>
 (Second Edition)</citetitle>.
 Jonathan Marsh and Richard Tobin, editors.
 W3C Recommendation. 28 January 2009.</bibliomixed>
-    <bibliomixed xml:id="xpath-serialization"><abbrev>Serialization</abbrev>
-<citetitle xlink:href="http://www.w3.org/TR/xslt-xquery-serialization-30/">XSLT and XQuery Serialization 3.0</citetitle>.
-Henry Zongaro, Andrew Coleman, and C. M. Sperberg-McQueen, editors.
-W3C Recommendation. 8 April 2014.</bibliomixed>
     <bibliomixed xml:id="rfc2119"><abbrev>RFC 2119</abbrev>
 <citetitle xlink:href="http://www.ietf.org/rfc/rfc2119.txt">Key words for use in RFCs to Indicate Requirement Levels</citetitle>.
 S. Bradner.
