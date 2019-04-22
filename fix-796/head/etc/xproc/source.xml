@@ -3734,16 +3734,16 @@ of the content types that might be produced by any of the <tag>p:when</tag>
 or the <tag>p:otherwise</tag>.
 </para>
 
-<para>The <tag>p:choose</tag> can specify the context item against
+<para>The <tag>p:choose</tag> can specify the context node against
 which the XPath expressions that occur on each branch are evaluated.
-The context item is specified as a <glossterm>connection</glossterm>
+The context node is specified as a <glossterm>connection</glossterm>
 in the <tag>p:with-input</tag>. If no explicit connection is provided,
 the <glossterm>default readable port</glossterm> is used. If the
-context item is connected to <tag>p:empty</tag>, or is unconnected and
+context node is connected to <tag>p:empty</tag>, or is unconnected and
 the <glossterm>default readable port</glossterm> is undefined, the
 context item is undefined. <error code="D0005">It is a
-<glossterm>dynamic error</glossterm> if more than one connection for 
-the context item is provided.</error>
+<glossterm>dynamic error</glossterm> if more than one document appears
+on the connection for this input port.</error>
 </para>
 
 <para>Each conditional <glossterm>subpipeline</glossterm> is
@@ -3784,9 +3784,9 @@ elements and the <tag>p:otherwise</tag> element are not in
             <glossterm>subpipeline</glossterm> contained within that
           <tag>p:when</tag>.</para>
 
-<para>The <tag>p:when</tag> can specify a context item against which
+<para>The <tag>p:when</tag> can specify a context node against which
 its <tag class="attribute">test</tag> expression is to be evaluated.
-That context item is specified as a <glossterm>connection</glossterm>
+That context node is specified as a <glossterm>connection</glossterm>
 for the <tag>p:with-input</tag>. If no context is specified on the
 <tag>p:when</tag>, the context of the <tag>p:choose</tag> is
 used.</para>
@@ -3854,9 +3854,9 @@ That XPath expression's effective boolean value is the guard for the
 <glossterm>subpipeline</glossterm> contained within it.
 </para>
 
-<para>The <tag>p:if</tag> step can specify a context item against which
+<para>The <tag>p:if</tag> step can specify a context node against which
 its <tag class="attribute">test</tag> expression is to be evaluated.
-That context item is specified as a <glossterm>connection</glossterm>
+That context node is specified as a <glossterm>connection</glossterm>
 for the <tag>p:with-input</tag>. If no context is specified on the
 <tag>p:if</tag>, the context comes from the
 <glossterm>default readable port</glossterm>.</para>
@@ -6724,9 +6724,11 @@ recent bindings are visible.</para>
               <listitem>
 <para>The context item. The context item is either specified with a
 <glossterm>connection</glossterm> or is taken from the
-<glossterm>default readable port</glossterm>. <error code="D0005">It is a
-<glossterm>dynamic error</glossterm> if more than one connection for 
-the context item is provided.</error>
+  <glossterm>default readable port</glossterm>.  If the explicit connection or
+the default readable port provides no or more than one document then the context 
+item is undefined. <error code="D0001">It is a <glossterm>dynamic error</glossterm>
+if the XPath expression makes use of the context item, but the context item is
+undefined.</error>
 </para>
 
 <para>The context item used for an XML, text, or JSON document is
@@ -6735,7 +6737,7 @@ the XDM representation of that item.
 <glossterm>implementation-defined</glossterm>.</impl></para>
 
 <para>If there is no explicit connection and there is no default
-readable port then the context node is undefined.</para>
+readable port then the context item is undefined.</para>
               </listitem>
             </varlistentry>
             <varlistentry>
