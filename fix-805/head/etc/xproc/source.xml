@@ -517,7 +517,7 @@ be serialized using the XML serializer (see <xref linkend="xml-serialization-31"
 Within XProc, they are <link linkend="xml-documents">XML documents</link>.
 HTML documents are identified by an HTML media type.
 <termdef xml:id="dt-HTML-media-type">The
-  “<literal>text/html</literal>” and “<literal>application/xhtml+xml”</literal>
+  “<literal>text/html</literal>” and “<literal>application/xhtml+xml</literal>”
 media types
 are <firstterm baseform="HTML media type">HTML media types</firstterm>.
 </termdef>
@@ -7202,7 +7202,7 @@ Engineering Task Force. November, 1996.</bibliomixed>
 </section>
 </appendix>
 <appendix xmlns:db="http://docbook.org/ns/docbook" xml:id="glossary"><title>Glossary</title><glosslist><glossentry><glossterm>HTML media type</glossterm><glossdef><para>The
-  “<literal>text/html</literal>” and “<literal>application/xhtml+xml”</literal>
+  “<literal>text/html</literal>” and “<literal>application/xhtml+xml</literal>”
 media types
 are <firstterm baseform="HTML media type">HTML media types</firstterm>.
 </para></glossdef></glossentry><glossentry><glossterm>JSON media type</glossterm><glossdef><para>The
