@@ -1855,6 +1855,7 @@
       <ref name="Step-insert"/>
       <ref name="Step-label-elements"/>
       <ref name="Step-load"/>
+      <ref name="Step-json-join"/>
       <ref name="Step-make-absolute-uris"/>
       <ref name="Step-namespace-rename"/>
       <ref name="Step-pack"/>
@@ -2199,7 +2200,9 @@
       </optional>
       <optional>
         <attribute name="cwd">
-          <data type="string"/>
+          <optional>
+            <data type="string"/>
+          </optional>
         </attribute>
       </optional>
       <optional>
@@ -2229,12 +2232,16 @@
       </optional>
       <optional>
         <attribute name="path-separator">
-          <data type="string"/>
+          <optional>
+            <data type="string"/>
+          </optional>
         </attribute>
       </optional>
       <optional>
         <attribute name="failure-threshold">
-          <data type="integer"/>
+          <optional>
+            <data type="integer"/>
+          </optional>
         </attribute>
       </optional>
       <optional>
@@ -2671,7 +2678,9 @@
       </optional>
       <optional>
         <attribute name="relative-to">
-          <data type="anyURI"/>
+          <optional>
+            <data type="anyURI"/>
+          </optional>
         </attribute>
       </optional>
       <optional>
@@ -3256,6 +3265,37 @@
       </interleave>
     </element>
   </define>
+  <define name="Step-json-join">
+    <element name="json-join">
+      <optional>
+        <ref name="name.ncname.attr"/>
+      </optional>
+      <ref name="common.attributes"/>
+      <optional>
+        <ref name="use-when.attr"/>
+      </optional>
+      <ref name="step.attributes"/>
+      <optional>
+        <attribute name="flatten-arrays">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <interleave>
+        <zeroOrMore>
+          <ref name="WithInput"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <ref name="WithOption"/>
+        </zeroOrMore>
+        <zeroOrMore>
+          <choice>
+            <ref name="Documentation"/>
+            <ref name="PipeInfo"/>
+          </choice>
+        </zeroOrMore>
+      </interleave>
+    </element>
+  </define>
   <define name="Step-make-absolute-uris">
     <element name="make-absolute-uris">
       <optional>
@@ -3306,12 +3346,16 @@
       <ref name="step.attributes"/>
       <optional>
         <attribute name="from">
-          <data type="anyURI"/>
+          <optional>
+            <data type="anyURI"/>
+          </optional>
         </attribute>
       </optional>
       <optional>
         <attribute name="to">
-          <data type="anyURI"/>
+          <optional>
+            <data type="anyURI"/>
+          </optional>
         </attribute>
       </optional>
       <optional>
@@ -3706,22 +3750,30 @@
       <ref name="step.attributes"/>
       <optional>
         <attribute name="separator">
-          <data type="string"/>
+          <optional>
+            <data type="string"/>
+          </optional>
         </attribute>
       </optional>
       <optional>
         <attribute name="prefix">
-          <data type="string"/>
+          <optional>
+            <data type="string"/>
+          </optional>
         </attribute>
       </optional>
       <optional>
         <attribute name="suffix">
-          <data type="string"/>
+          <optional>
+            <data type="string"/>
+          </optional>
         </attribute>
       </optional>
       <optional>
         <attribute name="override-content-type">
-          <data type="string"/>
+          <optional>
+            <data type="string"/>
+          </optional>
         </attribute>
       </optional>
       <interleave>
@@ -3759,7 +3811,9 @@
       </optional>
       <optional>
         <attribute name="flags">
-          <data type="string"/>
+          <optional>
+            <data type="string"/>
+          </optional>
         </attribute>
       </optional>
       <interleave>
@@ -3806,7 +3860,9 @@
       </optional>
       <optional>
         <attribute name="lang">
-          <data type="language"/>
+          <optional>
+            <data type="language"/>
+          </optional>
         </attribute>
       </optional>
       <optional>
@@ -3896,7 +3952,9 @@
       </optional>
       <optional>
         <attribute name="format">
-          <data type="QName"/>
+          <optional>
+            <data type="QName"/>
+          </optional>
         </attribute>
       </optional>
       <optional>
@@ -4264,6 +4322,11 @@
       <ref name="step.attributes"/>
       <optional>
         <attribute name="parameters">
+          <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="global-context-item">
           <data type="string"/>
         </attribute>
       </optional>
