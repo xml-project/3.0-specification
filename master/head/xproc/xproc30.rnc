@@ -646,7 +646,8 @@ NormalizationForm =
   | xsd:NMTOKEN
 ListOfQNames = text
 StandardStep =
-  Step-file-copy
+  Step-directory-list
+  | Step-file-copy
   | Step-file-delete
   | Step-file-info
   | Step-file-mkdir
@@ -669,9 +670,9 @@ StandardStep =
   | Step-archive-manifest
   | Step-cast-content-type
   | Step-compare
+  | Step-compress
   | Step-count
   | Step-delete
-  | Step-directory-list
   | Step-error
   | Step-escape-markup
   | Step-filter
@@ -710,6 +711,19 @@ StandardStep =
   | Step-xinclude
   | Step-xquery
   | Step-xslt
+Step-directory-list =
+  element directory-list {
+    name.ncname.attr?,
+    common.attributes,
+    use-when.attr?,
+    step.attributes,
+    attribute path { xsd:anyURI }?,
+    attribute detailed { xsd:boolean }?,
+    attribute max-depth { xsd:string? }?,
+    attribute include-filter { xsd:string }?,
+    attribute exclude-filter { xsd:string }?,
+    (WithOption* & (Documentation | PipeInfo)*)
+  }
 Step-file-copy =
   element file-copy {
     name.ncname.attr?,
@@ -962,6 +976,17 @@ Step-compare =
     attribute fail-if-not-equal { xsd:boolean }?,
     (WithInput* & WithOption* & (Documentation | PipeInfo)*)
   }
+Step-compress =
+  element compress {
+    name.ncname.attr?,
+    common.attributes,
+    use-when.attr?,
+    step.attributes,
+    attribute format { xsd:QName }?,
+    attribute serialization { xsd:string }?,
+    attribute parameters { xsd:string }?,
+    (WithInput* & WithOption* & (Documentation | PipeInfo)*)
+  }
 Step-count =
   element count {
     name.ncname.attr?,
@@ -979,19 +1004,6 @@ Step-delete =
     step.attributes,
     attribute match { xsd:string }?,
     (WithInput* & WithOption* & (Documentation | PipeInfo)*)
-  }
-Step-directory-list =
-  element directory-list {
-    name.ncname.attr?,
-    common.attributes,
-    use-when.attr?,
-    step.attributes,
-    attribute path { xsd:anyURI }?,
-    attribute detailed { xsd:boolean }?,
-    attribute max-depth { xsd:string? }?,
-    attribute include-filter { xsd:string }?,
-    attribute exclude-filter { xsd:string }?,
-    (WithOption* & (Documentation | PipeInfo)*)
   }
 Step-error =
   element error {
@@ -1092,7 +1104,7 @@ Step-json-join =
     common.attributes,
     use-when.attr?,
     step.attributes,
-    attribute flatten-arrays { xsd:boolean }?,
+    attribute flatten-to-depth { xsd:string? }?,
     (WithInput* & WithOption* & (Documentation | PipeInfo)*)
   }
 Step-make-absolute-uris =

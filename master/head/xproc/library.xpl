@@ -60,6 +60,19 @@
       <p:option name="method" as="xs:QName?"/>
       <p:option name="fail-if-not-equal" as="xs:boolean" select="false()"/>
    </p:declare-step>
+   <p:declare-step type="p:compress" xml:id="compress">
+      <p:input port="source"
+               primary="true"
+               content-types="any"
+               sequence="false"/>
+      <p:output port="result"
+                primary="true"
+                content-types="any"
+                sequence="false"/>
+      <p:option name="format" as="xs:QName" select="'gzip'"/>
+      <p:option name="serialization" as="xs:string"/>
+      <p:option name="parameters" as="xs:string"/>
+   </p:declare-step>
    <p:declare-step type="p:count" xml:id="count">
       <p:input port="source" content-types="*/*" sequence="true"/>
       <p:output port="result" content-types="application/xml"/>
@@ -184,7 +197,7 @@
    <p:declare-step type="p:json-join" xml:id="json-join">
       <p:input port="source" sequence="true" content-types="json"/>
       <p:output port="result" content-types="application/json"/>
-      <p:option name="flatten-arrays" as="xs:boolean" select="false()"/>
+      <p:option name="flatten-to-depth" as="xs:string?" select="'0'"/>
    </p:declare-step>
    <p:declare-step type="p:label-elements" xml:id="label-elements">
       <p:input port="source" content-types="xml html"/>
@@ -544,11 +557,11 @@
    </p:declare-step>
    <p:declare-step type="p:xquery" xml:id="xquery">
       <p:input port="source"
-               content-types="application/xml text/xml */*+xml"
+               content-types="any"
                sequence="true"
                primary="true"/>
-      <p:input port="query" content-types="application/xml */*+xml text/*"/>
-      <p:output port="result" sequence="true" content-types="*/*"/>
+      <p:input port="query" content-types="text xml"/>
+      <p:output port="result" sequence="true" content-types="any"/>
       <p:option name="parameters" as="xs:string"/>
       <p:option name="version" as="xs:string?"/>
    </p:declare-step>
