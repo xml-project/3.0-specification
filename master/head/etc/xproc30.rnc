@@ -701,6 +701,7 @@ StandardStep =
   | Step-text-sort
   | Step-text-tail
   | Step-unarchive
+  | Step-uncompress
   | Step-unescape-markup
   | Step-unwrap
   | Step-uuid
@@ -1287,6 +1288,17 @@ Step-unarchive =
     attribute exclude-filter { xsd:string }?,
     attribute format { xsd:QName? }?,
     attribute parameters { xsd:string }?,
+    (WithInput* & WithOption* & (Documentation | PipeInfo)*)
+  }
+Step-uncompress =
+  element uncompress {
+    name.ncname.attr?,
+    common.attributes,
+    use-when.attr?,
+    step.attributes,
+    attribute format { xsd:QName? }?,
+    attribute parameters { xsd:string }?,
+    attribute content-type { xsd:string }?,
     (WithInput* & WithOption* & (Documentation | PipeInfo)*)
   }
 Step-unescape-markup =
