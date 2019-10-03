@@ -684,6 +684,7 @@ StandardStep =
   | Step-load
   | Step-json-join
   | Step-make-absolute-uris
+  | Step-namespace-delete
   | Step-namespace-rename
   | Step-pack
   | Step-rename
@@ -1116,6 +1117,15 @@ Step-make-absolute-uris =
     step.attributes,
     attribute match { xsd:string }?,
     attribute base-uri { xsd:anyURI? }?,
+    (WithInput* & WithOption* & (Documentation | PipeInfo)*)
+  }
+Step-namespace-delete =
+  element namespace-delete {
+    name.ncname.attr?,
+    common.attributes,
+    use-when.attr?,
+    step.attributes,
+    attribute prefixes { xsd:string }?,
     (WithInput* & WithOption* & (Documentation | PipeInfo)*)
   }
 Step-namespace-rename =
