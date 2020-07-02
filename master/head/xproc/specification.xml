@@ -867,6 +867,11 @@ output named “<literal>result</literal>”, and the same set of options.
         <termdef xml:id="dt-declared-outputs">The output ports declared on a step are its
             <firstterm>declared outputs</firstterm>.</termdef> When a step is used in a pipeline, it
         is connected to other steps through its inputs and outputs. </para>
+  
+    <para><termdef xml:id="dt-anonymous-inputs">The <glossterm>compound steps</glossterm> 
+      <tag>p:for-each</tag> and <tag>p:viewport</tag> each declare
+        a single primary input without a port name. Such an input is called an 
+      <firstterm>anonymous input</firstterm>.</termdef></para>
 
          <para>When a step is used, all of the <glossterm>declared inputs</glossterm> of the step
                <rfc2119>must</rfc2119> be connected. Each connection binds the input to a data
@@ -2160,16 +2165,18 @@ static analysis is <glossterm>implementation-defined</glossterm>.</impl></para>
               specification</link>.</termdef></para>
         </listitem>
         <listitem>
+          <para>All steps that explicitly behave like the <tag>p:identity</tag> step under
+          some circumstances must preserve PSVI properties under those circumstances.
+          In this specifications, those steps are <tag>p:if</tag> when the condition is false
+          and <tag>p:choose</tag> when no subpipline is selected.</para>
+        </listitem>
+        <listitem>
           <para>Except as specified above, or in the descriptions of individual steps,
             implementations <rfc2119>must not</rfc2119> include PSVI properties in the outputs of
-            steps defined by this specification. <impl>It is
+            steps. 
+            <impl>It is
                 <glossterm>implementation-defined</glossterm> what PSVI properties, if any, are
               produced by extension steps.</impl></para>
-          <para>The exceptions in the standard XProc steps are the
-              <tag>p:validate-with-xml-schema</tag>, <tag>p:validate-with-relax-ng</tag>, and
-              <tag>p:validate-with-schematron</tag> steps, <tag>p:xslt</tag> (when XSLT 2.0 is
-            used), <tag>p:xquery</tag>, <tag>p:identity</tag>, and <tag>p:split-sequence</tag>.
-          </para>
         </listitem>
       </orderedlist>
       <note xml:id="note-psvi">
@@ -3694,7 +3701,7 @@ each document in the sequence in turn.</para>
         a <tag>p:for-each</tag> is an empty sequence, then the subpipeline is never run and an empty
         sequence is produced on all of the outputs. </para>
 
-<para>The <tag>p:for-each</tag> has a single anonymous input: its
+<para>The <tag>p:for-each</tag> has a single <glossterm>anonymous input</glossterm>: its
 <glossterm>connection</glossterm> is provided by the
 <tag>p:with-input</tag>. If no iteration sequence is explicitly provided,
 then the iteration source is read from the <glossterm>default readable
@@ -3794,7 +3801,7 @@ more subtrees of each document in turn.</para>
 original document where the selected subtrees have been replaced by
 the results of applying the subpipeline to them.</para>
 
-<para>The <tag>p:viewport</tag> has a single anonymous input: its
+<para>The <tag>p:viewport</tag> has a single <glossterm>anonymous input</glossterm>: its
 <glossterm>connection</glossterm> is provided by the
 <tag>p:with-input</tag>. If no document is explicitly provided,
 then the viewport source is read from the <glossterm>default readable
@@ -4498,6 +4505,18 @@ is an opportunity for the step to identify the error in a
 machine-processable fashion. Many steps omit this because they do not
 include the concept of errors identified by EQNames.</para>
 
+<para>The <tag class="attribute">cause</tag> is an EQName which
+identifies an underlying error, if applicable. As an aide to
+interoperability, this specification mandates particular error codes
+for conditions that can arise in a variety of ways. For example,
+<code>err:XD0050</code> is raised for all errors in XPath expressions
+in value templates. The implementation may use
+<tag class="attribute">cause</tag> to record an underlying error (for
+example, the XPath error code).
+<impl>The error codes that appear in <tag class="attribute">cause</tag>
+are
+<glossterm>implementation-dependent</glossterm>.</impl></para>
+
 <para>If the error was caused by a specific document, or by the
 location of some erroneous construction in a specific document, the
 <tag class="attribute">href</tag>, <tag class="attribute">line</tag>,
@@ -4822,10 +4841,10 @@ is a binding for the specified port. If no port is specified, then:</para>
 <itemizedlist>
 <listitem>
 <para>In a <tag>p:viewport</tag> or <tag>p:for-each</tag>, it is a
-binding for the step’s single, anonymous input port.</para>
+binding for the step’s single, <glossterm>anonymous input</glossterm> port.</para>
 </listitem>
 <listitem>
-<para>In a <tag>p:choose</tag> or <tag>p:when</tag>, it is a
+<para>In a <tag>p:choose</tag>, <tag>p:when</tag> or <tag>p:if</tag>, it is a
 binding for the context item for the test expression(s).</para>
 </listitem>
 <listitem>
@@ -4836,8 +4855,12 @@ is no primary input port.</error>
 </para>
 </listitem>
 </itemizedlist>
+<para><error code="S0043">It is a <glossterm>static error</glossterm>
+to specify a port name on <tag>p:with-input</tag> for <tag>p:for-each</tag>,
+  <tag>p:viewport</tag>, <tag>p:choose</tag>, <tag>p:when</tag>, or <tag>p:if</tag>.</error>
+</para>
 <para><error code="S0086">It is a <glossterm>static error</glossterm>
-to provide more than one p:with-input for the same port.</error>
+to provide more than one <tag>p:with-input</tag> for the same port.</error>
 </para>
 
 <para>If no connection is provided for a <glossterm>primary input
@@ -5230,7 +5253,7 @@ document</emphasis> and provide it on the output port. It
         </listitem>
         <listitem>
           <para>Parameter <literal>omit-xml-declaration</literal> is set to
-            <literal>true</literal>.</para>
+            <literal>false</literal>.</para>
         </listitem>
       </itemizedlist>
       
@@ -5250,9 +5273,7 @@ document</emphasis> and provide it on the output port. It
           <para>The <code>encoding</code> must support the value <code>UTF-8</code>.</para>
         </listitem>
         <listitem>
-          <para>The <code>omit-xml-declaration</code> must be supported. If the value is not
-            specified or has the value <code>no</code>, an XML declaration must be
-            produced.</para>
+          <para>The <code>omit-xml-declaration</code> must be supported.</para>
         </listitem>
       </itemizedlist>
       
@@ -7298,7 +7319,10 @@ an <glossterm>HTML media type</glossterm>)
 are <firstterm baseform="XML media type">XML media types</firstterm>.
 </para></glossdef></glossentry><glossentry><glossterm>ancestors</glossterm><glossdef><para>The <firstterm>ancestors</firstterm> of
 a step, if it has any, are its <glossterm>container</glossterm> and
-the ancestors of its container.</para></glossdef></glossentry><glossentry><glossterm>atomic
+the ancestors of its container.</para></glossdef></glossentry><glossentry><glossterm>anonymous input</glossterm><glossdef><para>The <glossterm>compound steps</glossterm> 
+      <tag>p:for-each</tag> and <tag>p:viewport</tag> each declare
+        a single primary input without a port name. Such an input is called an 
+      <firstterm>anonymous input</firstterm>.</para></glossdef></glossentry><glossentry><glossterm>atomic
 step</glossterm><glossdef><para>An <firstterm>atomic
 step</firstterm> is a step that does not contain a subpipline when it
 is invoked.</para></glossdef></glossentry><glossentry><glossterm>attribute value
@@ -8131,6 +8155,18 @@ draft:</para>
       <listitem>
         <para>Changed description of <tag>p:viewport</tag> stating that the base URI of every matched node is the
         document's base URI, not just for document and element nodes.</para>
+      </listitem>
+      <listitem>
+        <para>Changed the default value for serialization property <literal>omit-xml-declaration</literal>
+          from <literal>true</literal> to <literal>false</literal> in section “Serialization method” . Removed
+          remark about default settings for this parameter from section “Minimal conformance”.</para>
+      </listitem>
+      <listitem>
+        <para>Clarified the conditions under which steps may produce PSVI annotations.</para>
+      </listitem>
+      <listitem>
+        <para>Added a <tag class="attribute">cause</tag> attribute to the error vocabulary 
+         for recording the error codes of underlying errors.</para>
       </listitem>
     </itemizedlist>
 </appendix>
