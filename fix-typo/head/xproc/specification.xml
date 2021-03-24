@@ -5,7 +5,7 @@
 <title>XProc 3.0: An XML Pipeline Language</title>
 <!-- defaults to date formatted <pubdate>2014-12-18</pubdate> -->
 
-<copyright><year>2018</year><year>2019</year>
+<copyright><year>2018</year><year>2019</year><year>2020</year>
 <holder>the Contributors to the XProc 3.0 Specification</holder> 
 </copyright>
 
@@ -61,9 +61,8 @@ steps are executed.</para>
 
 <note role="editorial">
 <para>This draft is the “editor’s working draft” and may include changes made
-after the “last call” draft that was announced at XML Prague, 2019.</para>
-<para>The
-<link xlink:href="http://spec.xproc.org/lastcall-2019-12/head/xproc/">last call draft</link>
+after the “last call” draft. The
+<link xlink:href="http://spec.xproc.org/lastcall-2020-08/head/xproc/">last call draft</link>
 is stable and will not change.
 </para>
 </note>
@@ -281,27 +280,31 @@ inputs, from which it receives documents to process, outputs, to which
 it sends result documents, and options which influence its behavior.</para>
 
 <para>There are two kinds of steps: atomic and compound:</para>
-
-<para>An atomic step is a step that performs a unit of processing on
-its input, such as validation or transformation, and has no internal
-subpipeline. Atomic steps carry out fundamental operations and can
-perform arbitrary amounts of computation, but they are
-indivisible.</para>
-
-<para>There are many <emphasis>types</emphasis> of atomic steps. The
-standard library of atomic steps is described in <biblioref linkend="steps30"/>, but implementations <rfc2119>may</rfc2119>
-provide others as well. <impl>It is
-<glossterm>implementation-defined</glossterm> what additional step
-types, if any, are provided. </impl> Each use, or instance, of an
-atomic step invokes the processing defined by that type of step. A
-pipeline may contain instances of many types of steps and many
-instances of the same type of step.</para>
-
-<para>Compound steps, on the other hand, control and organize the flow
-of documents through a pipeline, providing familiar programming
-language functionality such as conditionals, iterators and exception
-handling. They contain other steps, whose evaluation they
-control.</para>
+  
+  <itemizedlist>
+    <listitem>
+      <para>An atomic step is a step that performs a unit of processing on
+        its input, such as validation or transformation, and has no internal
+        subpipeline. Atomic steps carry out fundamental operations and can
+        perform arbitrary amounts of computation, but they are
+        indivisible.</para>
+      <para>There are many <emphasis>types</emphasis> of atomic steps. The
+        standard library of atomic steps is described in <biblioref linkend="steps30"/>, but implementations <rfc2119>may</rfc2119>
+        provide others as well. <impl>It is
+          <glossterm>implementation-defined</glossterm> what additional step
+          types, if any, are provided. </impl> Each use, or instance, of an
+        atomic step invokes the processing defined by that type of step. A
+        pipeline may contain instances of many types of steps and many
+        instances of the same type of step.</para>
+    </listitem>
+    <listitem>
+      <para>Compound steps, on the other hand, control and organize the flow
+        of documents through a pipeline, providing familiar programming
+        language functionality such as conditionals, iterators and exception
+        handling. They contain other steps, whose evaluation they
+        control.</para>
+    </listitem>
+  </itemizedlist>
 
 <para><termdef xml:id="dt-compound-step">A <firstterm>compound
 step</firstterm> is a step that contains one or more
@@ -351,27 +354,82 @@ subpipeline is its last step in document order.</termdef></para>
         input port named “schema” and an output port named “schema”). </para>
       <para>A step may have zero or more <link linkend="options">options</link>, all with unique
         names.</para>
-      <para>All of the different instances of steps (atomic or compound) in a pipeline can be
-        distinguished from one another by name. If the pipeline author does not provide a name for a
-        step, a default name is <link linkend="step-names">manufactured automatically</link>.</para>
+     
+  
       <section xml:id="step-names">
         <title>Step names</title>
-        <para>The <tag class="attribute">name</tag> attribute on any step can be used to give it a
-          name. <assert xml:id="unique-names">The name <rfc2119>must</rfc2119> be unique within its scope, see <xref linkend="scoping"/>.</assert></para>
-        <para>If the pipeline author does not provide an explicit name, the processor manufactures a
-          default name. All default names are of the form
+        <para>All of the different instances of steps (atomic or compound) in a pipeline can be
+          distinguished from one another by <emphasis>name</emphasis>. Names can be specified using
+          the (optional) <tag class="attribute">name</tag> attribute. <assert xml:id="unique-names">A specified step name <rfc2119>must</rfc2119> be unique within its scope, see <xref linkend="scoping"/>.</assert></para>
+
+        <para>The main purpose of step names in a pipeline is to <emphasis>explicitly</emphasis>
+          connect to port(s) of another step. This applies to <tag>p:input</tag>,
+            <tag>p:output</tag>, <tag>p:with-input</tag>, <tag>p:with-option</tag> and
+            <tag>p:variable</tag>, using either a <tag>p:pipe</tag> child element or a <tag class="attribute">pipe</tag> attribute.</para>
+        
+        <para>The following example uses the step names provided by the <tag class="attribute">name</tag> attributes to explicitly connect ports, using <tag>p:pipe</tag> child elements. The
+          document on the <port>extra</port> port of the step gets an additional attribute and is
+          subsequently inserted into the document on the <port>source</port> port.</para>
+        <programlisting language="xml">&lt;p:declare-step xmlns:p="http://www.w3.org/ns/xproc" version="3.0" 
+    name="main-step"&gt;
+
+  &lt;p:input port="source" primary="true"/&gt;
+  &lt;p:input port="extra"/&gt;
+  &lt;p:output port="result" primary="true"/&gt;
+
+  &lt;p:add-attribute attribute-name="timestamp" attribute-value="{current-dateTime()}" 
+      name="add-timestamp"&gt;
+    &lt;p:with-input port="source"&gt;
+      &lt;p:pipe step="main-step" port="extra"/&gt;
+    &lt;/p:with-input&gt;
+  &lt;/p:add-attribute&gt;
+
+  &lt;p:insert match="/*" position="first-child"&gt;
+    &lt;p:with-input port="source"&gt;
+      &lt;p:pipe step="main-step" port="source"/&gt;
+    &lt;/p:with-input&gt;
+    &lt;p:with-input port="insertion"&gt;
+      &lt;p:pipe step="add-timestamp" port="result"/&gt;
+    &lt;/p:with-input&gt;
+  &lt;/p:insert&gt;
+
+&lt;/p:declare-step&gt;</programlisting>
+        
+        <para>Alternatively, using <tag class="attribute">pipe</tag> attributes to connect the
+          ports, you could write this as:</para>
+        <programlisting language="xml">&lt;p:declare-step xmlns:p="http://www.w3.org/ns/xproc" version="3.0" 
+    name="main-step"&gt;
+
+  &lt;p:input port="source" primary="true"/&gt;
+  &lt;p:input port="extra"/&gt;
+  &lt;p:output port="result" primary="true"/&gt;
+
+  &lt;p:add-attribute attribute-name="timestamp" attribute-value="{current-dateTime()}" 
+      name="add-timestamp"&gt;
+    &lt;p:with-input port="source" pipe="extra@main-step"/&gt;
+  &lt;/p:add-attribute&gt;
+
+  &lt;p:insert match="/*" position="first-child"&gt;
+    &lt;p:with-input port="source" pipe="source@main-step"/&gt;
+    &lt;p:with-input port="insertion" pipe="result@add-timestamp"/&gt;
+  &lt;/p:insert&gt;
+
+&lt;/p:declare-step&gt;</programlisting>
+        
+        <para>If the pipeline author does not provide an explicit name using the <tag class="attribute">name</tag> attribute, the processor manufactures a default name. All
+          default names are of the form
             “<literal>!1</literal><replaceable>.m</replaceable><replaceable>.n</replaceable>…” where
             “<replaceable>m</replaceable>” is the position (in the sense of counting sibling
-          elements) of the step’s highest ancestor element within the pipeline document or library
-          which contains it, “<replaceable>n</replaceable>” is the position of the next-highest
-          ancestor, and so on, including all of the elements in the pipeline document
-(that were not <glossterm>effectively excluded</glossterm>). For example, consider the
-          pipeline in <xref linkend="ex2"/>. The <tag>p:declare-step</tag> step has no name, so it gets
-          the default name “<literal>!1</literal>”; the <tag>p:choose</tag> gets the name
+          elements) of the step’s highest ancestor element within the pipeline document or
+          library which contains it, “<replaceable>n</replaceable>” is the position of the
+          next-highest ancestor, and so on, including all of the elements in the pipeline document
+          (that were not <glossterm>effectively excluded</glossterm>). For example, consider the
+          pipeline in <xref linkend="ex2"/>. The <tag>p:declare-step</tag> step has no name, so it
+          gets the default name “<literal>!1</literal>”; the <tag>p:choose</tag> gets the name
             “<literal>!1.1</literal>”; the first <tag>p:when</tag> gets the name
             “<literal>!1.1.1</literal>”; the <tag>p:otherwise</tag> gets the name
-            “<literal>!1.1.2</literal>”, etc. If the <tag>p:choose</tag> had a name, it would
-          not have received a default name, but it would still have been counted and its first
+            “<literal>!1.1.2</literal>”, etc. If the <tag>p:choose</tag> had a name, it would not
+          have received a default name, but it would still have been counted and its first
             <tag>p:when</tag> would still have been “<literal>!1.1.1</literal>”.</para>
         <para>Providing every step in the pipeline with an interoperable name has several
           benefits:</para>
@@ -389,18 +447,98 @@ subpipeline is its last step in document order.</termdef></para>
         <para>In a valid pipeline that runs successfully to completion, the manufactured names
           aren't visible (except perhaps in debugging or logging output).</para>
 
-<note xml:id="def-name-ncname">
-<para>The format for defaulted names does not conform to the
-requirements of an
-<link xlink:href="http://www.w3.org/TR/xml-names/#NT-NCName">NCName</link>.
-This is an explicit design decision; it prevents pipelines from using
-the defaulted names on <tag>p:pipe</tag> elements. If an explicit
-connection requires a step name, the pipeline author must name
-the step.
-</para>
-</note>
+        <note xml:id="def-name-ncname">
+          <para>The format for defaulted names does not conform to the requirements of an <link xlink:href="http://www.w3.org/TR/xml-names/#NT-NCName">NCName</link>. This is an
+            explicit design decision; it prevents pipelines from using the defaulted names on
+              <tag>p:pipe</tag> elements. If an explicit connection requires a step name, the
+            pipeline author must name the step. </para>
+        </note>
 
       </section>
+  
+      <section xml:id="step-types">
+        <title>Step types</title>
+
+        <para>A step can have a <emphasis>type</emphasis>. Step types are specified using the <tag class="attribute">type</tag> attribute of the <tag>p:declare-step</tag> element. Step
+          types are used as the name of the element by which the step is invoked. <assert xml:id="unique-types">A specified step type <rfc2119>must</rfc2119> be unique within its
+            scope, see <xref linkend="scoping"/>.</assert></para>
+
+        <para>Step types are QNames and <rfc2119>must</rfc2119> be in namespace with a non-null
+          namespace URI. Steps in the XProc standard and additional step libraries all have types in
+          the XProc namespace: <code>http://www.w3.org/ns/xproc</code>. When providing your own
+          steps with a type, which is necessary to use/invoke them in another step, a different
+          (non-null) namespace must be used.</para>
+
+        <para>Step types play an important role in the modularization of pipelines. They allow steps
+          to be re-used. The following example defines a local step with type
+            <code>mysteps:add-timestamp-attribute</code> and subsequently uses this twice somewhere inside
+          its main step’s pipeline: </para>
+        <programlisting language="xml">&lt;p:declare-step xmlns:p="http://www.w3.org/ns/xproc" version="3.0"
+  xmlns:mysteps="http://.../ns/mysteps"&gt;
+
+  &lt;p:input port="source"/&gt;
+  &lt;p:output port="result"/&gt;
+
+  &lt;p:declare-step type="mysteps:add-timestamp-attribute"&gt; 
+    &lt;p:input port="source"/&gt;
+    &lt;p:output port="result"/&gt;
+    &lt;p:add-attribute attribute-name="timestamp" attribute-value="{current-dateTime()}"/&gt;
+  &lt;/p:declare-step&gt;
+  
+  ...
+  &lt;mysteps:add-timestamp-attribute/&gt;
+  ...
+  &lt;mysteps:add-timestamp-attribute/&gt;
+  ...
+
+&lt;/p:declare-step&gt;</programlisting>
+
+        <para>Another way of doing this would be to isolate the
+            <code>mysteps:add-timestamp-attribute</code> step as a separate, stand-alone,
+          pipeline:</para>
+        <programlisting language="xml">&lt;p:declare-step type="mysteps:add-timestamp-attribute" version="3.0"
+  xmlns:p="http://www.w3.org/ns/xproc" xmlns:mysteps="http://.../ns/mysteps"&gt;
+  &lt;p:input port="source"/&gt;
+  &lt;p:output port="result"/&gt;
+  &lt;p:add-attribute attribute-name="timestamp" attribute-value="{current-dateTime()}"/&gt;
+&lt;/p:declare-step&gt;</programlisting>
+
+        <para>Assuming this is stored in a file called <code>add-timestamp-attribute.xpl</code>, you
+          can now use the <tag>p:import</tag> element to get it on board:</para>
+        <programlisting language="xml">&lt;p:declare-step xmlns:p="http://www.w3.org/ns/xproc" version="3.0"
+  xmlns:mysteps="http://.../ns/mysteps"&gt;
+
+  &lt;p:import href="add-timestamp-attribute.xpl"/&gt;
+
+  &lt;p:input port="source"/&gt;
+  &lt;p:output port="result"/&gt;
+
+  ...
+  &lt;mysteps:add-timestamp-attribute/&gt;
+  ...
+
+&lt;/p:declare-step&gt;</programlisting>
+
+        <para>Yet another way of achieving the same result would be to add the
+            <code>mysteps:add-timestamp-attribute</code> step to an XProc
+            <emphasis>library</emphasis>, using the <tag>p:library</tag> root element:</para>
+        <programlisting language="xml">&lt;p:library version="3.0" xmlns:p="http://www.w3.org/ns/xproc" 
+  xmlns:mysteps="http://.../ns/mysteps"&gt;
+
+  &lt;p:declare-step type="mysteps:add-timestamp-attribute"&gt;
+    &lt;p:input port="source"/&gt;
+    &lt;p:output port="result"/&gt;
+    &lt;p:add-attribute attribute-name="timestamp" attribute-value="{current-dateTime()}"/&gt;
+  &lt;/p:declare-step&gt;
+
+  ... more library steps
+
+&lt;/p:library&gt;</programlisting>
+
+        <para>Importing a library is also done with the <tag>p:import</tag> element. </para>
+
+      </section>
+    
     </section>
   </section>
 
@@ -681,11 +819,14 @@ etc.
 </section>
 </section>
 
-    <section>
+    <section xml:id="creating-documents-from-xdm-step-results">
       <title>Creating documents from XDM step results</title>
       <para>Some steps like <tag>p:xslt</tag>, <tag>p:xquery</tag> etc. create a sequence of new XDM
-        instances. Values in such a sequence can be of any XDM type (except attribute). Every item in such a sequence is converted into a <emphasis>separate</emphasis>
-        document that will appear on the output port of that particular step. The following rules
+        instances. The same is true for the result of a <code>select</code> expression on
+          <tag>p:with-input</tag>. Values in such a sequence can be of any XDM type (except
+        attribute or function). Every item in such a sequence is converted into a <emphasis>separate</emphasis>
+        document that will appear on the output port of that particular step or as the result of the 
+        <tag>p:with-input</tag>. The following rules
         apply to each of the items in the output sequence:</para>
       <itemizedlist>
         <listitem>
@@ -783,7 +924,11 @@ The following shortcuts <rfc2119>must</rfc2119> be supported by the processor:</
 </listitem>
 </itemizedlist>
 
-<para><impl>It is <glossterm>implementation-defined</glossterm> if a processor accepts any other content type shortcuts.</impl>
+  <para><error code="D0079">It is a <glossterm>dynamic error</glossterm> if a supplied content-type is not 
+    a valid media type of the form 
+    “<literal><replaceable>type</replaceable>/<replaceable>subtype</replaceable>+<replaceable>ext</replaceable></literal>” 
+    or “<literal><replaceable>type</replaceable>/<replaceable>subtype</replaceable></literal>”.</error>
+  <impl>It is <glossterm>implementation-defined</glossterm> if a processor accepts any other content type shortcuts.</impl>
 <error code="S0111">It is a <glossterm>static error</glossterm> if an unrecognized content type shortcut is specified.</error>
 </para>
 
@@ -860,6 +1005,11 @@ output named “<literal>result</literal>”, and the same set of options.
         <termdef xml:id="dt-declared-outputs">The output ports declared on a step are its
             <firstterm>declared outputs</firstterm>.</termdef> When a step is used in a pipeline, it
         is connected to other steps through its inputs and outputs. </para>
+  
+    <para><termdef xml:id="dt-anonymous-input">The <glossterm baseform="compound-step">compound steps</glossterm> 
+      <tag>p:for-each</tag> and <tag>p:viewport</tag> each declare
+        a single primary input without a port name. Such an input is called an 
+      <firstterm>anonymous input</firstterm>.</termdef></para>
 
          <para>When a step is used, all of the <glossterm>declared inputs</glossterm> of the step
                <rfc2119>must</rfc2119> be connected. Each connection binds the input to a data
@@ -908,12 +1058,8 @@ siblings.</para>
 step signatures are fixed and shared by all instances. There is no
 mechanism for a pipeline author to declare that an atomic step has a
 signature that varies. However, implementors may provide such
-mechanisms and other specifications may depend upon them. For example,
-the standard <tag>p:run</tag> step violates this constraint in that
-the name and number of its output ports depends on its inputs and may
-vary between invocations.
-</para>
-<para>Such steps are “magic” and XProc 3.0 makes no effort to provide
+mechanisms and other specifications may depend upon them.
+Such steps are “magic” and XProc 3.0 makes no effort to provide
 a mechanism to define them.</para>
 </note>
 
@@ -1261,7 +1407,7 @@ as they are available statically.</para>
   &lt;p:option name="A" static="true" select="5"/&gt;
   &lt;p:option name="B" static="true" select="$A + count(//*)"&gt;
     &lt;p:document href="doc.xml"/&gt;
-  &lt;/p:variable&gt;
+  &lt;/p:option&gt;
   &lt;p:variable name="D" select="count(//*)"/&gt;
 
   …
@@ -2153,16 +2299,18 @@ static analysis is <glossterm>implementation-defined</glossterm>.</impl></para>
               specification</link>.</termdef></para>
         </listitem>
         <listitem>
+          <para>All steps that explicitly behave like the <tag>p:identity</tag> step under
+          some circumstances must preserve PSVI properties under those circumstances.
+          In this specifications, those steps are <tag>p:if</tag> when the condition is false
+          and <tag>p:choose</tag> when no subpipline is selected.</para>
+        </listitem>
+        <listitem>
           <para>Except as specified above, or in the descriptions of individual steps,
             implementations <rfc2119>must not</rfc2119> include PSVI properties in the outputs of
-            steps defined by this specification. <impl>It is
+            steps. 
+            <impl>It is
                 <glossterm>implementation-defined</glossterm> what PSVI properties, if any, are
               produced by extension steps.</impl></para>
-          <para>The exceptions in the standard XProc steps are the
-              <tag>p:validate-with-xml-schema</tag>, <tag>p:validate-with-relax-ng</tag>, and
-              <tag>p:validate-with-schematron</tag> steps, <tag>p:xslt</tag> (when XSLT 2.0 is
-            used), <tag>p:xquery</tag>, <tag>p:identity</tag>, and <tag>p:split-sequence</tag>.
-          </para>
         </listitem>
       </orderedlist>
       <note xml:id="note-psvi">
@@ -2223,13 +2371,15 @@ containing atomic values or nodes.</error> Function, array and map items are
 explicitly excluded here because they do not have a string representation.
 </para>
 
-<para>The context item used for evaluating value templates comes from
-the <glossterm>default readable port</glossterm>. 
-<error code="D0065">It is a <glossterm>dynamic error</glossterm>
-to refer to the context item, size, or position in a value template if a sequence of documents
-appears on the default readable port.</error>
-If the value template appears in a context where no default
-readable port exists, then the context item is undefined.</para>
+  <para>A value template that contains a reference to the context
+    item reads that context item from the <glossterm>default readable port</glossterm>. 
+    This establishes a connection between the two steps.
+    <error code="D0065">It is a <glossterm>dynamic error</glossterm>
+      to refer to the context item, size, or position in a value template 
+      if a sequence of documents appears on the default readable port.</error> 
+    Value templates that do not contain a reference to the context item
+    do not establish a connection to another step and do not
+    require that a <glossterm>default readable port</glossterm> is available.</para>
 
 <section xml:id="attribute-value-templates">
 <title>Attribute Value Templates</title>
@@ -2410,34 +2560,34 @@ element.</para>
 
 <para>If the media type is an XML media type:</para>
 
-<programlisting>  &lt;p:inline content-type="application/xml"&gt;
+<programlisting language="xml">  &lt;p:inline content-type="application/xml"&gt;
     &lt;attribution&gt;{$name/node()}&lt;/attribution&gt;
   &lt;/p:inline&gt;</programlisting>
 
 <para>the result is that sequence of nodes:</para>
 
-<programlisting>  &lt;attribution&gt;&lt;given&gt;Mary&lt;/given&gt; &lt;surname&gt;Smith&lt;/surname&gt;&lt;/attribution&gt;</programlisting>
+<programlisting language="xml">  &lt;attribution&gt;&lt;given&gt;Mary&lt;/given&gt; &lt;surname&gt;Smith&lt;/surname&gt;&lt;/attribution&gt;</programlisting>
 
 <para>If the media type is not an XML media type:</para>
 
-<programlisting>  &lt;p:inline content-type="application/json"&gt;
+<programlisting language="xml">  &lt;p:inline content-type="application/json"&gt;
     {{ "name": "{$name/node()}" }}
   &lt;/p:inline&gt;</programlisting>
 
 <para>the result is the concatenation of the serialization of the nodes:</para>
 
-<programlisting>  { "name": "&lt;given&gt;Mary&lt;/given&gt; &lt;surname&gt;Smith&lt;/surname&gt;" }</programlisting>
+<programlisting language="javascript">  { "name": "&lt;given&gt;Mary&lt;/given&gt; &lt;surname&gt;Smith&lt;/surname&gt;" }</programlisting>
 
 <para>If the string value is desired, instead of escaped markup, write the
 expression such that it returns the string values:</para>
 
-<programlisting>  &lt;p:inline content-type="application/json"&gt;
+<programlisting language="xml">  &lt;p:inline content-type="application/json"&gt;
     {{ "name": "{$name/node()/string()}" }}
   &lt;/p:inline&gt;</programlisting>
 
 <para>To produce:</para>
 
-<programlisting>  { "name": "Mary Smith" }</programlisting>
+<programlisting language="javascript">  { "name": "Mary Smith" }</programlisting>
 
 </simplesect>
 </section>
@@ -2465,24 +2615,23 @@ Variable names are always expressed as
 
       <para>Consider this pipeline:</para>
 
-      <programlisting language="xml">&lt;p:declare-step xmlns:p="http://www.w3.org/ns/xproc" version="3.0" name="main"&gt;
+      <programlisting language="xml">&lt;p:declare-step xmlns:p="http://www.w3.org/ns/xproc" 
+  xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0"&gt;
+  
   &lt;p:option name="bname" as="xs:integer" select="1"/&gt;
-
-  &lt;p:message message="NAME1={$bname}"&gt;
-    &lt;p:input port="source"&gt;
+  &lt;p:identity message="NAME1={$bname}"&gt;
+    &lt;p:with-input port="source"&gt;
       &lt;p:empty/&gt;
-    &lt;/p:input&gt;
-  &lt;/p:message&gt;
-
+    &lt;/p:with-input&gt;
+  &lt;/p:identity&gt;
+  
+  
   &lt;p:variable name="bname" select="$bname + 1"/&gt;
-
-  &lt;p:message message="NAME2={$bname}"/&gt;
-
+  &lt;p:identity message="NAME2={$bname}"/&gt;
+  
   &lt;p:variable name="bname" select="7"/&gt;
-
-  &lt;p:message message="NAME3={$bname}"/&gt;
-
-  &lt;p:sink/&gt;
+  &lt;p:identity message="NAME3={$bname}"/&gt;
+  
 &lt;/p:declare-step&gt;</programlisting>
 
       <para>If no overriding value is provided for <varname>$bname</varname> at runtime, the pipeline will produce three
@@ -3184,9 +3333,17 @@ For convenience, they are all summarized here.</para>
   <para>An <tag class="attribute">xml:base</tag> attribute is allowed on any element. It has
   the semantics of <biblioref linkend="xml-base"/>.</para>
 </listitem>
+<listitem>
+  <para>An <tag class="attribute">xml:lang</tag> attribute is allowed on any element. It has
+  the semantics of <biblioref linkend="xml10"/>.</para>
+</listitem>
+<listitem>
+  <para>An <tag class="attribute">xml:space</tag> attribute is allowed on any element. It has
+    the semantics of <biblioref linkend="xml10"/>.</para>
+</listitem>
 </itemizedlist>
 
-<para>The remaining elements are sometimes in no namespace and sometimes
+<para>The remaining attributes are sometimes in no namespace and sometimes
 explicitly in the XProc namespace. They are in no namespace when they
 appear on an XProc element; they are in the XProc namespace when they
 are on an element in any other namespace. In this way, they do not
@@ -3688,7 +3845,7 @@ each document in the sequence in turn.</para>
         a <tag>p:for-each</tag> is an empty sequence, then the subpipeline is never run and an empty
         sequence is produced on all of the outputs. </para>
 
-<para>The <tag>p:for-each</tag> has a single anonymous input: its
+<para>The <tag>p:for-each</tag> has a single <glossterm>anonymous input</glossterm>: its
 <glossterm>connection</glossterm> is provided by the
 <tag>p:with-input</tag>. If no iteration sequence is explicitly provided,
 then the iteration source is read from the <glossterm>default readable
@@ -3762,7 +3919,7 @@ port</glossterm>.</para>
   &lt;/p:xslt&gt;
 
   &lt;p:xslt name="make-fo"&gt;
-    &lt;p:with-input port="source" pipe="chapters@current"/&gt;
+    &lt;p:with-input port="source" pipe="current@chapters"/&gt;
     &lt;p:with-input port="stylesheet" href="http://example.com/xsl/fo.xsl"/&gt;
   &lt;/p:xslt&gt;
 &lt;/p:for-each&gt;</programlisting>
@@ -3788,7 +3945,7 @@ more subtrees of each document in turn.</para>
 original document where the selected subtrees have been replaced by
 the results of applying the subpipeline to them.</para>
 
-<para>The <tag>p:viewport</tag> has a single anonymous input: its
+<para>The <tag>p:viewport</tag> has a single <glossterm>anonymous input</glossterm>: its
 <glossterm>connection</glossterm> is provided by the
 <tag>p:with-input</tag>. If no document is explicitly provided,
 then the viewport source is read from the <glossterm>default readable
@@ -3804,8 +3961,8 @@ the source document is wrapped in a document node, as necessary, and
 provided, one at a time, to the viewport’s
 <glossterm>subpipeline</glossterm> on a port named
 <port>current</port>. The base URI of the resulting document that is
-passed to the subpipeline is the base URI of the matched element or
-document. <error code="D0010">It is a <glossterm>dynamic
+passed to the subpipeline is the base URI of the matched node.
+<error code="D0010">It is a <glossterm>dynamic
 error</glossterm> if the <tag class="attribute">match</tag> expression
 on <tag>p:viewport</tag> matches an attribute or a namespace node.</error></para>
 
@@ -4492,6 +4649,18 @@ is an opportunity for the step to identify the error in a
 machine-processable fashion. Many steps omit this because they do not
 include the concept of errors identified by EQNames.</para>
 
+<para>The <tag class="attribute">cause</tag> is an EQName which
+identifies an underlying error, if applicable. As an aide to
+interoperability, this specification mandates particular error codes
+for conditions that can arise in a variety of ways. For example,
+<code>err:XD0050</code> is raised for all errors in XPath expressions
+in value templates. The implementation may use
+<tag class="attribute">cause</tag> to record an underlying error (for
+example, the XPath error code).
+<impl>The error codes that appear in <tag class="attribute">cause</tag>
+are
+<glossterm>implementation-dependent</glossterm>.</impl></para>
+
 <para>If the error was caused by a specific document, or by the
 location of some erroneous construction in a specific document, the
 <tag class="attribute">href</tag>, <tag class="attribute">line</tag>,
@@ -4744,18 +4913,14 @@ that more than one input port is the primary.</error></para>
 <tag class="attribute">select</tag> may be used to select a portion of the
 input identified by the <tag>p:empty</tag>, <tag>p:document</tag>,
 or <tag>p:inline</tag> elements in the
-<tag>p:input</tag>. This select expression <rfc2119>must</rfc2119> be an XPath
-expression.
-The selected nodes are returned as separate documents.
-If such a document consists exclusively of text nodes, then it has a content
-type of <literal>text/plain</literal>, otherwise it has a content type
-of <literal>application/xml</literal>. <error code="D0016">It is a
-<glossterm>dynamic error</glossterm> if the select expression on a p:input or
-p:with-input returns anything other than document nodes, element nodes,
-processing instruction nodes, comment nodes, text nodes or an empty sequence.</error></para>
+<tag>p:input</tag>.</para>
+
+<para>With the exception that <tag>p:input</tag> cannot establish a connection 
+to another step, what is said about the <tag class="attribute">select</tag> 
+attribute in <tag>p:with-input</tag> equally applies to <tag>p:input</tag>.</para>
 
 <para>The
-<tag class="attribute">select</tag> expression applies
+<tag class="attribute">select</tag> expression on <tag>p:input</tag> applies
 <emphasis>only</emphasis> if the default connection is used. If an
 explicit connection is provided by the caller, then the default select
 expression is ignored.</para>
@@ -4820,10 +4985,10 @@ is a binding for the specified port. If no port is specified, then:</para>
 <itemizedlist>
 <listitem>
 <para>In a <tag>p:viewport</tag> or <tag>p:for-each</tag>, it is a
-binding for the step’s single, anonymous input port.</para>
+binding for the step’s single, <glossterm>anonymous input</glossterm> port.</para>
 </listitem>
 <listitem>
-<para>In a <tag>p:choose</tag> or <tag>p:when</tag>, it is a
+<para>In a <tag>p:choose</tag>, <tag>p:when</tag> or <tag>p:if</tag>, it is a
 binding for the context item for the test expression(s).</para>
 </listitem>
 <listitem>
@@ -4834,8 +4999,12 @@ is no primary input port.</error>
 </para>
 </listitem>
 </itemizedlist>
+<para><error code="S0043">It is a <glossterm>static error</glossterm>
+to specify a port name on <tag>p:with-input</tag> for <tag>p:for-each</tag>,
+  <tag>p:viewport</tag>, <tag>p:choose</tag>, <tag>p:when</tag>, or <tag>p:if</tag>.</error>
+</para>
 <para><error code="S0086">It is a <glossterm>static error</glossterm>
-to provide more than one p:with-input for the same port.</error>
+to provide more than one <tag>p:with-input</tag> for the same port.</error>
 </para>
 
 <para>If no connection is provided for a <glossterm>primary input
@@ -4848,16 +5017,16 @@ undefined.</error></para>
 </varlistentry>
 <varlistentry><term><tag class="attribute">select</tag></term>
 <listitem>
-<para>A <tag class="attribute">select</tag> expression
-<rfc2119>may</rfc2119> also be provided with a connection.
-The <tag class="attribute">select</tag> expression, if specified, applies the
-specified XPath select expression to the document(s) that are read.</para>
+            <para>A <tag class="attribute">select</tag> expression <rfc2119>may</rfc2119> also be
+              provided with a connection. The <tag class="attribute">select</tag> expression, if
+              specified, applies the specified XPath select expression to the document(s) that are
+              read. </para>
+            <para>The result of this is a sequence of items. The rules as stated in <xref linkend="creating-documents-from-xdm-step-results"/> will be applied to the members
+              of this sequence and will turn these into separate documents. <error code="D0016">It is a
+                <glossterm>dynamic error</glossterm> if the select expression on a <tag>p:input</tag> or
+                <tag>p:with-input</tag> returns attribute nodes or function items.</error></para>
 
-<para>If the result from applying the select expression to the document(s) is
- an atomic value, a text node with the corresponding string value is created.</para>
-
-  <para>Each selected node is wrapped in a document (unless it is a document)
-and provided to the input port. In other words,</para>
+  <para>For example:</para>
 
 <programlisting language="xml">&lt;p:with-input port="source"&gt;
   &lt;p:document href="http://example.org/input.html"/&gt;
@@ -4887,13 +5056,6 @@ port of the step named <literal>origin</literal>.</para>
 expression is the base URI of the matched element or document. The document
 does not have a base URI if it results from selecting an atomic value.</para>
 
-<para>If a document constructed by selection consists exclusively of
-text nodes, then it has a content type of
-<literal>text/plain</literal>, otherwise it has a content type of
-<literal>application/xml</literal>. If the selection result is a map or
-  an array or an atomic value, it is a JSON document. <error code="D0016">It is a
-<glossterm>dynamic error</glossterm> if the select expression on a p:input or
-p:with-input returns attribute nodes or function items.</error></para>
 </listitem>
 </varlistentry>
 <varlistentry><term><tag class="attribute">href</tag></term>
@@ -5235,7 +5397,7 @@ document</emphasis> and provide it on the output port. It
         </listitem>
         <listitem>
           <para>Parameter <literal>omit-xml-declaration</literal> is set to
-            <literal>true</literal>.</para>
+            <literal>false</literal>.</para>
         </listitem>
       </itemizedlist>
       
@@ -5255,9 +5417,7 @@ document</emphasis> and provide it on the output port. It
           <para>The <code>encoding</code> must support the value <code>UTF-8</code>.</para>
         </listitem>
         <listitem>
-          <para>The <code>omit-xml-declaration</code> must be supported. If the value is not
-            specified or has the value <code>no</code>, an XML declaration must be
-            produced.</para>
+          <para>The <code>omit-xml-declaration</code> must be supported.</para>
         </listitem>
       </itemizedlist>
       
@@ -5324,7 +5484,7 @@ the name of a static option.</error>
 <listitem>
 <para>The type of the value may be specified in the
 <tag class="attribute">as</tag> attribute using an
-XProc sequence type, see <xref linkend="varopt-types"/>.
+XPath sequence type, see <xref linkend="varopt-types"/>.
 </para>
 </listitem>
 </varlistentry>
@@ -5360,20 +5520,6 @@ no effect.
 the context item is undefined. All of the documents that appear on the
 connection for the <tag>p:variable</tag> will be available as the
 default collection within <tag class="attribute">select</tag> expression.</para>
-</listitem>
-</varlistentry>
-
-<varlistentry><term><tag class="attribute">visibility</tag></term>
-<listitem>
-<para>If the <tag>p:variable</tag> is a child of a <tag>p:library</tag>,
-the <tag class="attribute">visibility</tag> attribute controls whether
-the variable is visible to an importing pipeline. If
-<tag class="attribute">visibility</tag> is set to “<literal>private</literal>”,
-the variable is visible inside the <tag>p:library</tag> but not visible to
-any pipeline importing the <tag>p:library</tag>. If the visibility attribute is
-missing, “<literal>public</literal>” is assumed. If the <tag>p:variable</tag> is not a child 
-of <tag>a p:library</tag> the attribute has no effect and is ignored.
-</para>
 </listitem>
 </varlistentry>
 
@@ -5469,7 +5615,7 @@ the name of a static option.</error>
 <listitem>
 <para>The type of the value may be specified in the
 <tag class="attribute">as</tag> attribute using an
-XProc sequence type, see <xref linkend="varopt-types"/>.
+XPath sequence type, see <xref linkend="varopt-types"/>.
 </para>
 </listitem>
 </varlistentry>
@@ -5525,10 +5671,9 @@ which will be evaluated to provide the default value for the option.
 </para>
 
 <para>The default value of an option is specified with an XPath
-expression on the <tag>p:declare-step</tag> that defines the step
-signature. It must be a statically valid expression at that point.
-Consequently, if it contains variable references, they can only be
-references to preceding options on the step or to in-scope static variables.
+expression. It must be a statically valid expression at that point.
+Consequently, if it contains option references, these can only be
+references to preceding non-static options on the step or to in-scope static options.
 <error code="D0001">It is a <glossterm>dynamic error</glossterm> if an
 XPath expression makes reference to the context item, size, or position when
 the context item is undefined.</error></para>
@@ -5612,7 +5757,7 @@ name as part of the same step invocation.</error></para>
 <listitem>
 <para>The type of the value may be specified in the
 <tag class="attribute">as</tag> attribute using an
-XProc sequence type, see <xref linkend="varopt-types"/>.
+XPath sequence type, see <xref linkend="varopt-types"/>.
 </para>
 </listitem>
 </varlistentry>
@@ -5809,15 +5954,17 @@ in its subpipeline.</para>
 <listitem>
 <para>The <tag class="attribute">name</tag> attribute provides a
 name for the step. This name can be used within the subpipeline to
-refer back to the declaration, for example, to read from its inputs.
+refer back to the declaration, for example, to read from its inputs. See also <xref linkend="step-names"/>.
 </para>
 </listitem>
 </varlistentry>
 <varlistentry><term><tag class="attribute">type</tag></term>
 <listitem>
 <para>The <tag class="attribute">type</tag> attribute provides
-a type for the step. 
-The value of the <tag class="attribute">type</tag> can be from
+  a type for the step. Step
+  types are used as the name of the element by which the step is invoked. 
+  See also <xref linkend="step-types"/>.</para>
+  <para>The value of the <tag class="attribute">type</tag> can be from
 any namespace provided that the expanded-QName of the value has a
 non-null namespace URI. <error code="S0025">It is a <glossterm>static
 error</glossterm> if the expanded-QName value of the <tag class="attribute">type</tag> attribute is in no namespace or in the
@@ -6870,7 +7017,9 @@ readable port then the context item is undefined.</para>
             <varlistentry>
               <term>context position and context size</term>
               <listitem>
-                <para>The context position and context size are both “1”. </para>
+          <para>If the context item is defined, the context position and context size are both “1”.
+              <error code="D0001">It is a <glossterm>dynamic error</glossterm> to refer to the
+              context position or size if the context item is undefined.</error></para>
               </listitem>
             </varlistentry>
             <varlistentry>
@@ -7316,7 +7465,10 @@ an <glossterm>HTML media type</glossterm>)
 are <firstterm baseform="XML media type">XML media types</firstterm>.
 </para></glossdef></glossentry><glossentry><glossterm>ancestors</glossterm><glossdef><para>The <firstterm>ancestors</firstterm> of
 a step, if it has any, are its <glossterm>container</glossterm> and
-the ancestors of its container.</para></glossdef></glossentry><glossentry><glossterm>atomic
+the ancestors of its container.</para></glossdef></glossentry><glossentry><glossterm>anonymous input</glossterm><glossdef><para>The <glossterm baseform="compound-step">compound steps</glossterm> 
+      <tag>p:for-each</tag> and <tag>p:viewport</tag> each declare
+        a single primary input without a port name. Such an input is called an 
+      <firstterm>anonymous input</firstterm>.</para></glossdef></glossentry><glossentry><glossterm>atomic
 step</glossterm><glossdef><para>An <firstterm>atomic
 step</firstterm> is a step that does not contain a subpipline when it
 is invoked.</para></glossdef></glossentry><glossentry><glossterm>attribute value
@@ -7463,10 +7615,8 @@ they are <firstterm>visible</firstterm> to each other.</para></glossdef></glosse
 descriptions of this language are available in
 <link xlink:href="schemas/xproc.rng">RELAX NG</link> (and the
 RELAX NG 
-<link xlink:href="schemas/xproc.rnc">compact syntax</link>),
-<link xlink:href="schemas/xproc.xsd">W3C XML Schema</link>,
-and 
-<link xlink:href="schemas/xproc.dtd">DTD</link> syntaxes.</para>
+<link xlink:href="schemas/xproc.rnc">compact syntax</link>).
+</para>
 
 <?syntax-summary?>
 
@@ -7745,24 +7895,52 @@ either case.</para>
 as the state of the filesystem or the state of the web. Consider
 the following pipeline:</para>
 
-<programlisting>&lt;p:xslt name="generate-stylesheet"&gt;
+<programlisting>&lt;p:declare-step xmlns:p="http://www.w3.org/ns/xproc"
+                version="3.0"&gt;
+&lt;p:input port="source"/&gt;
+&lt;p:output port="result"/&gt;
+
+  &lt;p:xslt name="generate-stylesheet"&gt;
     &lt;p:with-input port="source" href="someURI"/&gt;
     &lt;p:with-input port="stylesheet" href="someOtherURI"/&gt;
   &lt;/p:xslt&gt;
 
-  &lt;p:store name="save-xslt" href="gen-style.xsl"/&gt;</programlisting>
+  &lt;p:store name="save-xslt" href="gen-style.xsl"/&gt;
+
+  &lt;p:xslt name="style"&gt;
+    &lt;p:with-input port="source"&gt;
+      &lt;p:pipe step="main" port="source"/&gt;
+    &lt;/p:with-input&gt;
+    &lt;p:with-input port="stylesheet" href="gen-style.xsl"/&gt;
+  &lt;/p:xslt&gt;
+&lt;/p:declare-step&gt;</programlisting>
 
 <para>There’s no guarantee that “style” step will execute after the
 “save-xslt” step. In this case, the solution is straightforward. Even
 if you need the saved stylesheet, you don't need to rely on it in your
 pipeline:</para>
 
-<programlisting>&lt;p:xslt name="generate-stylesheet"&gt;
+<programlisting>&lt;p:declare-step xmlns:p="http://www.w3.org/ns/xproc"
+                name="main" version="3.0"&gt;
+&lt;p:input port="source"/&gt;
+&lt;p:output port="result"/&gt;
+
+  &lt;p:xslt name="generate-stylesheet"&gt;
     &lt;p:with-input port="source" href="someURI"/&gt;
     &lt;p:with-input port="stylesheet" href="someOtherURI"/&gt;
   &lt;/p:xslt&gt;
 
-  &lt;p:store name="save-xslt" href="gen-style.xsl"/&gt;</programlisting>
+  &lt;p:store name="save-xslt" href="gen-style.xsl"/&gt;
+
+  &lt;p:xslt name="style"&gt;
+    &lt;p:with-input port="source"&gt;
+      &lt;p:pipe step="main" port="source"/&gt;
+    &lt;/p:with-input&gt;
+    &lt;p:with-input port="stylesheet"&gt;
+      &lt;p:pipe step="generate-stylesheet" port="result"/&gt;
+    &lt;/p:with-input&gt;
+  &lt;/p:xslt&gt;
+&lt;/p:declare-step&gt;</programlisting>
 
 <para>Now the result is independent of the implementation strategy.</para>
 
@@ -8018,7 +8196,25 @@ who contributed to this document and all of the versions that came before it.</p
 
 <appendix xml:id="changelog">
 <title>Change Log</title>
-<para>This appendix catalogs non-editorial changes made after the
+  <para>This list contains the non-editorial changes made after the
+    December 2019
+    “<link xlink:href="https://spec.xproc.org/lastcall-2019-12/head/xproc/">last call</link>”
+    draft:</para>
+  
+  <itemizedlist>
+    <listitem>
+      <para>The <code>visibility</code> attribute of <tag>p:variable</tag> was removed.</para>
+    </listitem>
+    <listitem>
+        <para>The description of the <code>select</code> attribute of <tag>p:option</tag> no longer
+          mentions static variables.</para>
+    </listitem>
+    <listitem>
+      <para>Error XD0079 added for defective content-types. (Was XS0070 or XS00130).</para>
+    </listitem>
+  </itemizedlist>
+  
+<para>This list contains the non-editorial changes made after the
 February 2019
 “<link xlink:href="http://spec.xproc.org/lastcall-2019-02/head/xproc/">last call</link>”
 draft:</para>
@@ -8082,7 +8278,7 @@ draft:</para>
         <para>Identified the <port>error</port> port as the primary input port in <tag>p:catch</tag>.</para>
       </listitem>
       <listitem>
-        <para>Clarified that <tag>p:finally</tag> <rfc2119>must not</rfc2119> declare a pirmary output port.</para>
+        <para>Clarified that <tag>p:finally</tag> <rfc2119>must not</rfc2119> declare a primary output port.</para>
       </listitem>
       <listitem>
         <para>Clarified which functions are available during static analysis.</para>
@@ -8097,6 +8293,26 @@ draft:</para>
         <para>Clarified how sequences of XDM values (for
         example, from a <tag>p:xslt</tag> step) are converted into
         documents.</para>
+      </listitem>
+      <listitem>
+        <para>Updated the description of the <tag class="attribute">select</tag> attribute for <tag>p:input</tag>
+        so that it is in line with the more recent changes that have been applied to <tag>p:with-input</tag>.</para>
+      </listitem>
+      <listitem>
+        <para>Changed description of <tag>p:viewport</tag> stating that the base URI of every matched node is the
+        document's base URI, not just for document and element nodes.</para>
+      </listitem>
+      <listitem>
+        <para>Changed the default value for serialization property <literal>omit-xml-declaration</literal>
+          from <literal>true</literal> to <literal>false</literal> in section “Serialization method” . Removed
+          remark about default settings for this parameter from section “Minimal conformance”.</para>
+      </listitem>
+      <listitem>
+        <para>Clarified the conditions under which steps may produce PSVI annotations.</para>
+      </listitem>
+      <listitem>
+        <para>Added a <tag class="attribute">cause</tag> attribute to the error vocabulary 
+         for recording the error codes of underlying errors.</para>
       </listitem>
     </itemizedlist>
 </appendix>
